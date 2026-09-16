@@ -8,6 +8,16 @@ class FloorRequest extends FormRequest
 {
     public function authorize(): bool { return true; }
 
+    protected function prepareForValidation(): void
+    {
+        if (!$this->has('building_id') && $this->route('building')) {
+            $building = $this->route('building');
+            $this->merge([
+                'building_id' => is_object($building) ? $building->id : $building,
+            ]);
+        }
+    }
+
     public function rules(): array
     {
         return [

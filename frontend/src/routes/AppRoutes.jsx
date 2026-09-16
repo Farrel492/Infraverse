@@ -27,6 +27,8 @@ import DigitalTwinPage from "../pages/DigitalTwin/DigitalTwinPage.jsx";
 import MaintenancePage from "../pages/Maintenance/MaintenancePage.jsx";
 import MaintenanceFormPage from "../pages/Maintenance/MaintenanceFormPage.jsx";
 import ProfilePage from "../pages/Profile/ProfilePage.jsx";
+import UserListPage from "../pages/Users/UserListPage.jsx";
+import UserFormPage from "../pages/Users/UserFormPage.jsx";
 import MainLayout from "../components/layout/MainLayout.jsx";
 
 function PrivateRoute({ children }) {
@@ -67,13 +69,16 @@ export default function AppRoutes() {
         <Route path="mapping"                   element={<MappingPage />} />
         <Route path="mapping/create-connection" element={<ConnectionFormPage />} />
 
-        {/* Simulation, Digital Twin, Maintenance, Profile */}
+        {/* Simulation, Digital Twin, Maintenance, Profile, User Management */}
         <Route path="simulation"                element={<SimulationPage />} />
         <Route path="digital-twin"              element={<DigitalTwinPage />} />
         <Route path="maintenance"               element={<MaintenancePage />} />
         <Route path="maintenance/create"        element={<MaintenanceFormPage />} />
         <Route path="maintenance/:id/edit"      element={<MaintenanceFormPage />} />
         <Route path="profile"                   element={<ProfilePage />} />
+        <Route path="users"                     element={<UserListPage />} />
+        <Route path="users/create"              element={<UserFormPage />} />
+        <Route path="users/:id/edit"            element={<UserFormPage />} />
       </Route>
     </Routes>
   );

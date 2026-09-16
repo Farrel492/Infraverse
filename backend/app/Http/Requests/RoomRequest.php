@@ -8,6 +8,16 @@ class RoomRequest extends FormRequest
 {
     public function authorize(): bool { return true; }
 
+    protected function prepareForValidation(): void
+    {
+        if (!$this->has('floor_id') && $this->route('floor')) {
+            $floor = $this->route('floor');
+            $this->merge([
+                'floor_id' => is_object($floor) ? $floor->id : $floor,
+            ]);
+        }
+    }
+
     public function rules(): array
     {
         return [

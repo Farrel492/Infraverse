@@ -8,6 +8,20 @@ class DeviceRequest extends FormRequest
 {
     public function authorize(): bool { return true; }
 
+    protected function prepareForValidation(): void
+    {
+        $sanitized = [];
+        $nullableKeys = ['rack_id', 'vendor', 'model', 'serial_number', 'ip_address', 'mac_address', 'purchase_date', 'warranty_expiry', 'rack_position', 'rack_units', 'status'];
+        foreach ($nullableKeys as $key) {
+            if ($this->has($key) && ($this->input($key) === '' || $this->input($key) === 'null')) {
+                $sanitized[$key] = null;
+            }
+        }
+        if (!empty($sanitized)) {
+            $this->merge($sanitized);
+        }
+    }
+
     public function rules(): array
     {
         return [

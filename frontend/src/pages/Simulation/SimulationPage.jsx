@@ -185,7 +185,7 @@ export default function SimulationPage() {
       ) : tab === "scenarios" ? (
         
         /* SCENARIOS CARDS */
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
           {scenarios.map((s, idx) => {
             const c = TYPE_COLOR[s.scenario_type] ?? { border:"border-slate-700", bg:"bg-slate-800", glow:"" };
             return (
@@ -194,38 +194,59 @@ export default function SimulationPage() {
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: idx * 0.05 }}
-                className={`glass rounded-2xl p-6 border ${c.border} ${c.glow} hover:scale-[1.01] transition-all flex flex-col justify-between group shadow-xl`}
+                className={`glass rounded-3xl p-7 border ${c.border} ${c.glow} hover:scale-[1.01] transition-all flex flex-col justify-between group shadow-2xl relative overflow-hidden`}
               >
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <div className="flex items-start justify-between gap-3">
-                    <div className="w-12 h-12 rounded-2xl bg-slate-900/80 border border-slate-700/80 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                      {TYPE_ICON[s.scenario_type] ?? <Cpu size={24} className="text-slate-400" />}
+                    <div className="w-14 h-14 rounded-2xl bg-slate-900/90 border border-slate-700/80 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-lg">
+                      {TYPE_ICON[s.scenario_type] ?? <Cpu size={28} className="text-slate-400" />}
                     </div>
-                    <span className="text-[10px] font-mono uppercase font-bold text-slate-400 bg-slate-900/80 px-2.5 py-1 rounded-lg border border-slate-800">
+                    <span className="text-xs font-mono uppercase font-black text-purple-300 bg-purple-500/15 px-3 py-1.5 rounded-xl border border-purple-500/30">
                       {s.scenario_type?.replace(/_/g," ")}
                     </span>
                   </div>
 
-                  <h3 className="font-bold text-slate-100 text-base leading-snug group-hover:text-purple-300 transition-colors">{s.name}</h3>
-                  <p className="text-xs text-slate-400 leading-relaxed">{s.description}</p>
+                  <div>
+                    <h3 className="font-black text-slate-100 text-lg group-hover:text-purple-300 transition-colors leading-snug">{s.name}</h3>
+                    <p className="text-xs sm:text-sm text-slate-300 mt-1.5 leading-relaxed font-medium">{s.description}</p>
+                  </div>
 
-                  <div className="bg-slate-950/60 rounded-xl p-3 border border-amber-500/20 text-xs space-y-1">
-                    <p className="text-[10px] text-amber-400 font-bold uppercase tracking-wider flex items-center gap-1">
-                      <AlertTriangle size={12} /> Dampak Kegagalan Sistem:
+                  {/* Impact Alert */}
+                  <div className="bg-amber-500/10 rounded-2xl p-4 border border-amber-500/30 text-xs space-y-1.5">
+                    <p className="text-xs text-amber-400 font-black uppercase tracking-wider flex items-center gap-1.5">
+                      <AlertTriangle size={14} /> Dampak Insiden Kegagalan:
                     </p>
-                    <p className="text-xs text-slate-300 leading-relaxed">{s.impact_description}</p>
+                    <p className="text-xs text-slate-200 leading-relaxed font-medium">{s.impact_description}</p>
+                  </div>
+
+                  {/* Step Workflow Preview */}
+                  <div className="bg-slate-950/70 rounded-2xl p-4 border border-slate-800 space-y-2">
+                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-wider">Tahapan Prosedur Recovery:</p>
+                    <div className="space-y-1.5">
+                      {s.steps?.slice(0, 3).map((st, stIdx) => (
+                        <div key={stIdx} className="flex items-center gap-2 text-xs text-slate-300 font-medium">
+                          <span className="w-4 h-4 rounded-full bg-purple-500/20 text-purple-400 font-bold text-[10px] flex items-center justify-center flex-shrink-0 border border-purple-500/30">
+                            {stIdx + 1}
+                          </span>
+                          <span className="truncate">{st}</span>
+                        </div>
+                      ))}
+                      {(s.steps?.length ?? 0) > 3 && (
+                        <p className="text-[10px] text-slate-500 font-bold italic pl-6">+ {(s.steps.length - 3)} langkah prosedur lanjutan...</p>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-between">
-                  <div className="text-xs text-slate-500 flex items-center gap-1.5">
-                    <Cpu size={13} className="text-indigo-400" />
+                <div className="mt-6 pt-5 border-t border-slate-800/90 flex items-center justify-between">
+                  <div className="text-xs font-bold text-slate-400 flex items-center gap-2">
+                    <Cpu size={15} className="text-indigo-400" />
                     <span>{s.affected_device_ids?.length ?? 0} Perangkat Terdampak</span>
                   </div>
 
                   <button onClick={() => handleRun(s)}
-                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl shadow-[0_0_15px_rgba(168,85,247,0.3)] transition-all">
-                    <Play size={13} /> Uji Simulasi
+                    className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-black rounded-2xl shadow-[0_0_20px_rgba(168,85,247,0.4)] transition-all active:scale-95">
+                    <Play size={15} /> Uji Simulasi
                   </button>
                 </div>
               </motion.div>

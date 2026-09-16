@@ -8,6 +8,16 @@ class RackRequest extends FormRequest
 {
     public function authorize(): bool { return true; }
 
+    protected function prepareForValidation(): void
+    {
+        if (!$this->has('room_id') && $this->route('room')) {
+            $room = $this->route('room');
+            $this->merge([
+                'room_id' => is_object($room) ? $room->id : $room,
+            ]);
+        }
+    }
+
     public function rules(): array
     {
         return [

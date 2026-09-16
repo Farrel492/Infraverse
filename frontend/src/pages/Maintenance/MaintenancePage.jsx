@@ -120,12 +120,13 @@ export default function MaintenancePage() {
             Penjadwalan & Pemantauan Perawatan Infrastruktur Kritis Kampus
           </p>
         </div>
-        {canWrite && (
-          <button onClick={() => navigate("/maintenance/create")}
-            className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white text-sm font-bold rounded-2xl shadow-[0_0_25px_rgba(245,158,11,0.4)] transition-all">
-            <Plus size={18} /> Tambah Jadwal Maintenance
-          </button>
-        )}
+        <button 
+          id="btn-add-maintenance"
+          onClick={() => navigate("/maintenance/create")}
+          className="flex items-center gap-2 px-6 py-3.5 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white text-sm font-bold rounded-2xl shadow-[0_0_25px_rgba(245,158,11,0.4)] transition-all cursor-pointer"
+        >
+          <Plus size={18} /> Tambah Jadwal Maintenance
+        </button>
       </div>
 
       {/* Top Metric KPI Cards */}

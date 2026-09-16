@@ -154,90 +154,94 @@ export default function DashboardPage() {
       animate="visible"
     >
       {/* HEADER */}
-      <motion.div variants={itemVariants} className="flex items-start justify-between">
+      <motion.div variants={itemVariants} className="flex items-center justify-between flex-wrap gap-4 pb-2 border-b border-slate-800/80">
         <div>
-          <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">
-            Selamat datang, {user?.name ?? "?"}
-          </h2>
-          <p className="text-slate-400 text-sm mt-1">
-            Dasbor Utama InfraVerse — Cerdas, Inklusif, Berkelanjutan.
+          <div className="flex items-center gap-3">
+            <h2 className="text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-slate-100">
+              Selamat datang, {user?.name ?? "Administrator"}
+            </h2>
+          </div>
+          <p className="text-slate-400 text-base font-semibold mt-1.5">
+            Dasbor Command Center InfraVerse — Platform Digital Twin Infrastruktur Kampus
           </p>
         </div>
-        <div className="text-right">
-          <p className="text-xs text-slate-400 font-medium tracking-wide">
-            {new Date().toLocaleDateString("id-ID", {
-              weekday:"long", year:"numeric", month:"long", day:"numeric"
-            })}
-          </p>
-          <div className="inline-flex mt-2 items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700/50">
-            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-            <p className="text-xs text-slate-300 capitalize">Role: {user?.role ?? "?"}</p>
+        <div className="flex items-center gap-4">
+          <div className="text-right">
+            <p className="text-sm text-slate-300 font-bold tracking-wide">
+              {new Date().toLocaleDateString("id-ID", {
+                weekday:"long", year:"numeric", month:"long", day:"numeric"
+              })}
+            </p>
+            <div className="inline-flex mt-1.5 items-center gap-2 px-3.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 shadow-md">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]"></span>
+              <p className="text-xs font-bold uppercase tracking-wider">Role: {user?.role ?? "Admin"}</p>
+            </div>
           </div>
         </div>
       </motion.div>
 
       {/* AI & GREEN IT WELCOME BANNER */}
-      <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl p-6 border border-blue-500/20 shadow-[0_0_40px_rgba(59,130,246,0.15)] bg-slate-900/40 backdrop-blur-xl">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-indigo-600/5 to-purple-600/10 pointer-events-none" />
-        <div className="relative flex items-center gap-5">
-          <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30 flex-shrink-0">
-            <Activity className="text-white" size={28} />
+      <motion.div variants={itemVariants} className="relative overflow-hidden rounded-3xl p-7 border border-blue-500/30 shadow-[0_0_50px_rgba(59,130,246,0.15)] bg-slate-900/60 backdrop-blur-2xl">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/15 via-indigo-600/10 to-purple-600/15 pointer-events-none" />
+        <div className="relative flex items-center gap-6">
+          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-500/40 flex-shrink-0">
+            <Activity className="text-white" size={32} />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2">
-              Ekosistem Digital Cerdas untuk Masa Depan <Leaf size={16} className="text-emerald-400" />
+            <h3 className="text-xl font-black text-slate-100 flex items-center gap-3">
+              Ekosistem Digital Cerdas untuk Masa Depan <Leaf size={20} className="text-emerald-400" />
             </h3>
-            <p className="text-sm text-slate-400 mt-1 max-w-3xl leading-relaxed">
-              Infrastruktur IT Anda berjalan dengan optimal. Bulan ini, optimalisasi AI InfraVerse telah berhasil mengurangi konsumsi energi sebesar <strong>12%</strong> dan mencegah <strong>3 potensi kegagalan sistem</strong>.
+            <p className="text-sm sm:text-base text-slate-300 mt-2 max-w-4xl leading-relaxed font-medium">
+              Infrastruktur IT Anda berjalan dengan optimal. Bulan ini, optimalisasi AI InfraVerse telah berhasil mengurangi konsumsi energi sebesar <strong className="text-emerald-400 font-black">12%</strong> dan mencegah <strong className="text-blue-400 font-black">3 potensi kegagalan sistem</strong> secara otomatis.
             </p>
           </div>
         </div>
       </motion.div>
 
       {/* STAT CARDS */}
-      <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5">
         {statCards.map(s => (
           <button key={s.label} onClick={() => navigate(s.path)}
-            className={`border rounded-2xl p-5 text-left transition-all relative overflow-hidden backdrop-blur-sm ${colorMap[s.color]}`}>
-            {s.alert && <span className="absolute top-3 right-3 w-2.5 h-2.5 bg-red-500 rounded-full animate-ping" />}
+            className={`border rounded-3xl p-6 text-left transition-all relative overflow-hidden backdrop-blur-md ${colorMap[s.color]}`}>
+            {s.alert && <span className="absolute top-4 right-4 w-3 h-3 bg-red-500 rounded-full animate-ping" />}
             <div className={`mb-4 ${iconColor[s.color]}`}>
-              <s.Icon size={24} strokeWidth={2} />
+              <s.Icon size={28} strokeWidth={2.2} />
             </div>
-            <p className="text-3xl font-black text-slate-100 font-mono">
+            <p className="text-3xl sm:text-4xl font-black text-slate-100 font-mono tracking-tight">
               <AnimatedCounter value={s.value} suffix={s.suffix} />
             </p>
-            <p className="text-xs text-slate-400 mt-1.5 font-medium">{s.label}</p>
+            <p className="text-xs font-bold text-slate-300 uppercase tracking-wider mt-2">{s.label}</p>
           </button>
         ))}
       </motion.div>
 
       {/* CHARTS SECTION */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 xl:grid-cols-3 gap-8">
         {/* Power Trend Chart */}
-        <div className="xl:col-span-2 bg-slate-800/40 backdrop-blur-md border border-slate-700/60 rounded-2xl p-6 shadow-xl">
+        <div className="xl:col-span-2 bg-slate-900/60 backdrop-blur-xl border border-slate-700/60 rounded-3xl p-7 shadow-2xl">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-base font-bold text-slate-200 flex items-center gap-2">
-                <Zap size={18} className="text-yellow-400" /> Tren Konsumsi Daya (7 Hari)
+              <h3 className="text-lg font-black text-slate-100 flex items-center gap-2.5">
+                <Zap size={22} className="text-yellow-400" /> Tren Konsumsi Daya (7 Hari)
               </h3>
-              <p className="text-xs text-slate-400 mt-1">Pemantauan energi real-time untuk keberlanjutan.</p>
+              <p className="text-xs text-slate-400 mt-1 font-semibold">Pemantauan energi real-time untuk efisiensi sistem.</p>
             </div>
             <div className="text-right">
-              <p className="text-2xl font-black text-emerald-400">721 <span className="text-sm font-medium text-slate-500">kWh</span></p>
-              <p className="text-xs text-emerald-500 flex items-center justify-end gap-1 mt-0.5"><TrendingUp size={12}/> -4.2% dari minggu lalu</p>
+              <p className="text-3xl font-black text-emerald-400">721 <span className="text-sm font-bold text-slate-400">kWh</span></p>
+              <p className="text-xs text-emerald-400 font-bold flex items-center justify-end gap-1 mt-0.5"><TrendingUp size={14}/> -4.2% dari minggu lalu</p>
             </div>
           </div>
-          <ResponsiveContainer width="100%" height={240}>
+          <ResponsiveContainer width="100%" height={260}>
             <AreaChart data={mockPowerData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorKwh" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.35}/>
                   <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
-              <XAxis dataKey="day" tick={{ fill:"#94a3b8", fontSize:12 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill:"#94a3b8", fontSize:12 }} axisLine={false} tickLine={false} />
+              <XAxis dataKey="day" tick={{ fill:"#94a3b8", fontSize:13, fontWeight:600 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill:"#94a3b8", fontSize:13, fontWeight:600 }} axisLine={false} tickLine={false} />
               <Tooltip content={<CustomTooltip />} />
               <Area type="monotone" dataKey="kwh" name="Konsumsi (kWh)" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorKwh)" />
             </AreaChart>
@@ -245,14 +249,14 @@ export default function DashboardPage() {
         </div>
 
         {/* Device Distribution Bar Chart */}
-        <div className="bg-slate-800/40 backdrop-blur-md border border-slate-700/60 rounded-2xl p-6 shadow-xl">
-          <h3 className="text-base font-bold text-slate-200 mb-6">Distribusi Tipe Perangkat</h3>
-          <ResponsiveContainer width="100%" height={240}>
+        <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-700/60 rounded-3xl p-7 shadow-2xl">
+          <h3 className="text-lg font-black text-slate-100 mb-6">Distribusi Tipe Perangkat</h3>
+          <ResponsiveContainer width="100%" height={260}>
             <BarChart data={byTypeChart} margin={{ top:0, right:0, bottom:0, left:-20 }} layout="vertical">
               <XAxis type="number" hide />
-              <YAxis dataKey="name" type="category" tick={{ fill:"#cbd5e1", fontSize:11 }} axisLine={false} tickLine={false} width={85} />
+              <YAxis dataKey="name" type="category" tick={{ fill:"#cbd5e1", fontSize:12, fontWeight:600 }} axisLine={false} tickLine={false} width={95} />
               <Tooltip content={<CustomTooltip />} cursor={{ fill:"rgba(255,255,255,0.05)" }} />
-              <Bar dataKey="count" name="Jumlah" radius={[0,4,4,0]} barSize={16}>
+              <Bar dataKey="count" name="Jumlah" radius={[0,6,6,0]} barSize={18}>
                 {byTypeChart.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
               </Bar>
             </BarChart>
@@ -261,31 +265,31 @@ export default function DashboardPage() {
       </motion.div>
 
       {/* AI RECOMMENDATIONS & MAINTENANCE */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 xl:grid-cols-2 gap-8">
         
         {/* Smart AI Recommendation */}
-        <div className="bg-slate-800/40 backdrop-blur-md border border-slate-700/60 rounded-2xl p-6 shadow-xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl -mr-10 -mt-10" />
-          <div className="flex items-center justify-between mb-5">
-            <h3 className="text-base font-bold text-slate-200 flex items-center gap-2">
-              <BrainCircuit size={20} className="text-indigo-400" /> InfraVerse AI Copilot
+        <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-700/60 rounded-3xl p-7 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-36 h-36 bg-indigo-500/10 rounded-full blur-3xl -mr-10 -mt-10" />
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-black text-slate-100 flex items-center gap-2.5">
+              <BrainCircuit size={22} className="text-indigo-400" /> InfraVerse AI Copilot
             </h3>
-            <span className="text-xs bg-indigo-500/20 text-indigo-300 px-2.5 py-1 rounded-full font-medium border border-indigo-500/30">
+            <span className="text-xs bg-indigo-500/20 text-indigo-300 px-3 py-1 rounded-full font-bold border border-indigo-500/30">
               {aiRecommendations.length} Rekomendasi
             </span>
           </div>
           <div className="space-y-4">
             {aiRecommendations.map(rec => (
-              <div key={rec.id} className="p-4 rounded-xl bg-slate-900/50 border border-slate-700/50 hover:border-indigo-500/40 transition-colors group">
-                <div className="flex items-start gap-3">
-                  <div className={`mt-0.5 p-2 rounded-lg ${rec.type === 'energy' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
-                    {rec.type === 'energy' ? <Lightbulb size={16} /> : <AlertTriangle size={16} />}
+              <div key={rec.id} className="p-5 rounded-2xl bg-slate-900/80 border border-slate-700/60 hover:border-indigo-500/50 transition-colors group">
+                <div className="flex items-start gap-4">
+                  <div className={`mt-0.5 p-2.5 rounded-xl ${rec.type === 'energy' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
+                    {rec.type === 'energy' ? <Lightbulb size={20} /> : <AlertTriangle size={20} />}
                   </div>
                   <div>
-                    <h4 className="text-sm font-semibold text-slate-200 group-hover:text-indigo-300 transition-colors">{rec.title}</h4>
-                    <p className="text-xs text-slate-400 mt-1 leading-relaxed">{rec.description}</p>
-                    <button className="mt-3 text-xs font-medium text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors">
-                      Terapkan Solusi <ChevronRight size={14} />
+                    <h4 className="text-base font-bold text-slate-100 group-hover:text-indigo-300 transition-colors">{rec.title}</h4>
+                    <p className="text-xs sm:text-sm text-slate-300 mt-1.5 leading-relaxed font-medium">{rec.description}</p>
+                    <button className="mt-3.5 text-xs font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1.5 transition-colors px-3 py-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
+                      Terapkan Solusi <ChevronRight size={15} />
                     </button>
                   </div>
                 </div>
@@ -294,41 +298,44 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Predictive & Maintenance Combo */}
-        <div className="bg-slate-800/40 backdrop-blur-md border border-slate-700/60 rounded-2xl p-6 shadow-xl">
-          <div className="flex items-center justify-between mb-5">
-            <h3 className="text-base font-bold text-slate-200 flex items-center gap-2">
-              <Calendar size={18} className="text-slate-400" /> Maintenance Mendatang
+        {/* Maintenance Combo */}
+        <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-700/60 rounded-3xl p-7 shadow-2xl">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-black text-slate-100 flex items-center gap-2.5">
+              <Calendar size={20} className="text-slate-400" /> Maintenance Mendatang
             </h3>
-            <button onClick={() => navigate("/maintenance")} className="text-xs text-blue-400 hover:text-blue-300">
-              Kelola Semua
+            <button
+              onClick={() => navigate("/maintenance")}
+              className="px-4 py-2 text-xs font-bold text-blue-400 hover:text-white bg-blue-500/15 hover:bg-blue-600 border border-blue-500/30 rounded-xl transition-all shadow-md flex items-center gap-1.5"
+            >
+              Kelola Semua Maintenance <ChevronRight size={14} />
             </button>
           </div>
           
           {(summary.upcoming_maintenances?.length ?? 0) === 0 ? (
-            <div className="flex flex-col items-center justify-center py-10 bg-slate-900/30 rounded-xl border border-dashed border-slate-700">
-              <CheckCircle size={32} className="text-green-500/50 mb-3" />
-              <p className="text-sm text-slate-400 font-medium">Infrastruktur Aman</p>
-              <p className="text-xs text-slate-500 mt-1">Tidak ada jadwal maintenance dalam 30 hari ke depan.</p>
+            <div className="flex flex-col items-center justify-center py-12 bg-slate-900/40 rounded-2xl border border-dashed border-slate-700/80">
+              <CheckCircle size={36} className="text-emerald-500/60 mb-3" />
+              <p className="text-base text-slate-200 font-bold">Infrastruktur Aman & Terkendali</p>
+              <p className="text-xs text-slate-400 mt-1 font-medium">Tidak ada jadwal maintenance yang mendesak dalam 30 hari ke depan.</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-3.5">
               {summary.upcoming_maintenances.slice(0,4).map((m, i) => (
-                <div key={i} className="flex items-center gap-4 p-3 rounded-xl bg-slate-900/50 border border-slate-700/50 hover:bg-slate-800 transition-colors">
-                  <div className="w-10 h-10 bg-slate-800 border border-slate-700 rounded-lg flex items-center justify-center shadow-inner">
-                    <Wrench size={16} className="text-yellow-500" />
+                <div key={i} className="flex items-center gap-4 p-4 rounded-2xl bg-slate-900/80 border border-slate-700/60 hover:bg-slate-800/80 transition-colors">
+                  <div className="w-11 h-11 bg-slate-800 border border-slate-700 rounded-xl flex items-center justify-center shadow-inner">
+                    <Wrench size={18} className="text-yellow-400" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-slate-200 truncate">{m.device}</p>
-                    <p className="text-xs text-slate-500 capitalize flex items-center gap-1 mt-0.5">
-                      {TYPE_ICON_MAP[m.type] ?? <Package size={12}/>} {m.type.replace("_"," ")}
+                    <p className="text-sm font-bold text-slate-100 truncate">{m.device}</p>
+                    <p className="text-xs text-slate-400 capitalize flex items-center gap-1.5 mt-1 font-medium">
+                      {TYPE_ICON_MAP[m.type] ?? <Package size={13}/>} {m.type.replace("_"," ")}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs font-medium text-slate-300">
+                    <p className="text-xs font-bold text-slate-200">
                       {m.scheduled_date ? new Date(m.scheduled_date).toLocaleDateString("id-ID", { day:"numeric", month:"short" }) : "?"}
                     </p>
-                    <p className="text-[10px] text-slate-500 uppercase tracking-wider mt-0.5">Jadwal</p>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">Jadwal</p>
                   </div>
                 </div>
               ))}

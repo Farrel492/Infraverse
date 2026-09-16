@@ -89,4 +89,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/devices/{device}/documents',              [DeviceDocumentController::class, 'store']);
         Route::delete('/devices/{device}/documents/{document}', [DeviceDocumentController::class, 'destroy']);
     });
+
+    // Admin Only: User Management
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/users',                      [\App\Http\Controllers\Api\UserController::class, 'index']);
+        Route::post('/users',                     [\App\Http\Controllers\Api\UserController::class, 'store']);
+        Route::get('/users/{user}',               [\App\Http\Controllers\Api\UserController::class, 'show']);
+        Route::patch('/users/{user}',             [\App\Http\Controllers\Api\UserController::class, 'update']);
+        Route::delete('/users/{user}',            [\App\Http\Controllers\Api\UserController::class, 'destroy']);
+        Route::post('/users/{user}/reset-password',[\App\Http\Controllers\Api\UserController::class, 'resetPassword']);
+    });
 });

@@ -111,101 +111,113 @@ export default function LoginPage() {
       </div>
 
       {/* ===== RIGHT PANEL — FORM ===== */}
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="w-full max-w-sm animate-fade-in delay-150">
+      <div className="flex-1 flex items-center justify-center p-8 lg:p-12">
+        <div className="w-full max-w-md animate-fade-in delay-150">
 
           {/* Mobile logo */}
           <div className="lg:hidden text-center mb-8">
             <div
-              className="inline-flex w-12 h-12 rounded-2xl items-center justify-center font-black text-white text-xl mb-3"
-              style={{ background: "linear-gradient(135deg, #3b82f6, #6366f1)", boxShadow: "0 4px 20px rgba(59,130,246,0.4)" }}
+              className="inline-flex w-14 h-14 rounded-2xl items-center justify-center font-black text-white text-2xl mb-3 shadow-[0_4px_20px_rgba(59,130,246,0.4)] bg-gradient-to-br from-blue-500 to-indigo-600"
             >
               IV
             </div>
-            <h1 className="text-xl font-bold text-gradient-blue">InfraVerse</h1>
+            <h1 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-300">InfraVerse</h1>
           </div>
 
           {/* Form card */}
           <div
-            className="p-7 rounded-2xl"
+            className="p-8 sm:p-10 rounded-3xl"
             style={{
-              background: "rgba(11,20,38,0.8)",
-              border: "1px solid rgba(99,148,210,0.15)",
-              backdropFilter: "blur(16px)",
-              boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
+              background: "rgba(11,20,38,0.85)",
+              border: "1px solid rgba(99,148,210,0.2)",
+              backdropFilter: "blur(20px)",
+              boxShadow: "0 25px 70px rgba(0,0,0,0.6)",
             }}
           >
-            <div className="mb-6">
-              <h2 className="text-xl font-bold text-slate-100">Masuk ke Akun</h2>
-              <p className="text-xs mt-1" style={{ color: "rgba(148,163,184,0.5)" }}>
-                Selamat datang kembali di InfraVerse
+            <div className="mb-8">
+              <h2 className="text-2xl font-black text-slate-100">Masuk ke Akun</h2>
+              <p className="text-sm mt-1.5 font-medium" style={{ color: "rgba(148,163,184,0.65)" }}>
+                Selamat datang kembali di Platform InfraVerse
               </p>
             </div>
 
             {error && (
               <div
-                className="mb-4 px-4 py-3 rounded-xl text-sm"
-                style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", color: "#fca5a5" }}
+                className="mb-6 px-4 py-3.5 rounded-2xl text-sm font-semibold flex items-center gap-3"
+                style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.3)", color: "#fca5a5" }}
               >
+                <span className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_10px_#ef4444]" />
                 {error}
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Email */}
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Quick Demo Selector for Competition Presentation */}
               <div>
-                <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(148,163,184,0.7)" }}>
-                  Email
+                <label className="block text-xs font-bold uppercase tracking-wider mb-2 text-slate-400">
+                  Akun Demo Pengujian Cepat:
                 </label>
-                <div className="relative">
-                  <Mail size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "rgba(99,148,210,0.4)" }} />
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { role: "Admin", email: "admin@infraverse.test", pass: "password" },
+                    { role: "Teknisi", email: "teknisi@infraverse.test", pass: "password" },
+                    { role: "Viewer", email: "viewer@infraverse.test", pass: "password" },
+                  ].map((acc) => (
+                    <button
+                      key={acc.role}
+                      type="button"
+                      onClick={() => setForm({ email: acc.email, password: acc.pass })}
+                      className="px-2.5 py-2 rounded-xl text-xs font-bold bg-slate-800/80 hover:bg-blue-600/30 border border-slate-700/70 hover:border-blue-500/50 text-slate-300 hover:text-blue-300 transition-all text-center"
+                    >
+                      {acc.role}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Email with Separate Addon Box (No overlap guaranteed) */}
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider mb-2 text-slate-300">
+                  Alamat Email Pengguna
+                </label>
+                <div className="flex rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900/90 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all shadow-inner">
+                  <div className="flex items-center justify-center px-4 bg-slate-800/60 border-r border-slate-700/60 text-blue-400 flex-shrink-0">
+                    <Mail size={18} />
+                  </div>
                   <input
                     type="email"
                     required
                     value={form.email}
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    placeholder="admin@infraverse.test"
-                    className="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl text-slate-200 outline-none transition-all"
-                    style={{
-                      background: "rgba(15,28,50,0.8)",
-                      border: "1px solid rgba(99,148,210,0.15)",
-                    }}
-                    onFocus={e => { e.target.style.border = "1px solid rgba(59,130,246,0.5)"; e.target.style.boxShadow = "0 0 0 3px rgba(59,130,246,0.1)"; }}
-                    onBlur={e => { e.target.style.border = "1px solid rgba(99,148,210,0.15)"; e.target.style.boxShadow = ""; }}
+                    placeholder="Masukkan alamat email"
+                    className="w-full px-4 py-3.5 text-[15px] font-medium bg-transparent text-slate-100 outline-none placeholder:text-slate-500"
                   />
                 </div>
               </div>
 
-              {/* Password */}
+              {/* Password with Separate Addon Box (No overlap guaranteed) */}
               <div>
-                <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(148,163,184,0.7)" }}>
-                  Password
+                <label className="block text-xs font-bold uppercase tracking-wider mb-2 text-slate-300">
+                  Kata Sandi Akun
                 </label>
-                <div className="relative">
-                  <Lock size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "rgba(99,148,210,0.4)" }} />
+                <div className="flex rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900/90 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all shadow-inner">
+                  <div className="flex items-center justify-center px-4 bg-slate-800/60 border-r border-slate-700/60 text-blue-400 flex-shrink-0">
+                    <Lock size={18} />
+                  </div>
                   <input
                     type={showPass ? "text" : "password"}
                     required
                     value={form.password}
                     onChange={(e) => setForm({ ...form, password: e.target.value })}
-                    placeholder="Masukkan password"
-                    className="w-full pl-10 pr-10 py-2.5 text-sm rounded-xl text-slate-200 outline-none transition-all"
-                    style={{
-                      background: "rgba(15,28,50,0.8)",
-                      border: "1px solid rgba(99,148,210,0.15)",
-                    }}
-                    onFocus={e => { e.target.style.border = "1px solid rgba(59,130,246,0.5)"; e.target.style.boxShadow = "0 0 0 3px rgba(59,130,246,0.1)"; }}
-                    onBlur={e => { e.target.style.border = "1px solid rgba(99,148,210,0.15)"; e.target.style.boxShadow = ""; }}
+                    placeholder="Masukkan kata sandi"
+                    className="w-full px-4 py-3.5 text-[15px] font-medium bg-transparent text-slate-100 outline-none placeholder:text-slate-500"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPass(v => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
-                    style={{ color: "rgba(99,148,210,0.4)" }}
-                    onMouseEnter={e => e.target.style.color = "#60a5fa"}
-                    onMouseLeave={e => e.target.style.color = "rgba(99,148,210,0.4)"}
+                    className="px-4 text-slate-400 hover:text-slate-200 transition-colors flex items-center justify-center"
                   >
-                    {showPass ? <EyeOff size={14} /> : <Eye size={14} />}
+                    {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
               </div>
@@ -214,23 +226,16 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-2.5 text-sm font-bold text-white rounded-xl mt-2 transition-all"
-                style={{
-                  background: loading ? "rgba(59,130,246,0.4)" : "linear-gradient(135deg, #3b82f6, #6366f1)",
-                  boxShadow: loading ? "none" : "0 4px 20px rgba(59,130,246,0.4)",
-                  cursor: loading ? "not-allowed" : "pointer",
-                }}
-                onMouseEnter={e => { if (!loading) e.target.style.transform = "translateY(-1px)"; }}
-                onMouseLeave={e => e.target.style.transform = "translateY(0)"}
+                className="w-full py-4 text-base font-black text-white rounded-2xl mt-4 transition-all shadow-[0_4px_25px_rgba(59,130,246,0.4)] bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 hover:from-blue-500 hover:to-indigo-500 active:scale-[0.99]"
               >
-                {loading ? "Memproses..." : "Masuk"}
+                {loading ? "Memproses Autentikasi..." : "Masuk ke Sistem InfraVerse"}
               </button>
             </form>
 
-            <p className="mt-5 text-center text-xs" style={{ color: "rgba(148,163,184,0.4)" }}>
-              Belum punya akun?{" "}
-              <Link to="/register" className="font-semibold text-blue-400 hover:text-blue-300 transition-colors">
-                Daftar di sini
+            <p className="mt-6 text-center text-xs sm:text-sm font-medium text-slate-400">
+              Belum memiliki akun?{" "}
+              <Link to="/register" className="font-bold text-blue-400 hover:text-blue-300 transition-colors underline">
+                Daftar akun di sini
               </Link>
             </p>
           </div>

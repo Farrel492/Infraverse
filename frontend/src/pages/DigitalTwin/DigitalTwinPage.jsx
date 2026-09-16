@@ -266,42 +266,43 @@ export default function DigitalTwinPage() {
       <Breadcrumb items={[{ label:"Dashboard", href:"/dashboard" }, { label:"Digital Twin Rack Inspector" }]} />
 
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
+      <div className="flex items-center justify-between flex-wrap gap-4 glass p-6 rounded-3xl border border-slate-700/60 shadow-xl">
         <div>
           <h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-slate-100">
             Digital Twin Rack Inspector
           </h2>
-          <p className="text-slate-400 text-sm mt-1">
-            {sceneData?.building?.name ?? "Pilih Gedung"} — Pemantauan Posisi Fisik Rack per Ruangan
+          <p className="text-slate-400 text-sm font-semibold mt-1">
+            {sceneData?.building?.name ? `Lokasi: ${sceneData.building.name}` : "Pilih Gedung Spesifik"} — Inspection Rack Per Ruangan
           </p>
         </div>
 
         {/* Building Selector */}
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-2">
-            <Building2 size={15} className="text-blue-400" />
+        <div className="flex items-center gap-4 flex-wrap">
+          <div className="flex items-center gap-2.5 bg-slate-900/90 p-1.5 px-3 rounded-2xl border border-blue-500/50 shadow-md">
+            <Building2 size={18} className="text-blue-400" />
             <select
               value={selectedBuilding}
               onChange={e => { setSelectedBuilding(e.target.value); setSelected(null); }}
-              className="px-3.5 py-2 bg-slate-900/80 border border-blue-500/40 rounded-xl text-slate-200 text-xs font-bold focus:outline-none focus:border-blue-400 transition-all"
+              className="px-3 py-2 bg-transparent text-slate-100 text-sm font-black focus:outline-none transition-all cursor-pointer"
             >
-              <option value="">Pilih Gedung...</option>
-              {buildings.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+              <option value="" className="bg-slate-900 text-slate-400">-- Pilih Gedung Spesifik --</option>
+              {buildings.map(b => <option key={b.id} value={b.id} className="bg-slate-900 text-white font-bold">{b.name}</option>)}
             </select>
           </div>
+
           <button onClick={toggleSimMode}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold border transition-all ${
+            className={`flex items-center gap-2.5 px-5 py-3 rounded-2xl text-xs font-black border transition-all shadow-md ${
               simMode
-                ? "bg-red-500/20 border-red-500/40 text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.3)] animate-pulse"
+                ? "bg-red-500/20 border-red-500/50 text-red-400 shadow-[0_0_20px_rgba(239,68,68,0.4)] animate-pulse"
                 : "glass border-slate-700 text-slate-300 hover:bg-slate-800"
             }`}>
-            {simMode ? <ZapOff size={14} /> : <Zap size={14} />}
-            {simMode ? "Sim Mode ON" : "Mode Simulasi"}
+            {simMode ? <ZapOff size={16} /> : <Zap size={16} />}
+            {simMode ? "Sim Mode ON" : "Mode Simulasi Live"}
           </button>
 
           <button onClick={handleResetAll}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold glass border border-slate-700 text-slate-300 hover:bg-slate-800 transition-colors">
-            <RotateCcw size={14} /> Reset Status
+            className="flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-black glass border border-slate-700 text-slate-300 hover:bg-slate-800 transition-colors shadow-md">
+            <RotateCcw size={16} /> Reset Semua Status
           </button>
         </div>
       </div>

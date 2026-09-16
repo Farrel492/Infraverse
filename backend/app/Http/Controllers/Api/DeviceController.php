@@ -30,11 +30,24 @@ class DeviceController extends Controller
             $query->where('rack_id', $request->rack_id);
         }
         if ($request->filled('search')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', "%{$request->search}%")
-                  ->orWhere('ip_address', 'like', "%{$request->search}%")
-                  ->orWhere('serial_number', 'like', "%{$request->search}%")
-                  ->orWhere('vendor', 'like', "%{$request->search}%");
+            $term = $request->search;
+            $query->where(function ($q) use ($term) {
+                $q->where('name', 'like', "%{$term}%")
+                  ->orWhere('ip_address', 'like', "%{$term}%")
+                  ->orWhere('serial_number', 'like', "%{$term}%")
+                  ->orWhere('vendor', 'like', "%{$term}%")
+                  ->orWhere('model', 'like', "%{$term}%")
+                  ->orWhere('type', 'like', "%{$term}%")
+                  ->orWhereHas('rack', function ($rq) use ($term) {
+                      $rq->where('name', 'like', "%{$term}%")
+                        ->orWhereHas('room', function ($rmq) use ($term) {
+                            $rmq->where('name', 'like', "%{$term}%")
+                              ->orWhereHas('floor.building', function ($bq) use ($term) {
+                                  $bq->where('name', 'like', "%{$term}%")
+                                    ->orWhere('location', 'like', "%{$term}%");
+                              });
+                        });
+                  });
             });
         }
 
