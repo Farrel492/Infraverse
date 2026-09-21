@@ -119,7 +119,16 @@ class BuildingController extends Controller
 
     public function rackUpdate(RackRequest $request, Room $room, Rack $rack): JsonResponse
     {
-        $rack->update($request->validated());
+        $data = $request->validated();
+        if (isset($data['total_u'])) {
+            $maxDeviceSlot = $rack->devices()->max('rack_position') ?? 0;
+            if ($data['total_u'] < $maxDeviceSlot) {
+                return response()->json([
+                    'message' => "Kapasitas slot tidak boleh lebih kecil dari posisi perangkat tertinggi yang terpasang (Slot U{$maxDeviceSlot})."
+                ], 422);
+            }
+        }
+        $rack->update($data);
         return response()->json($rack);
     }
 
@@ -128,4 +137,11 @@ class BuildingController extends Controller
         $rack->delete();
         return response()->json(['message' => 'Rack berhasil dihapus.']);
     }
+
+    public function allRacks(): JsonResponse
+    {
+        $racks = Rack::with(['room.floor.building'])->orderBy('name')->get();
+        return response()->json($racks);
+    }
 }
+

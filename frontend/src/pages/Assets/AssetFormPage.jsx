@@ -5,8 +5,9 @@ import { buildingService } from "../../services/buildingService";
 import Breadcrumb from "../../components/shared/Breadcrumb.jsx";
 import {
   Server, ArrowLeft, Save, MapPin, HardDrive, Network,
-  ShieldCheck, Calendar, Activity, CheckCircle2, Shield, Router, 
-  Wifi, Battery, Package, Sparkles, AlertCircle, Cpu
+  ShieldCheck, Calendar, CheckCircle2, Shield, Router, 
+  Wifi, Battery, Package, Sparkles, AlertCircle, Cpu,
+  ChevronDown, Globe, Hash, BarChart2
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -36,6 +37,7 @@ export default function AssetFormPage() {
   const navigate    = useNavigate();
 
   const [buildings, setBuildings] = useState([]);
+  const [racksList, setRacksList] = useState([]);
   const [loading, setLoading]     = useState(true);
   const [saving, setSaving]       = useState(false);
   const [error, setError]         = useState("");
@@ -59,14 +61,18 @@ export default function AssetFormPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const bRes = await buildingService.getAll();
-        setBuildings(bRes.data);
+        const [bRes, rkRes] = await Promise.all([
+          buildingService.getAll(),
+          buildingService.getAllRacks().catch(() => ({ data: [] })),
+        ]);
+        setBuildings(bRes.data || []);
+        setRacksList(rkRes.data || []);
 
         if (isEditing) {
           const dRes = await deviceService.getOne(id);
           const d = dRes.data;
           setForm({
-            rack_id: d.rack_id ?? "",
+            rack_id: d.rack_id ? String(d.rack_id) : "",
             name: d.name ?? "",
             type: d.type ?? "server",
             vendor: d.vendor ?? "",
@@ -101,6 +107,9 @@ export default function AssetFormPage() {
       Object.entries(form).forEach(([k, v]) => {
         if (v !== "" && v !== null && v !== undefined) {
           fd.append(k, v);
+        } else {
+          // Pass empty string so nullable fields get converted to null on backend
+          fd.append(k, "");
         }
       });
 
@@ -122,17 +131,27 @@ export default function AssetFormPage() {
     }
   };
 
-  // Find selected rack details for preview
-  const allRacks = buildings.flatMap(b =>
-    (b.floors ?? []).flatMap(f =>
-      (f.rooms ?? []).flatMap(r =>
-        (r.racks ?? []).map(rk => ({
+  // Find selected rack details for preview from direct query or nested buildings
+  const allRacks = racksList.length > 0
+    ? racksList.map(rk => {
+        const bName = rk.room?.floor?.building?.name ?? "Gedung";
+        const fName = rk.room?.floor?.name ?? "Lantai";
+        const rName = rk.room?.name ?? "Ruang";
+        return {
           ...rk,
-          fullLabel: `${b.name} › ${f.name} › ${r.name} › ${rk.name}`
-        }))
-      )
-    )
-  );
+          fullLabel: `${bName} › ${fName} › ${rName} › ${rk.name} (${rk.total_u ?? 42}U)`
+        };
+      })
+    : buildings.flatMap(b =>
+        (b.floors ?? []).flatMap(f =>
+          (f.rooms ?? []).flatMap(r =>
+            (r.racks ?? []).map(rk => ({
+              ...rk,
+              fullLabel: `${b.name} › ${f.name} › ${r.name} › ${rk.name} (${rk.total_u ?? 42}U)`
+            }))
+          )
+        )
+      );
 
   const selectedRackObj = allRacks.find(r => String(r.id) === String(form.rack_id));
 
@@ -224,24 +243,41 @@ export default function AssetFormPage() {
 
             <div className="space-y-5">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-2">
-                  Rack Server Penempatan <span className="text-blue-400">*</span>
-                </label>
-                <select 
-                  required 
-                  value={form.rack_id} 
-                  onChange={e => setForm({ ...form, rack_id: e.target.value })}
-                  className="w-full px-5 py-4 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 text-sm font-semibold focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-inner"
-                >
-                  <option value="">-- Pilih Rack Cabinet Penempatan --</option>
-                  {allRacks.map(rk => (
-                    <option key={rk.id} value={rk.id}>{rk.fullLabel}</option>
-                  ))}
-                </select>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-200">
+                    Rack Server Penempatan
+                  </label>
+                  <span className="text-[11px] text-slate-400">
+                    (Pilih rack atau biarkan kosong untuk perangkat standalone)
+                  </span>
+                </div>
+                <div className="relative group">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-400 pointer-events-none">
+                    <Server size={18} />
+                  </div>
+                  <select 
+                    value={form.rack_id} 
+                    onChange={e => setForm({ ...form, rack_id: e.target.value })}
+                    className="w-full pl-11 pr-10 py-4 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 text-sm font-semibold focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-inner appearance-none cursor-pointer"
+                  >
+                    <option value="">-- Perangkat Standalone / Tanpa Rack Cabinet --</option>
+                    {allRacks.map(rk => (
+                      <option key={rk.id} value={rk.id}>
+                        {rk.fullLabel}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                    <ChevronDown size={16} />
+                  </div>
+                </div>
                 {allRacks.length === 0 && (
-                  <p className="text-xs text-amber-400 mt-2 font-medium">
-                    ⚠️ Belum ada rack terdaftar. Buat rack di menu Inspeksi Gedung terlebih dahulu.
-                  </p>
+                  <div className="flex items-center gap-2 mt-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                    <AlertCircle size={14} className="text-amber-400 flex-shrink-0" />
+                    <p className="text-xs text-amber-400 font-medium">
+                      Belum ada rack terdaftar. Anda tetap dapat menyimpan perangkat sebagai Standalone.
+                    </p>
+                  </div>
                 )}
               </div>
 
@@ -394,35 +430,50 @@ export default function AssetFormPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-2">Alamat IP (IPv4)</label>
-                <input 
-                  type="text" 
-                  value={form.ip_address} 
-                  placeholder="Contoh: 192.168.10.1"
-                  onChange={e => setForm({ ...form, ip_address: e.target.value })}
-                  className="w-full px-5 py-4 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 font-mono text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-inner" 
-                />
+                <div className="relative group">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-400 transition-colors pointer-events-none">
+                    <Globe size={16} />
+                  </div>
+                  <input 
+                    type="text" 
+                    value={form.ip_address} 
+                    placeholder="192.168.10.1"
+                    onChange={e => setForm({ ...form, ip_address: e.target.value })}
+                    className="w-full pl-10 pr-4 py-4 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 font-mono text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all shadow-inner" 
+                  />
+                </div>
               </div>
 
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-2">MAC Address</label>
-                <input 
-                  type="text" 
-                  value={form.mac_address} 
-                  placeholder="00:1A:2B:3C:4D:5E"
-                  onChange={e => setForm({ ...form, mac_address: e.target.value })}
-                  className="w-full px-5 py-4 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 font-mono text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-inner" 
-                />
+                <div className="relative group">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-400 transition-colors pointer-events-none">
+                    <Network size={16} />
+                  </div>
+                  <input 
+                    type="text" 
+                    value={form.mac_address} 
+                    placeholder="00:1A:2B:3C:4D:5E"
+                    onChange={e => setForm({ ...form, mac_address: e.target.value })}
+                    className="w-full pl-10 pr-4 py-4 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 font-mono text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all shadow-inner" 
+                  />
+                </div>
               </div>
 
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-2">Nomor Seri (S/N)</label>
-                <input 
-                  type="text" 
-                  value={form.serial_number} 
-                  placeholder="SN-9821-XCA-001"
-                  onChange={e => setForm({ ...form, serial_number: e.target.value })}
-                  className="w-full px-5 py-4 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 font-mono text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-inner" 
-                />
+                <div className="relative group">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-400 transition-colors pointer-events-none">
+                    <Hash size={16} />
+                  </div>
+                  <input 
+                    type="text" 
+                    value={form.serial_number} 
+                    placeholder="SN-9821-XCA-001"
+                    onChange={e => setForm({ ...form, serial_number: e.target.value })}
+                    className="w-full pl-10 pr-4 py-4 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 font-mono text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-inner" 
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -467,24 +518,34 @@ export default function AssetFormPage() {
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-2">
                     Tanggal Pengadaan / Pembelian
                   </label>
-                  <input 
-                    type="date" 
-                    value={form.purchase_date}
-                    onChange={e => setForm({ ...form, purchase_date: e.target.value })}
-                    className="w-full px-5 py-4 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-inner" 
-                  />
+                  <div className="relative group">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-400 transition-colors pointer-events-none">
+                      <Calendar size={16} />
+                    </div>
+                    <input 
+                      type="date" 
+                      value={form.purchase_date}
+                      onChange={e => setForm({ ...form, purchase_date: e.target.value })}
+                      className="w-full pl-10 pr-4 py-4 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-inner" 
+                    />
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-2">
                     Batas Akhir Masa Garansi
                   </label>
-                  <input 
-                    type="date" 
-                    value={form.warranty_expiry}
-                    onChange={e => setForm({ ...form, warranty_expiry: e.target.value })}
-                    className="w-full px-5 py-4 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-inner" 
-                  />
+                  <div className="relative group">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-amber-400 transition-colors pointer-events-none">
+                      <ShieldCheck size={16} />
+                    </div>
+                    <input 
+                      type="date" 
+                      value={form.warranty_expiry}
+                      onChange={e => setForm({ ...form, warranty_expiry: e.target.value })}
+                      className="w-full pl-10 pr-4 py-4 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all shadow-inner" 
+                    />
+                  </div>
                 </div>
               </div>
             </div>

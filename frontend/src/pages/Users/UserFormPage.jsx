@@ -318,30 +318,29 @@ export default function UserFormPage() {
               {ROLES.map((r) => {
                 const isSelected = form.role === r.value;
                 return (
-                  <label
+                  <div
                     key={r.value}
-                    className={`block p-5 rounded-2xl border cursor-pointer transition-all ${
+                    onClick={() => setForm({ ...form, role: r.value })}
+                    className={`block p-5 rounded-2xl border cursor-pointer transition-all duration-200 ${
                       isSelected
-                        ? "bg-blue-600/20 border-blue-500/70 shadow-[0_0_20px_rgba(59,130,246,0.25)] ring-1 ring-white/10"
-                        : "bg-slate-900/70 border-slate-800 hover:border-slate-700 hover:bg-slate-850"
+                        ? "bg-blue-600/15 border-blue-500/80 shadow-[0_0_25px_rgba(59,130,246,0.25)] ring-1 ring-blue-400/30"
+                        : "bg-slate-900/70 border-slate-800/80 hover:border-slate-700 hover:bg-slate-850/80"
                     }`}
                   >
                     <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="radio"
-                          name="role_selector"
-                          value={r.value}
-                          checked={isSelected}
-                          onChange={() => setForm({ ...form, role: r.value })}
-                          className="accent-blue-500 w-4 h-4 mt-0.5"
-                        />
+                      <div className="flex items-start gap-3.5">
+                        {/* Custom Modern Radio Indicator */}
+                        <div className={`w-5 h-5 rounded-full flex items-center justify-center border transition-all mt-1 flex-shrink-0 ${
+                          isSelected ? 'border-blue-400 bg-blue-500 shadow-[0_0_12px_rgba(59,130,246,0.8)]' : 'border-slate-600 bg-slate-800/80'
+                        }`}>
+                          {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
+                        </div>
                         <div>
                           <div className="flex items-center gap-2.5">
-                            <span className={`text-base font-bold ${isSelected ? "text-white" : "text-slate-200"}`}>
+                            <span className={`text-base font-black ${isSelected ? "text-white" : "text-slate-200"}`}>
                               {r.label}
                             </span>
-                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${
+                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
                               r.value === 'admin' ? 'bg-red-500/20 text-red-400 border border-red-500/40' :
                               r.value === 'teknisi' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40' :
                               'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
@@ -349,20 +348,22 @@ export default function UserFormPage() {
                               {r.badge}
                             </span>
                           </div>
-                          <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">{r.desc}</p>
+                          <p className="text-xs text-slate-400 mt-1.5 leading-relaxed font-medium">{r.desc}</p>
                         </div>
                       </div>
                     </div>
 
                     {/* Permissions tags */}
-                    <div className="flex flex-wrap gap-2 mt-3.5 pt-3 border-t border-slate-800/80 pl-7">
+                    <div className="flex flex-wrap gap-2 mt-3.5 pt-3 border-t border-slate-800/80 pl-8">
                       {r.capabilities.map((c, i) => (
-                        <span key={i} className="text-[10px] font-semibold text-slate-300 bg-slate-800/80 px-2.5 py-1 rounded-lg border border-slate-700/60">
-                          ✓ {c}
+                        <span key={i} className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border transition-colors flex items-center gap-1.5 ${
+                          isSelected ? 'bg-blue-500/15 border-blue-500/30 text-blue-200' : 'bg-slate-800/80 border-slate-700/60 text-slate-300'
+                        }`}>
+                          <CheckCircle2 size={11} className="flex-shrink-0" /> {c}
                         </span>
                       ))}
                     </div>
-                  </label>
+                  </div>
                 );
               })}
             </div>

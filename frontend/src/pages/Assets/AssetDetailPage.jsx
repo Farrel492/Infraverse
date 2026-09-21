@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { deviceService } from "../../services/deviceService";
+import api from "../../services/api.js";
 import useAuthStore from "../../stores/authStore";
 import StatusBadge from "../../components/shared/StatusBadge.jsx";
 import Breadcrumb from "../../components/shared/Breadcrumb.jsx";
@@ -78,7 +79,6 @@ export default function AssetDetailPage() {
       fd.append("name", docName || docFile.name);
       fd.append("document", docFile);
       fd.append("device_id", id);
-      const api = (await import("../../services/api.js")).default;
       await api.post(`/devices/${id}/documents`, fd, {
         headers: { "Content-Type": "multipart/form-data" },
       });

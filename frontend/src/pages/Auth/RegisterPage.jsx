@@ -37,36 +37,29 @@ export default function RegisterPage() {
 
   const InputField = ({ label, name, type = "text", placeholder, icon: Icon, showToggle, show, onToggle }) => (
     <div>
-      <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(148,163,184,0.7)" }}>
+      <label className="block text-xs font-bold uppercase tracking-wider mb-2 text-slate-300">
         {label}
       </label>
-      <div className="relative">
-        {Icon && <Icon size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "rgba(99,148,210,0.4)" }} />}
+      <div className="flex h-12 rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900/90 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all shadow-inner">
+        {Icon && (
+          <div className="flex items-center justify-center px-4 bg-slate-800/60 border-r border-slate-700/60 text-blue-400 flex-shrink-0">
+            <Icon size={18} />
+          </div>
+        )}
         <input
           type={showToggle ? (show ? "text" : "password") : type}
           required
           value={form[name]}
           onChange={(e) => setForm({ ...form, [name]: e.target.value })}
           placeholder={placeholder}
-          className="w-full py-2.5 text-sm rounded-xl text-slate-200 outline-none transition-all"
-          style={{
-            paddingLeft: Icon ? "2.5rem" : "1rem",
-            paddingRight: showToggle ? "2.5rem" : "1rem",
-            background: "rgba(15,28,50,0.8)",
-            border: "1px solid rgba(99,148,210,0.15)",
-          }}
-          onFocus={e => { e.target.style.border = "1px solid rgba(59,130,246,0.5)"; e.target.style.boxShadow = "0 0 0 3px rgba(59,130,246,0.1)"; }}
-          onBlur={e => { e.target.style.border = "1px solid rgba(99,148,210,0.15)"; e.target.style.boxShadow = ""; }}
+          className="w-full px-4 text-[14px] font-medium bg-transparent text-slate-100 outline-none placeholder:text-slate-500"
         />
         {showToggle && (
           <button
             type="button" onClick={onToggle}
-            className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
-            style={{ color: "rgba(99,148,210,0.4)" }}
-            onMouseEnter={e => e.currentTarget.style.color = "#60a5fa"}
-            onMouseLeave={e => e.currentTarget.style.color = "rgba(99,148,210,0.4)"}
+            className="px-4 text-slate-400 hover:text-slate-200 transition-colors flex items-center justify-center cursor-pointer"
           >
-            {show ? <EyeOff size={14} /> : <Eye size={14} />}
+            {show ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         )}
       </div>

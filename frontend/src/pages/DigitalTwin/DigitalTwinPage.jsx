@@ -1,11 +1,13 @@
 import { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { digitalTwinService } from "../../services/digitalTwinService";
 import { buildingService } from "../../services/buildingService";
 import toast from "react-hot-toast";
 import Breadcrumb from "../../components/shared/Breadcrumb.jsx";
 import {
   Server, Router, Shield, Network, Wifi, Battery,
-  Package, RefreshCw, Zap, ZapOff, RotateCcw, Layers, DoorOpen, Building2
+  Package, RefreshCw, Zap, ZapOff, RotateCcw, Layers, DoorOpen, Building2,
+  Wrench, ExternalLink, ChevronRight
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -178,9 +180,11 @@ function RackView({ rack, selectedDevice, onSelectDevice, simMode, affectedIds }
 }
 
 export default function DigitalTwinPage() {
+  const navigate = useNavigate();
   const [sceneData, setSceneData]     = useState(null);
   const [buildings, setBuildings]      = useState([]);
   const [selectedBuilding, setSelectedBuilding] = useState("");
+  const [selectedFloor, setSelectedFloor]       = useState("all");
   const [loading, setLoading]         = useState(true);
   const [selected, setSelected]       = useState(null);
   const [updating, setUpdating]       = useState(false);
@@ -342,49 +346,91 @@ export default function DigitalTwinPage() {
                   other:       "border-slate-600/50 bg-slate-800/30",
                 };
 
-                return Object.entries(byFloor).map(([floorId, floorData]) => (
-                  <div key={floorId} className="space-y-4">
-                    {/* Floor Header */}
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900/80 border border-slate-700 rounded-xl">
-                        <Layers size={13} className="text-blue-400" />
-                        <span className="text-xs font-bold text-blue-300">{floorData.label}</span>
+                const floorEntries = Object.entries(byFloor);
+
+                return (
+                  <div className="space-y-5">
+                    {/* Floor Selector Filter Pills */}
+                    {floorEntries.length > 1 && (
+                      <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                        <button
+                          onClick={() => setSelectedFloor("all")}
+                          className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                            selectedFloor === "all"
+                              ? "bg-blue-600 text-white shadow-[0_0_12px_rgba(59,130,246,0.4)]"
+                              : "glass text-slate-400 hover:text-white"
+                          }`}
+                        >
+                          Semua Lantai ({racks.length} Rack)
+                        </button>
+                        {floorEntries.map(([floorId, floorData]) => {
+                          const rCount = Object.values(floorData.rooms).reduce((acc, rm) => acc + rm.racks.length, 0);
+                          return (
+                            <button
+                              key={floorId}
+                              onClick={() => setSelectedFloor(floorId)}
+                              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                                selectedFloor === floorId
+                                  ? "bg-blue-600 text-white shadow-[0_0_12px_rgba(59,130,246,0.4)]"
+                                  : "glass text-slate-400 hover:text-white"
+                              }`}
+                            >
+                              <Layers size={13} />
+                              {floorData.label} ({rCount} Rack)
+                            </button>
+                          );
+                        })}
                       </div>
-                      <div className="flex-1 h-px bg-slate-800" />
-                    </div>
+                    )}
 
-                    {/* Rooms in this floor */}
-                    {Object.entries(floorData.rooms).map(([roomId, roomData]) => (
-                      <div key={roomId} className={`rounded-2xl border p-4 space-y-3 ${ROOM_TYPE_COLOR[roomData.type] ?? ROOM_TYPE_COLOR.other}`}>
-                        {/* Room Header */}
-                        <div className="flex items-center gap-2">
-                          <DoorOpen size={13} className="text-slate-400" />
-                          <span className="text-xs font-bold text-slate-200">{roomData.label}</span>
-                          <span className="text-[10px] px-2 py-0.5 rounded-md bg-slate-900/60 text-slate-400 border border-slate-800 capitalize">
-                            {roomData.type?.replace("_"," ")}
-                          </span>
-                          <span className="text-[10px] text-slate-500 ml-auto">
-                            {roomData.racks.length} rack
-                          </span>
-                        </div>
+                    {/* Floor Sections */}
+                    {floorEntries
+                      .filter(([floorId]) => selectedFloor === "all" || floorId === selectedFloor)
+                      .map(([floorId, floorData]) => (
+                        <div key={floorId} className="space-y-4">
+                          {/* Floor Header */}
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900/80 border border-slate-700 rounded-xl">
+                              <Layers size={13} className="text-blue-400" />
+                              <span className="text-xs font-bold text-blue-300">{floorData.label}</span>
+                            </div>
+                            <div className="flex-1 h-px bg-slate-800" />
+                          </div>
 
-                        {/* Racks in this room */}
-                        <div className="flex gap-4 overflow-x-auto pb-1">
-                          {roomData.racks.map(rack => (
-                            <RackView
-                              key={rack.id}
-                              rack={rack}
-                              selectedDevice={selected}
-                              onSelectDevice={setSelected}
-                              simMode={simMode}
-                              affectedIds={affectedIds}
-                            />
+                          {/* Rooms in this floor */}
+                          {Object.entries(floorData.rooms).map(([roomId, roomData]) => (
+                            <div key={roomId} className={`rounded-2xl border p-4 space-y-3 ${ROOM_TYPE_COLOR[roomData.type] ?? ROOM_TYPE_COLOR.other}`}>
+                              {/* Room Header */}
+                              <div className="flex items-center gap-2">
+                                <DoorOpen size={13} className="text-slate-400" />
+                                <span className="text-xs font-bold text-slate-200">{roomData.label}</span>
+                                <span className="text-[10px] px-2 py-0.5 rounded-md bg-slate-900/60 text-slate-400 border border-slate-800 capitalize">
+                                  {roomData.type?.replace("_"," ")}
+                                </span>
+                                <span className="text-[10px] text-slate-500 ml-auto">
+                                  {roomData.racks.length} rack
+                                </span>
+                              </div>
+
+                              {/* Racks in this room */}
+                              <div className="flex gap-4 overflow-x-auto pb-1">
+                                {roomData.racks.map(rack => (
+                                  <RackView
+                                    key={rack.id}
+                                    rack={rack}
+                                    selectedDevice={selected}
+                                    onSelectDevice={setSelected}
+                                    simMode={simMode}
+                                    affectedIds={affectedIds}
+                                  />
+                                ))}
+                              </div>
+                            </div>
                           ))}
                         </div>
-                      </div>
-                    ))}
+                      ))}
                   </div>
-                ));
+                );
               })()}
             </div>
           )}
@@ -462,6 +508,22 @@ export default function DigitalTwinPage() {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="pt-3 border-t border-slate-800/80 flex flex-col gap-2">
+                <button
+                  onClick={() => navigate(`/maintenance/create?device_id=${selected.id}`)}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-bold transition-all shadow-md cursor-pointer"
+                >
+                  <Wrench size={14} /> Jadwalkan Maintenance
+                </button>
+                <button
+                  onClick={() => navigate(`/assets/${selected.id}/edit`)}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700/60 text-xs font-bold transition-all shadow-md cursor-pointer"
+                >
+                  <ExternalLink size={14} /> Edit Konfigurasi Aset
+                </button>
               </div>
             </div>
           ) : (

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import toast from "react-hot-toast";
 import useAuthStore from "../../stores/authStore";
 import Breadcrumb from "../../components/shared/Breadcrumb.jsx";
@@ -83,6 +83,10 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("profile");
   const [showCurrentPass, setShowCurrentPass] = useState(false);
   const [showNewPass, setShowNewPass] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState(user?.avatar ? `/storage/${user.avatar}` : null);
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const fileInputRef = useRef(null);
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
@@ -94,6 +98,37 @@ export default function ProfilePage() {
     } catch (err) {
       toast.error(err.response?.data?.message ?? "Gagal memperbarui profil.");
     } finally { setSavingProfile(false); }
+  };
+
+  const handleAvatarChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!['image/jpeg','image/png','image/jpg','image/webp'].includes(file.type)) {
+      toast.error("Format gambar harus JPG, PNG, atau WebP."); return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Ukuran foto maksimal 2MB."); return;
+    }
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+  };
+
+  const handleUploadAvatar = async () => {
+    if (!avatarFile) return;
+    setUploadingAvatar(true);
+    try {
+      const formData = new FormData();
+      formData.append("avatar", avatarFile);
+      formData.append("_method", "PATCH");
+      const res = await api.post("/profile", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setAuth(res.data.user, token);
+      setAvatarFile(null);
+      toast.success("Foto profil berhasil diperbarui!");
+    } catch (err) {
+      toast.error(err.response?.data?.message ?? "Gagal mengunggah foto profil.");
+    } finally { setUploadingAvatar(false); }
   };
 
   const handleChangePassword = async (e) => {
@@ -166,6 +201,32 @@ export default function ProfilePage() {
 
       <div className="px-6 lg:px-10 max-w-6xl mx-auto pb-16 -mt-20 relative z-10">
 
+        {/* Avatar upload confirmation banner */}
+        {avatarFile && (
+          <div className="mb-4 flex items-center gap-4 p-4 rounded-2xl border border-blue-500/40 bg-blue-500/10 backdrop-blur-sm animate-pulse-slow">
+            <Camera size={18} className="text-blue-400 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-blue-300">Foto profil baru dipilih: <span className="text-white">{avatarFile.name}</span></p>
+              <p className="text-xs text-slate-400 mt-0.5">Klik "Simpan Foto" untuk mengunggah ke server.</p>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button
+                onClick={() => { setAvatarFile(null); setAvatarPreview(user?.avatar ? `/storage/${user.avatar}` : null); }}
+                className="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white border border-slate-600 hover:border-slate-500 transition-all"
+              >
+                Batalkan
+              </button>
+              <button
+                onClick={handleUploadAvatar}
+                disabled={uploadingAvatar}
+                className="px-4 py-1.5 rounded-xl text-xs font-black text-white bg-blue-600 hover:bg-blue-500 border border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.4)] transition-all disabled:opacity-50 flex items-center gap-1.5"
+              >
+                {uploadingAvatar ? "Mengunggah..." : <><CheckCircle2 size={13} /> Simpan Foto</>}
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Profile Identity Card */}
         <div className="glass rounded-3xl border border-slate-700/60 shadow-2xl overflow-hidden mb-8">
           <div className="p-6 sm:p-8">
@@ -174,16 +235,31 @@ export default function ProfilePage() {
               {/* Avatar */}
               <div className="relative flex-shrink-0">
                 <div
-                  className={`w-28 h-28 rounded-3xl flex items-center justify-center text-4xl font-black text-white border-4 border-slate-800 ${roleConf.glow}`}
-                  style={{ background: `linear-gradient(135deg, ${roleConf.color}cc, ${roleConf.color}66)` }}
+                  className={`w-28 h-28 rounded-3xl flex items-center justify-center text-4xl font-black text-white border-4 border-slate-800 overflow-hidden ${roleConf.glow}`}
+                  style={!avatarPreview ? { background: `linear-gradient(135deg, ${roleConf.color}cc, ${roleConf.color}66)` } : {}}
                 >
-                  {initials}
+                  {avatarPreview
+                    ? <img src={avatarPreview} alt="avatar" className="w-full h-full object-cover" />
+                    : initials
+                  }
                 </div>
                 <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-emerald-500 border-3 border-slate-900 flex items-center justify-center shadow-[0_0_12px_#10b981]">
                   <div className="w-3 h-3 rounded-full bg-white" />
                 </div>
-                <button className="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-slate-700 border border-slate-600 flex items-center justify-center hover:bg-slate-600 transition-all shadow-lg">
-                  <Camera size={12} className="text-slate-300" />
+                {/* Camera button - triggers file input */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/jpg,image/webp"
+                  className="hidden"
+                  onChange={handleAvatarChange}
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  title="Ganti Foto Profil"
+                  className="absolute -top-1 -right-1 w-8 h-8 rounded-full bg-blue-600 border-2 border-slate-900 flex items-center justify-center hover:bg-blue-500 transition-all shadow-lg"
+                >
+                  <Camera size={13} className="text-white" />
                 </button>
               </div>
 

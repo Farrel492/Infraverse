@@ -21,6 +21,7 @@ export const buildingService = {
   deleteRoom: (floorId, roomId)     =>
     api.delete(`/floors/${floorId}/rooms/${roomId}`),
 
+  getAllRacks:                      () => api.get("/racks"),
   getRacks: (roomId)                => api.get(`/rooms/${roomId}/racks`),
   createRack: (roomId, data)        => api.post(`/rooms/${roomId}/racks`, data),
   updateRack: (roomId, rackId, data) =>

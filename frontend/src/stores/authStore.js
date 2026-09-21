@@ -1,13 +1,16 @@
 import { create } from "zustand";
 
+const getToken = () => sessionStorage.getItem("infraverse_token") || localStorage.getItem("infraverse_token");
+
 const useAuthStore = create((set) => ({
   user:            null,
-  token:           localStorage.getItem("infraverse_token") || null,
-  isAuthenticated: !!localStorage.getItem("infraverse_token"),
+  token:           getToken(),
+  isAuthenticated: !!getToken(),
   isInitialized:   false,
 
   setAuth: (user, token) => {
-    localStorage.setItem("infraverse_token", token);
+    // Default to sessionStorage for high security session handling
+    sessionStorage.setItem("infraverse_token", token);
     set({ user, token, isAuthenticated: true, isInitialized: true });
   },
 
@@ -16,6 +19,7 @@ const useAuthStore = create((set) => ({
   },
 
   clearAuth: () => {
+    sessionStorage.removeItem("infraverse_token");
     localStorage.removeItem("infraverse_token");
     set({ user: null, token: null, isAuthenticated: false, isInitialized: true });
   },

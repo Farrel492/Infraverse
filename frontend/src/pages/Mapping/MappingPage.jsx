@@ -448,7 +448,7 @@ export default function MappingPage() {
             className="flex items-center gap-2 px-6 py-3.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 shadow-[0_0_25px_rgba(59,130,246,0.45)] hover:shadow-[0_0_35px_rgba(59,130,246,0.7)] text-white text-sm font-black rounded-2xl transition-all cursor-pointer"
           >
             <Plus size={18} />
-            <span>+ Tambah Koneksi Baru</span>
+            <span>Tambah Koneksi Baru</span>
           </button>
         </div>
       </div>
@@ -470,12 +470,15 @@ export default function MappingPage() {
               enableDamping 
               dampingFactor={0.05}
               minDistance={5}
-              maxDistance={70}
+              maxDistance={90}
               maxPolarAngle={Math.PI / 2 + 0.15}
+              enablePan={true}
+              screenSpacePanning={true}
+              panSpeed={1.5}
             />
 
             {/* Grid Floor */}
-            <gridHelper args={[80, 80, "#334155", "#0f172a"]} position={[0, -12, 0]} />
+            <gridHelper args={[140, 140, "#334155", "#0f172a"]} position={[0, -12, 0]} />
 
             {/* Edges */}
             {visibleEdges.map(e => {

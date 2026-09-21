@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { buildingService } from "../../services/buildingService";
 import useAuthStore from "../../stores/authStore";
@@ -6,7 +6,7 @@ import Breadcrumb from "../../components/shared/Breadcrumb.jsx";
 import { 
   Plus, Server, ArrowLeft, Layers, DoorOpen, HardDrive, 
   Cpu, ShieldAlert, Activity, ChevronRight, Zap, CheckCircle2, 
-  AlertTriangle, Wrench, Eye, Sparkles, ExternalLink 
+  AlertTriangle, Wrench, Eye, Sparkles, ExternalLink, Settings2, X
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
@@ -22,6 +22,12 @@ export default function BuildingDetailPage() {
   const [activeRoom, setActiveRoom]   = useState(null);
   const [activeRack, setActiveRack]   = useState(null);
   const [loading, setLoading]         = useState(true);
+
+  // Rack Capacity Modal
+  const [showCapModal, setShowCapModal] = useState(false);
+  const [capValue, setCapValue]         = useState("");
+  const [savingCap, setSavingCap]       = useState(false);
+  const capInputRef = useRef(null);
 
   const load = async () => {
     try {
@@ -86,6 +92,32 @@ export default function BuildingDetailPage() {
       setActiveRack(r.racks[0]);
     } else {
       setActiveRack(null);
+    }
+  };
+
+  const openCapModal = () => {
+    setCapValue(String(activeRack?.total_u ?? 42));
+    setShowCapModal(true);
+    setTimeout(() => capInputRef.current?.focus(), 100);
+  };
+
+  const handleSaveCapacity = async () => {
+    const newCap = parseInt(capValue, 10);
+    if (!newCap || newCap < 1 || newCap > 100) {
+      toast.error("Kapasitas harus antara 1 hingga 100 U.");
+      return;
+    }
+    setSavingCap(true);
+    try {
+      await buildingService.updateRack(activeRoom.id, activeRack.id, { total_u: newCap, name: activeRack.name, position: activeRack.position });
+      toast.success(`Kapasitas rack diperbarui menjadi ${newCap}U.`);
+      setShowCapModal(false);
+      load();
+    } catch (err) {
+      const msg = err.response?.data?.message ?? err.response?.data?.errors?.total_u?.[0] ?? "Gagal memperbarui kapasitas.";
+      toast.error(msg);
+    } finally {
+      setSavingCap(false);
     }
   };
 
@@ -184,7 +216,7 @@ export default function BuildingDetailPage() {
               onClick={() => navigate(`/buildings/${id}/floors/create`)}
               className="flex items-center gap-1.5 text-xs font-bold text-blue-300 hover:text-white px-3 py-1.5 rounded-xl bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 transition-all shadow-sm cursor-pointer"
             >
-              <Plus size={14} /> + Lantai
+              <Plus size={14} /> Lantai
             </button>
           </div>
 
@@ -231,7 +263,7 @@ export default function BuildingDetailPage() {
                     onClick={() => navigate(`/buildings/${id}/floors/create`)} 
                     className="text-xs font-bold text-blue-400 hover:text-blue-300 px-4 py-2 rounded-xl bg-blue-500/10 border border-blue-500/30 transition-all inline-block"
                   >
-                    + Tambah Lantai Pertama
+                    Tambah Lantai Pertama
                   </button>
                 )}
               </div>
@@ -254,7 +286,7 @@ export default function BuildingDetailPage() {
                 onClick={() => navigate(`/buildings/${id}/rooms/create?floor_id=${activeFloor.id}`)}
                 className="flex items-center gap-1.5 text-xs font-bold text-emerald-300 hover:text-white px-3 py-1.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/40 border border-emerald-500/40 transition-all shadow-sm cursor-pointer"
               >
-                <Plus size={14} /> + Ruang
+                <Plus size={14} /> Ruang
               </button>
             )}
           </div>
@@ -304,7 +336,7 @@ export default function BuildingDetailPage() {
                     onClick={() => navigate(`/buildings/${id}/rooms/create?floor_id=${activeFloor.id}`)}
                     className="text-xs font-bold text-emerald-400 hover:text-emerald-300 px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 transition-all inline-block"
                   >
-                    + Tambah Ruangan Baru
+                    Tambah Ruangan Baru
                   </button>
                 )}
               </div>
@@ -329,17 +361,26 @@ export default function BuildingDetailPage() {
                   onClick={() => navigate(`/buildings/${id}/racks/create?room_id=${activeRoom.id}`)}
                   className="flex items-center gap-1.5 text-xs font-bold text-blue-300 hover:text-white px-3.5 py-2 rounded-xl bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 transition-all shadow-sm cursor-pointer"
                 >
-                  <Plus size={14} /> + Tambah Rack
+                  <Plus size={14} /> Tambah Rack
                 </button>
               )}
               {activeRack && (
-                <button 
-                  id="btn-install-device"
-                  onClick={() => navigate(`/assets/create?rack_id=${activeRack.id}`)}
-                  className="flex items-center gap-1.5 text-xs font-bold text-white px-3.5 py-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 border border-blue-400/40 shadow-[0_0_20px_rgba(59,130,246,0.35)] transition-all cursor-pointer"
-                >
-                  <Sparkles size={14} /> + Pasang Perangkat
-                </button>
+                <>
+                  <button 
+                    id="btn-edit-rack-capacity"
+                    onClick={openCapModal}
+                    className="flex items-center gap-1.5 text-xs font-bold text-amber-300 hover:text-white px-3.5 py-2 rounded-xl bg-amber-600/20 hover:bg-amber-600/40 border border-amber-500/40 transition-all shadow-sm cursor-pointer"
+                  >
+                    <Settings2 size={14} /> Ubah Kapasitas
+                  </button>
+                  <button 
+                    id="btn-install-device"
+                    onClick={() => navigate(`/assets/create?rack_id=${activeRack.id}`)}
+                    className="flex items-center gap-1.5 text-xs font-bold text-white px-3.5 py-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 border border-blue-400/40 shadow-[0_0_20px_rgba(59,130,246,0.35)] transition-all cursor-pointer"
+                  >
+                    <Sparkles size={14} /> Pasang Perangkat
+                  </button>
+                </>
               )}
             </div>
           </div>
@@ -489,6 +530,69 @@ export default function BuildingDetailPage() {
         </div>
 
       </div>
+
+      {/* ===== RACK CAPACITY MODAL ===== */}
+      {showCapModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.75)" }}>
+          <div className="glass rounded-3xl border border-slate-700/70 shadow-2xl p-8 w-full max-w-md relative">
+            <div className="absolute top-0 left-0 right-0 h-1 rounded-t-3xl" style={{ background: "linear-gradient(90deg, #f59e0b, #d97706)" }} />
+            <button
+              onClick={() => setShowCapModal(false)}
+              className="absolute top-4 right-4 w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-all"
+            >
+              <X size={16} />
+            </button>
+
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-11 h-11 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                <Settings2 size={20} />
+              </div>
+              <div>
+                <h3 className="text-base font-black text-slate-100">Ubah Kapasitas Slot Rak</h3>
+                <p className="text-xs text-slate-400 mt-0.5">Rack: <span className="text-amber-400 font-bold">{activeRack?.name}</span></p>
+              </div>
+            </div>
+
+            <div className="space-y-5">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+                  Kapasitas Baru (Unit U) <span className="text-amber-400">*</span>
+                </label>
+                <input
+                  ref={capInputRef}
+                  type="number"
+                  min={1}
+                  max={100}
+                  value={capValue}
+                  onChange={e => setCapValue(e.target.value)}
+                  className="w-full px-5 py-4 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 text-sm font-semibold focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
+                  placeholder="Contoh: 42"
+                />
+                <p className="text-xs text-slate-500 mt-2">
+                  Kapasitas saat ini: <span className="text-amber-400 font-bold">{activeRack?.total_u ?? 42}U</span>. 
+                  Tidak bisa dikurangi di bawah slot perangkat tertinggi yang terpasang.
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowCapModal(false)}
+                  className="flex-1 py-3 rounded-2xl text-sm font-bold text-slate-300 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-all"
+                >
+                  Batalkan
+                </button>
+                <button
+                  onClick={handleSaveCapacity}
+                  disabled={savingCap}
+                  className="flex-1 py-3 rounded-2xl text-sm font-black text-white bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 shadow-[0_0_20px_rgba(245,158,11,0.4)] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {savingCap ? "Menyimpan..." : <><CheckCircle2 size={16} /> Simpan Kapasitas</>}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

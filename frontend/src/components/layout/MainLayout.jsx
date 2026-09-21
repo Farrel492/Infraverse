@@ -221,13 +221,16 @@ export default function MainLayout() {
             }
           >
             <div
-              className="relative w-12 h-12 rounded-2xl flex items-center justify-center text-lg font-black text-white flex-shrink-0 shadow-md"
+              className="relative w-12 h-12 rounded-2xl flex items-center justify-center text-lg font-black text-white flex-shrink-0 shadow-md overflow-hidden"
               style={{
-                background: `linear-gradient(135deg, ${roleColor[user?.role] ?? "#3b82f6"}cc, ${roleColor[user?.role] ?? "#6366f1"})`,
+                background: user?.avatar ? undefined : `linear-gradient(135deg, ${roleColor[user?.role] ?? "#3b82f6"}cc, ${roleColor[user?.role] ?? "#6366f1"})`,
                 boxShadow: `0 4px 15px ${roleColor[user?.role] ?? "#3b82f6"}50`,
               }}
             >
-              {user?.name?.charAt(0)?.toUpperCase() ?? "U"}
+              {user?.avatar
+                ? <img src={`/storage/${user.avatar}`} alt="avatar" className="w-full h-full object-cover" />
+                : (user?.name?.charAt(0)?.toUpperCase() ?? "U")
+              }
               <div
                 className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-[#060d1c]"
                 style={{ background: "#22c55e", boxShadow: "0 0 6px #22c55e" }}

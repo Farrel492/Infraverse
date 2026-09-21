@@ -6,7 +6,8 @@ import toast from "react-hot-toast";
 import {
   Router, Network, Scissors, Battery, Server,
   Play, Clock, CheckCircle, Target, Cpu,
-  AlertTriangle, ChevronRight, RotateCcw, Activity, ShieldCheck, Zap
+  AlertTriangle, ChevronRight, RotateCcw, Activity, ShieldCheck, Zap,
+  Flame, FastForward, Check, ShieldAlert, Award
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -19,11 +20,19 @@ const TYPE_ICON = {
 };
 
 const TYPE_COLOR = {
-  router_down:    { border:"border-blue-500/40",   bg:"bg-blue-500/5", glow:"shadow-[0_0_15px_rgba(59,130,246,0.15)]" },
-  switch_down:    { border:"border-purple-500/40", bg:"bg-purple-500/5", glow:"shadow-[0_0_15px_rgba(168,85,247,0.15)]" },
-  fiber_cut:      { border:"border-amber-500/40",  bg:"bg-amber-500/5", glow:"shadow-[0_0_15px_rgba(245,158,11,0.15)]" },
-  ups_failure:    { border:"border-pink-500/40",   bg:"bg-pink-500/5", glow:"shadow-[0_0_15px_rgba(236,72,153,0.15)]" },
-  server_offline: { border:"border-emerald-500/40",bg:"bg-emerald-500/5", glow:"shadow-[0_0_15px_rgba(16,185,129,0.15)]" },
+  router_down:    { border:"border-blue-500/40",   bg:"bg-blue-500/5", glow:"shadow-[0_0_20px_rgba(59,130,246,0.15)]", badge: "bg-blue-500/20 text-blue-300 border-blue-500/40" },
+  switch_down:    { border:"border-purple-500/40", bg:"bg-purple-500/5", glow:"shadow-[0_0_20px_rgba(168,85,247,0.15)]", badge: "bg-purple-500/20 text-purple-300 border-purple-500/40" },
+  fiber_cut:      { border:"border-amber-500/40",  bg:"bg-amber-500/5", glow:"shadow-[0_0_20px_rgba(245,158,11,0.15)]", badge: "bg-amber-500/20 text-amber-300 border-amber-500/40" },
+  ups_failure:    { border:"border-pink-500/40",   bg:"bg-pink-500/5", glow:"shadow-[0_0_20px_rgba(236,72,153,0.15)]", badge: "bg-pink-500/20 text-pink-300 border-pink-500/40" },
+  server_offline: { border:"border-emerald-500/40",bg:"bg-emerald-500/5", glow:"shadow-[0_0_20px_rgba(16,185,129,0.15)]", badge: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40" },
+};
+
+const SEVERITY_INFO = {
+  router_down:    { level: "P1 Critical", color: "text-red-400 border-red-500/30 bg-red-500/10" },
+  switch_down:    { level: "P2 Major",    color: "text-purple-400 border-purple-500/30 bg-purple-500/10" },
+  fiber_cut:      { level: "P1 Critical", color: "text-red-400 border-red-500/30 bg-red-500/10" },
+  ups_failure:    { level: "P2 Major",    color: "text-amber-400 border-amber-500/30 bg-amber-500/10" },
+  server_offline: { level: "P2 Major",    color: "text-orange-400 border-orange-500/30 bg-orange-500/10" },
 };
 
 function getScore(seconds) {
@@ -32,11 +41,11 @@ function getScore(seconds) {
 }
 
 function getRating(score) {
-  if (score >= 90) return { label:"S", color:"text-amber-400", desc:"Respons Sempurna (Perfect Response)" };
-  if (score >= 75) return { label:"A", color:"text-emerald-400",  desc:"Sangat Baik (Fast Recovery)" };
-  if (score >= 55) return { label:"B", color:"text-blue-400",   desc:"Baik (Good Mitigation)" };
+  if (score >= 90) return { label:"S", color:"text-amber-400", desc:"Respons Sempurna (Perfect Recovery Time)" };
+  if (score >= 75) return { label:"A", color:"text-emerald-400",  desc:"Sangat Baik (Fast Incident Mitigation)" };
+  if (score >= 55) return { label:"B", color:"text-blue-400",   desc:"Baik (Standard SLA Compliant)" };
   if (score >= 35) return { label:"C", color:"text-orange-400", desc:"Cukup (Acceptable Downtime)" };
-  return { label:"D", color:"text-red-400", desc:"Perlu Latihan Incident Response" };
+  return { label:"D", color:"text-red-400", desc:"Perlu Peningkatan Kecepatan Prosedur" };
 }
 
 export default function SimulationPage() {
@@ -136,58 +145,97 @@ export default function SimulationPage() {
     : 0;
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-8 lg:p-10 space-y-8 max-w-7xl mx-auto">
       <Breadcrumb items={[{ label:"Dashboard", href:"/dashboard" }, { label:"Simulation Command Center" }]} />
 
-      {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-indigo-300 to-slate-100">
-            Simulasi Gangguan & Disaster Recovery
-          </h2>
-          <p className="text-slate-400 text-sm mt-1">
-            Uji Ketahanan Infrastruktur Kampus dengan Skenario Incident Response Terukur
-          </p>
-        </div>
-
-        <div className="flex gap-3">
-          <div className="glass px-4 py-2 rounded-xl border border-slate-700/60 text-center shadow-lg">
-            <p className="text-xl font-black text-purple-400">{scenarios.length}</p>
-            <p className="text-[10px] uppercase font-bold text-slate-500">Skenario Bencana</p>
-          </div>
-          <div className="glass px-4 py-2 rounded-xl border border-slate-700/60 text-center shadow-lg">
-            <p className="text-xl font-black text-emerald-400">
-              {logs.filter(l => l.resolved).length}
+      {/* Header Banner */}
+      <div className="glass p-8 rounded-3xl border border-slate-700/60 shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative z-10 flex items-center justify-between flex-wrap gap-6">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <span className="px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-purple-500/15 text-purple-300 border border-purple-500/30 flex items-center gap-1.5">
+                <Flame size={14} className="text-amber-400" /> Incident Response Sandbox
+              </span>
+              <span className="text-slate-500 text-xs">•</span>
+              <span className="text-slate-400 text-xs font-semibold">ISO 27001 Disaster Recovery Testing</span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-indigo-200 to-white">
+              Simulasi Gangguan & Pemulihan Bencana
+            </h1>
+            <p className="text-slate-300 text-sm sm:text-base mt-2 max-w-3xl leading-relaxed font-medium">
+              Uji ketangguhan infrastruktur kampus secara terkontrol. Latih prosedur darurat, mitigasi downtime, dan ukur kecepatan respons tim NOC secara terukur.
             </p>
-            <p className="text-[10px] uppercase font-bold text-slate-500">Insiden Teratasi</p>
           </div>
+
+          <div className="flex gap-4">
+            <div className="glass px-5 py-3 rounded-2xl border border-slate-700/60 text-center shadow-lg">
+              <p className="text-2xl font-black text-purple-400 font-mono">{scenarios.length}</p>
+              <p className="text-[11px] uppercase font-bold text-slate-400 mt-0.5">Skenario Bencana</p>
+            </div>
+            <div className="glass px-5 py-3 rounded-2xl border border-slate-700/60 text-center shadow-lg">
+              <p className="text-2xl font-black text-emerald-400 font-mono">
+                {logs.filter(l => l.resolved).length}
+              </p>
+              <p className="text-[11px] uppercase font-bold text-slate-400 mt-0.5">Insiden Teratasi</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Protocol Workflow Bar (Explains the sequence clearly so it's not confusing) */}
+      <div className="glass-strong p-6 rounded-3xl border border-slate-800 shadow-xl">
+        <p className="text-xs font-black uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-2">
+          <Activity size={15} className="text-purple-400" /> 4 Tahapan Standar Prosedur Simulasi Insiden (SOP):
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[
+            { step: "1", name: "Deteksi & Notifikasi", desc: "Sistem mendeteksi anomali pada link atau perangkat host" },
+            { step: "2", name: "Isolasi Gangguan", desc: "Isolasi area kegagalan dan alihkan ke backup redundant" },
+            { step: "3", name: "Prosedur Mitigasi", desc: "Eksekusi langkah SOP perbaikan teknis berurutan" },
+            { step: "4", name: "Verifikasi & Evaluasi", desc: "Layanan pulih 100% dan kalkulasi skor kepatuhan SLA" },
+          ].map((s, idx) => (
+            <div key={s.step} className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-start gap-3">
+              <div className="w-8 h-8 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-400 font-black text-sm flex items-center justify-center flex-shrink-0">
+                {s.step}
+              </div>
+              <div>
+                <p className="text-xs font-bold text-slate-200">{s.name}</p>
+                <p className="text-[11px] text-slate-400 mt-0.5 leading-relaxed">{s.desc}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
       {/* Tab Switcher */}
-      <div className="flex items-center gap-2 bg-slate-900/60 p-1.5 rounded-2xl border border-slate-800/80 w-fit">
-        {[["scenarios","Skenario Bencana"],["logs","Riwayat Simulasi"]].map(([key, label]) => (
-          <button key={key} onClick={() => setTab(key)}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              tab === key
-                ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-[0_0_15px_rgba(168,85,247,0.3)]"
-                : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/60"
-            }`}>
-            {label}
-          </button>
-        ))}
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 bg-slate-900/80 p-1.5 rounded-2xl border border-slate-800 w-fit">
+          {[["scenarios","Katalog Skenario Insiden"],["logs","Riwayat Eksekusi Simulasi"]].map(([key, label]) => (
+            <button key={key} onClick={() => setTab(key)}
+              className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                tab === key
+                  ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-[0_0_15px_rgba(168,85,247,0.35)]"
+                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/60"
+              }`}>
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {loading ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {Array.from({length:5}).map((_,i) => <SkeletonCard key={i} />)}
+          {Array.from({length:6}).map((_,i) => <SkeletonCard key={i} />)}
         </div>
       ) : tab === "scenarios" ? (
         
         /* SCENARIOS CARDS */
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
           {scenarios.map((s, idx) => {
-            const c = TYPE_COLOR[s.scenario_type] ?? { border:"border-slate-700", bg:"bg-slate-800", glow:"" };
+            const c = TYPE_COLOR[s.scenario_type] ?? { border:"border-slate-700", bg:"bg-slate-800", glow:"", badge: "bg-slate-800 text-slate-300" };
+            const sev = SEVERITY_INFO[s.scenario_type] ?? { level: "P2 Major", color: "text-amber-400 border-amber-500/30 bg-amber-500/10" };
+
             return (
               <motion.div
                 key={s.id}
@@ -201,9 +249,14 @@ export default function SimulationPage() {
                     <div className="w-14 h-14 rounded-2xl bg-slate-900/90 border border-slate-700/80 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-lg">
                       {TYPE_ICON[s.scenario_type] ?? <Cpu size={28} className="text-slate-400" />}
                     </div>
-                    <span className="text-xs font-mono uppercase font-black text-purple-300 bg-purple-500/15 px-3 py-1.5 rounded-xl border border-purple-500/30">
-                      {s.scenario_type?.replace(/_/g," ")}
-                    </span>
+                    <div className="flex flex-col items-end gap-1.5">
+                      <span className={`text-[10px] font-mono uppercase font-black px-3 py-1 rounded-xl border ${sev.color}`}>
+                        {sev.level}
+                      </span>
+                      <span className={`text-[10px] font-mono uppercase font-bold px-2.5 py-0.5 rounded-lg border ${c.badge}`}>
+                        {s.scenario_type?.replace(/_/g," ")}
+                      </span>
+                    </div>
                   </div>
 
                   <div>
@@ -220,8 +273,13 @@ export default function SimulationPage() {
                   </div>
 
                   {/* Step Workflow Preview */}
-                  <div className="bg-slate-950/70 rounded-2xl p-4 border border-slate-800 space-y-2">
-                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-wider">Tahapan Prosedur Recovery:</p>
+                  <div className="bg-slate-950/70 rounded-2xl p-4 border border-slate-800 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <p className="text-[11px] font-black text-slate-400 uppercase tracking-wider">Tahapan Prosedur SOP:</p>
+                      <span className="text-[10px] font-mono text-purple-400 font-bold bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">
+                        {s.steps?.length ?? 0} Langkah
+                      </span>
+                    </div>
                     <div className="space-y-1.5">
                       {s.steps?.slice(0, 3).map((st, stIdx) => (
                         <div key={stIdx} className="flex items-center gap-2 text-xs text-slate-300 font-medium">
@@ -245,7 +303,7 @@ export default function SimulationPage() {
                   </div>
 
                   <button onClick={() => handleRun(s)}
-                    className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-black rounded-2xl shadow-[0_0_20px_rgba(168,85,247,0.4)] transition-all active:scale-95">
+                    className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-black rounded-2xl shadow-[0_0_20px_rgba(168,85,247,0.4)] transition-all active:scale-95 cursor-pointer">
                     <Play size={15} /> Uji Simulasi
                   </button>
                 </div>
@@ -256,16 +314,16 @@ export default function SimulationPage() {
       ) : (
 
         /* LOGS TABLE */
-        <div className="glass-strong rounded-2xl border border-slate-700/60 overflow-hidden shadow-[0_15px_40px_rgba(0,0,0,0.5)]">
+        <div className="glass-strong rounded-3xl border border-slate-700/60 overflow-hidden shadow-2xl">
           <div className="overflow-x-auto">
             <table className="w-full text-xs text-left">
               <thead>
                 <tr className="border-b border-slate-800 bg-slate-900/80 text-slate-400 uppercase tracking-wider text-[10px] font-bold">
-                  <th className="px-5 py-4">Skenario Insiden</th>
-                  <th className="px-5 py-4">Eksekutor</th>
-                  <th className="px-5 py-4">Waktu Eksekusi</th>
-                  <th className="px-5 py-4">Durasi Respon</th>
-                  <th className="px-5 py-4">Status Pemulihan</th>
+                  <th className="px-6 py-4">Skenario Insiden</th>
+                  <th className="px-6 py-4">Eksekutor</th>
+                  <th className="px-6 py-4">Waktu Eksekusi</th>
+                  <th className="px-6 py-4">Durasi Respon</th>
+                  <th className="px-6 py-4">Status Pemulihan</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
@@ -278,28 +336,28 @@ export default function SimulationPage() {
                   </tr>
                 ) : logs.map((l) => (
                   <tr key={l.id} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="px-5 py-4">
+                    <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center flex-shrink-0">
-                          {TYPE_ICON[l.type] ?? <Cpu size={14} />}
+                        <div className="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center flex-shrink-0">
+                          {TYPE_ICON[l.type] ?? <Cpu size={16} />}
                         </div>
                         <span className="text-slate-100 font-bold">{l.scenario}</span>
                       </div>
                     </td>
-                    <td className="px-5 py-4 text-slate-300 font-medium">{l.user}</td>
-                    <td className="px-5 py-4 text-slate-400 font-mono text-[11px]">
+                    <td className="px-6 py-4 text-slate-300 font-medium">{l.user}</td>
+                    <td className="px-6 py-4 text-slate-400 font-mono text-[11px]">
                       {l.started_at ? new Date(l.started_at).toLocaleString("id-ID") : "-"}
                     </td>
-                    <td className="px-5 py-4 text-purple-400 font-mono font-bold text-xs">
+                    <td className="px-6 py-4 text-purple-400 font-mono font-bold text-xs">
                       {formatDuration(l.duration)}
                     </td>
-                    <td className="px-5 py-4">
+                    <td className="px-6 py-4">
                       {l.resolved ? (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-lg border bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
+                        <span className="inline-flex items-center gap-1.5 text-[10px] font-bold px-3 py-1 rounded-xl border bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
                           <CheckCircle size={12} /> Teratasi (Resolved)
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-lg border bg-amber-500/10 text-amber-400 border-amber-500/20">
+                        <span className="inline-flex items-center gap-1.5 text-[10px] font-bold px-3 py-1 rounded-xl border bg-amber-500/10 text-amber-400 border-amber-500/20">
                           <Clock size={12} /> Belum Teratasi
                         </span>
                       )}
@@ -316,29 +374,27 @@ export default function SimulationPage() {
       {running && !result && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md">
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="glass-strong rounded-2xl border-2 border-red-500/60 w-full max-w-2xl shadow-[0_25px_80px_rgba(239,68,68,0.25)] overflow-hidden relative"
+            className="glass-strong rounded-3xl border-2 border-red-500/60 w-full max-w-2xl shadow-[0_25px_80px_rgba(239,68,68,0.25)] overflow-hidden relative"
           >
             {/* Top Red Glow Line */}
-            <div className="h-1 bg-slate-800">
-              <div className="h-1 bg-gradient-to-r from-red-500 to-amber-500 transition-all duration-500"
+            <div className="h-1.5 bg-slate-800">
+              <div className="h-1.5 bg-gradient-to-r from-red-500 to-amber-500 transition-all duration-500"
                 style={{ width:`${progress}%` }} />
             </div>
 
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/60">
-              <div className="flex items-center gap-3">
-                <div className="flex gap-1">
-                  <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
-                </div>
+            <div className="flex items-center justify-between px-7 py-5 border-b border-slate-800 bg-slate-900/70">
+              <div className="flex items-center gap-3.5">
+                <div className="w-3 h-3 rounded-full bg-red-500 animate-ping" />
                 <div>
-                  <h3 className="font-bold text-slate-100 text-base">{running.scenario.name}</h3>
-                  <p className="text-xs text-red-400 font-medium">SIMULASI GANGGULAN INFRASTRUKTUR AKTIF</p>
+                  <h3 className="font-black text-slate-100 text-lg">{running.scenario.name}</h3>
+                  <p className="text-xs text-red-400 font-bold uppercase tracking-wider">Simulasi Insiden Bencana Sedang Berjalan</p>
                 </div>
               </div>
               <div className="text-right">
-                <div className={`text-2xl font-mono font-black tabular-nums ${
+                <div className={`text-3xl font-mono font-black tabular-nums ${
                   elapsed > 120 ? "text-red-400" : elapsed > 60 ? "text-amber-400" : "text-emerald-400"
                 }`}>
                   {formatTime(elapsed)}
@@ -348,56 +404,76 @@ export default function SimulationPage() {
             </div>
 
             {/* Impact Banner */}
-            <div className="px-6 py-3 bg-red-500/10 border-b border-red-500/20 flex items-center gap-2">
-              <AlertTriangle size={16} className="text-red-400 flex-shrink-0" />
-              <p className="text-xs text-red-300 font-semibold leading-relaxed">
+            <div className="px-7 py-3.5 bg-red-500/10 border-b border-red-500/20 flex items-center gap-3">
+              <AlertTriangle size={18} className="text-red-400 flex-shrink-0" />
+              <p className="text-xs text-red-200 font-semibold leading-relaxed">
                 {running.scenario.impact_description}
               </p>
             </div>
 
             {/* Steps Container */}
-            <div className="px-6 py-5 space-y-2.5 max-h-[380px] overflow-y-auto">
+            <div className="px-7 py-6 space-y-3 max-h-[380px] overflow-y-auto">
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  Prosedur SOP Eksekusi:
+                </p>
+                <span className="text-xs font-mono font-bold text-blue-400">
+                  Langkah {stepIndex + 1} dari {running.steps.length}
+                </span>
+              </div>
               {running.steps.map((step, i) => (
                 <div key={i}
-                  className={`flex items-start gap-3 p-3.5 rounded-xl text-xs transition-all ${
+                  className={`flex items-start gap-3.5 p-4 rounded-2xl text-xs transition-all ${
                     i < stepIndex
-                      ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 opacity-75"
+                      ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 opacity-80"
                       : i === stepIndex
-                      ? "bg-blue-600/20 border border-blue-400 text-slate-100 font-medium shadow-[0_0_15px_rgba(59,130,246,0.2)] scale-[1.01]"
+                      ? "bg-blue-600/20 border-2 border-blue-400 text-slate-100 font-semibold shadow-[0_0_15px_rgba(59,130,246,0.25)] scale-[1.01]"
                       : "bg-slate-900/60 border border-slate-800 text-slate-500 opacity-50"
                   }`}>
-                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                    i < stepIndex ? "bg-emerald-500 text-white"
-                    : i === stepIndex ? "bg-blue-500 text-white shadow-[0_0_8px_#3b82f6]"
+                  <div className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+                    i < stepIndex ? "bg-emerald-500 text-white shadow-[0_0_10px_#10b981]"
+                    : i === stepIndex ? "bg-blue-500 text-white shadow-[0_0_10px_#3b82f6]"
                     : "bg-slate-800 text-slate-500"
                   }`}>
-                    {i < stepIndex ? <CheckCircle size={12} /> : i + 1}
+                    {i < stepIndex ? <Check size={14} strokeWidth={3} /> : i + 1}
                   </div>
-                  <span className="leading-relaxed mt-0.5">{step}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="leading-relaxed mt-0.5">{step}</p>
+                    {i === stepIndex && (
+                      <span className="inline-block mt-2 text-[10px] font-bold text-blue-400 uppercase tracking-wider bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
+                        Sedang Dikerjakan...
+                      </span>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
 
             {/* Footer Control */}
-            <div className="px-6 py-4 border-t border-slate-800 bg-slate-900/60 flex items-center justify-between gap-4">
-              <p className="text-xs text-slate-400 font-mono">
-                Progres: <strong className="text-blue-400">{stepIndex + 1}</strong> / {running.steps.length} ({progress}%)
-              </p>
-              <div className="flex gap-3">
-                <button onClick={handleClose}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl transition-all">
-                  Batalkan
-                </button>
+            <div className="px-7 py-4 border-t border-slate-800 bg-slate-900/70 flex items-center justify-between gap-4">
+              <button onClick={handleClose}
+                className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl transition-all cursor-pointer">
+                Batalkan
+              </button>
+
+              <div className="flex items-center gap-3">
                 {stepIndex < running.steps.length - 1 ? (
-                  <button onClick={handleNextStep}
-                    className="flex items-center gap-2 px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.35)] transition-all active:scale-95">
-                    Langkah Berikutnya <ChevronRight size={14} />
-                  </button>
+                  <>
+                    <button onClick={handleNextStep}
+                      className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-black rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.35)] transition-all active:scale-95 cursor-pointer">
+                      Langkah Berikutnya <ChevronRight size={15} />
+                    </button>
+                    <button onClick={handleResolve} disabled={resolving}
+                      className="flex items-center gap-1.5 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl border border-slate-700 transition-all cursor-pointer"
+                      title="Selesaikan semua langkah secara cepat">
+                      <FastForward size={14} className="text-amber-400" /> Selesaikan Cepat
+                    </button>
+                  </>
                 ) : (
                   <button onClick={handleResolve} disabled={resolving}
-                    className="flex items-center gap-2 px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.35)] transition-all disabled:opacity-50 active:scale-95">
-                    <CheckCircle size={14} />
-                    {resolving ? "Selesai..." : "Tandai Insiden Teratasi"}
+                    className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-all disabled:opacity-50 active:scale-95 cursor-pointer">
+                    <CheckCircle size={15} />
+                    {resolving ? "Memproses Pemulihan..." : "Tandai Insiden Teratasi & Nilai"}
                   </button>
                 )}
               </div>
@@ -412,9 +488,13 @@ export default function SimulationPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="glass-strong border border-slate-700/80 rounded-2xl w-full max-w-md p-8 shadow-[0_25px_80px_rgba(0,0,0,0.8)] text-center relative overflow-hidden"
+            className="glass-strong border border-slate-700/80 rounded-3xl w-full max-w-md p-8 shadow-[0_25px_80px_rgba(0,0,0,0.8)] text-center relative overflow-hidden"
           >
-            <div className="h-1 bg-gradient-to-r from-blue-500 via-emerald-500 to-amber-500 absolute top-0 left-0 right-0" />
+            <div className="h-1.5 bg-gradient-to-r from-blue-500 via-emerald-500 to-amber-500 absolute top-0 left-0 right-0" />
+
+            <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-lg">
+              <Award size={30} />
+            </div>
 
             <div className={`text-7xl font-black mb-1 ${result.rating.color} drop-shadow-[0_0_20px_currentColor]`}>
               {result.rating.label}
@@ -422,24 +502,24 @@ export default function SimulationPage() {
             <p className={`text-base font-bold mb-1 ${result.rating.color}`}>
               {result.rating.desc}
             </p>
-            <p className="text-slate-400 text-xs mb-6">Simulasi Pemulihan Berhasil Selesai</p>
+            <p className="text-slate-400 text-xs mb-6">Simulasi Pemulihan Berhasil Diselesaikan Sesuai SOP</p>
 
             <div className="grid grid-cols-3 gap-3 mb-6">
               {[
-                { label:"Skor Evaluasi", value: result.score, color:"text-blue-400" },
+                { label:"Skor Evaluasi", value: `${result.score}/100`, color:"text-blue-400" },
                 { label:"Waktu Respons", value: formatTime(result.duration), color:"text-purple-400" },
-                { label:"Langkah Kerja", value: result.steps, color:"text-emerald-400" },
+                { label:"Langkah Kerja", value: `${result.steps} Tahap`, color:"text-emerald-400" },
               ].map(s => (
-                <div key={s.label} className="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
-                  <p className={`text-xl font-black ${s.color}`}>{s.value}</p>
+                <div key={s.label} className="bg-slate-900/80 p-3.5 rounded-2xl border border-slate-800">
+                  <p className={`text-lg font-black font-mono ${s.color}`}>{s.value}</p>
                   <p className="text-[10px] text-slate-500 font-bold uppercase mt-0.5">{s.label}</p>
                 </div>
               ))}
             </div>
 
             <button onClick={handleClose}
-              className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl shadow-[0_0_20px_rgba(59,130,246,0.35)] transition-all">
-              Tutup Ringkasan Evaluasi
+              className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-black rounded-2xl shadow-[0_0_25px_rgba(168,85,247,0.4)] transition-all cursor-pointer">
+              Tutup & Kembali ke Command Center
             </button>
           </motion.div>
         </div>

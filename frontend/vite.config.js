@@ -37,6 +37,18 @@ export default defineConfig(({ mode }) => ({
       },
     },
   },
+  build: {
+    chunkSizeWarningLimit: 1200,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          three: ['three', '@react-three/fiber', '@react-three/drei'],
+          charts: ['recharts'],
+          vendor: ['react', 'react-dom', 'react-router-dom', 'framer-motion', 'zustand', 'axios'],
+        },
+      },
+    },
+  },
   test: {
     globals: true,
     environment: 'happy-dom',

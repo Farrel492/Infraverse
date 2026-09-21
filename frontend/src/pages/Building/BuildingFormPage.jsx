@@ -154,54 +154,96 @@ export default function BuildingFormPage() {
               </div>
             </div>
 
-            <div className="space-y-5">
+            <div className="space-y-6">
+              {/* Nama Gedung */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-2">
-                  Nama Gedung / Fasilitas <span className="text-blue-400">*</span>
+                <label className="block text-xs font-black uppercase tracking-wider text-slate-200 mb-2.5 flex items-center justify-between">
+                  <span>Nama Gedung / Fasilitas <span className="text-blue-400">*</span></span>
+                  <span className="text-[11px] font-semibold text-slate-500">Wajib Diisi</span>
                 </label>
-                <div className="relative">
+                <div className="flex h-13 rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900/90 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/15 transition-all shadow-inner">
+                  <div className="flex items-center justify-center px-4.5 bg-slate-800/60 border-r border-slate-700/60 text-blue-400 flex-shrink-0">
+                    <Building2 size={20} />
+                  </div>
                   <input
                     type="text"
                     required
                     value={form.name}
                     onChange={e => setForm({ ...form, name: e.target.value })}
                     placeholder="Contoh: Gedung Rektorat (Pusat Data Utama NOC)"
-                    className="w-full px-5 py-4 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 text-sm font-semibold focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:font-normal shadow-inner"
+                    className="w-full px-4 text-sm font-semibold bg-transparent text-slate-100 outline-none placeholder:text-slate-500"
                   />
                 </div>
-                <p className="text-[11px] text-slate-400 mt-1.5 font-medium">Gunakan nama resmi yang mudah diidentifikasi oleh tim lapangan & teknisi NOC.</p>
+                {/* Quick Name Presets */}
+                <div className="flex items-center gap-2 mt-2.5 flex-wrap">
+                  <span className="text-[11px] font-bold text-slate-500">Template Cepat:</span>
+                  {["Gedung Rektorat", "Pusat Data & NOC", "Fakultas Teknik", "Lab Komputer & IoT", "Perpustakaan Pusat"].map(tpl => (
+                    <button
+                      key={tpl}
+                      type="button"
+                      onClick={() => setForm({ ...form, name: tpl })}
+                      className="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-blue-600/20 text-slate-300 hover:text-blue-300 border border-slate-700/60 transition-colors"
+                    >
+                      + {tpl}
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {/* Lokasi & Total Lantai Stepper */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-2">
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-200 mb-2.5">
                     Lokasi / Zona Kampus
                   </label>
-                  <div className="relative">
+                  <div className="flex h-13 rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900/90 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/15 transition-all shadow-inner">
+                    <div className="flex items-center justify-center px-4.5 bg-slate-800/60 border-r border-slate-700/60 text-indigo-400 flex-shrink-0">
+                      <MapPin size={20} />
+                    </div>
                     <input
                       type="text"
                       value={form.location}
                       onChange={e => setForm({ ...form, location: e.target.value })}
                       placeholder="Contoh: Kampus Utama - Zona Barat"
-                      className="w-full px-5 py-4 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-inner"
+                      className="w-full px-4 text-sm font-semibold bg-transparent text-slate-100 outline-none placeholder:text-slate-500"
                     />
                   </div>
                 </div>
 
+                {/* Total Floors with Custom Stepper */}
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-2">
-                    Total Lantai Fisik <span className="text-blue-400">*</span>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-200 mb-2.5 flex items-center justify-between">
+                    <span>Total Lantai Fisik <span className="text-blue-400">*</span></span>
+                    <span className="text-[11px] font-bold text-blue-400">{form.total_floors} Tingkat</span>
                   </label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      min={1}
-                      max={50}
-                      required
-                      value={form.total_floors}
-                      onChange={e => setForm({ ...form, total_floors: e.target.value })}
-                      className="w-full px-5 py-4 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 text-sm font-bold focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-inner"
-                    />
+                  <div className="flex items-center h-13 rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900/90 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/15 transition-all shadow-inner p-1">
+                    <button
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, total_floors: Math.max(1, Number(f.total_floors) - 1) }))}
+                      className="w-11 h-11 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-black flex items-center justify-center text-lg transition-colors flex-shrink-0"
+                    >
+                      −
+                    </button>
+                    <div className="flex-1 flex items-center justify-center gap-2">
+                      <Layers size={18} className="text-blue-400" />
+                      <input
+                        type="number"
+                        min={1}
+                        max={50}
+                        required
+                        value={form.total_floors}
+                        onChange={e => setForm({ ...form, total_floors: Math.max(1, parseInt(e.target.value) || 1) })}
+                        className="w-14 text-center font-mono text-base font-black bg-transparent text-slate-100 outline-none"
+                      />
+                      <span className="text-xs font-bold text-slate-400">Lantai</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, total_floors: Math.min(50, Number(f.total_floors) + 1) }))}
+                      className="w-11 h-11 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-black flex items-center justify-center text-lg transition-colors flex-shrink-0"
+                    >
+                      +
+                    </button>
                   </div>
                 </div>
               </div>
@@ -212,24 +254,24 @@ export default function BuildingFormPage() {
           <div className="glass p-8 rounded-3xl border border-slate-700/60 space-y-6 shadow-2xl">
             <div className="flex items-center gap-3.5 border-b border-slate-800 pb-5">
               <div className="w-11 h-11 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shadow-inner">
-                <FileText size={24} />
+                <FileText size={22} />
               </div>
               <div>
-                <h2 className="text-base font-bold text-slate-100 uppercase tracking-wider">Peran & Fungsi Infrastruktur</h2>
+                <h2 className="text-base font-black text-slate-100 uppercase tracking-wider">Peran & Fungsi Infrastruktur</h2>
                 <p className="text-xs text-slate-400 mt-0.5">Catatan operasional untuk tim pemeliharaan dan audit sistem</p>
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-2">
+              <label className="block text-xs font-black uppercase tracking-wider text-slate-200 mb-2.5">
                 Deskripsi Operasional Gedung
               </label>
               <textarea
-                rows={5}
+                rows={4}
                 value={form.description}
                 onChange={e => setForm({ ...form, description: e.target.value })}
                 placeholder="Jelaskan peran gedung ini, contoh: Gedung pusat administrasi dan data center rektorat. Berisi server core switch, koneksi fiber optik uplink kampus, serta backup UPS 40kVA."
-                className="w-full px-5 py-4 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 resize-none transition-all leading-relaxed shadow-inner"
+                className="w-full p-4.5 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 text-sm focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15 resize-none transition-all leading-relaxed shadow-inner placeholder:text-slate-500 font-medium"
               />
             </div>
 
@@ -238,17 +280,17 @@ export default function BuildingFormPage() {
               <button
                 type="button"
                 onClick={() => navigate("/buildings")}
-                className="w-full sm:w-1/3 py-4 rounded-2xl bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white text-sm font-semibold transition-all shadow-md"
+                className="w-full sm:w-1/3 py-4 rounded-2xl bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white text-sm font-bold transition-all shadow-md cursor-pointer"
               >
                 Batal
               </button>
               <button
                 type="submit"
                 disabled={saving}
-                className="w-full sm:w-2/3 py-4 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white text-sm font-bold shadow-[0_0_30px_rgba(59,130,246,0.4)] hover:shadow-[0_0_40px_rgba(59,130,246,0.6)] transition-all disabled:opacity-50 flex items-center justify-center gap-2.5"
+                className="w-full sm:w-2/3 py-4 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white text-sm font-black shadow-[0_0_30px_rgba(59,130,246,0.4)] hover:shadow-[0_0_40px_rgba(59,130,246,0.6)] transition-all disabled:opacity-50 flex items-center justify-center gap-2.5 cursor-pointer"
               >
-                <Save size={20} />
-                <span>{saving ? "Menyimpan Perubahan..." : (isEditing ? "Simpan Perubahan Gedung" : "Daftarkan Gedung Baru")}</span>
+                <Save size={18} />
+                <span>{saving ? "Menyimpan Konfigurasi..." : (isEditing ? "Simpan Perubahan Gedung" : "Daftarkan Gedung Baru")}</span>
               </button>
             </div>
           </div>

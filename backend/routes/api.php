@@ -21,8 +21,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
     // Profile
-    Route::patch('/profile',          [ProfileController::class, 'update']);
-    Route::patch('/profile/password', [ProfileController::class, 'changePassword']);
+    Route::match(['patch', 'post'], '/profile', [ProfileController::class, 'update']);
+    Route::patch('/profile/password',           [ProfileController::class, 'changePassword']);
 
     // Buildings
     Route::get('/buildings',                   [BuildingController::class, 'index']);
@@ -30,6 +30,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/buildings/{building}/floors', [BuildingController::class, 'floorIndex']);
     Route::get('/floors/{floor}/rooms',        [BuildingController::class, 'roomIndex']);
     Route::get('/rooms/{room}/racks',          [BuildingController::class, 'rackIndex']);
+    Route::get('/racks',                       [BuildingController::class, 'allRacks']);
 
     // Devices
     Route::get('/devices',               [DeviceController::class, 'index']);

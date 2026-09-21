@@ -9,7 +9,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("infraverse_token");
+  const token = sessionStorage.getItem("infraverse_token") || localStorage.getItem("infraverse_token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -20,6 +20,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      sessionStorage.removeItem("infraverse_token");
       localStorage.removeItem("infraverse_token");
       window.location.href = "/login";
     }

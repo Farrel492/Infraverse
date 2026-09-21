@@ -151,46 +151,23 @@ export default function LoginPage() {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Quick Demo Selector for Competition Presentation */}
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider mb-2 text-slate-400">
-                  Akun Demo Pengujian Cepat:
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { role: "Admin", email: "admin@infraverse.test", pass: "password" },
-                    { role: "Teknisi", email: "teknisi@infraverse.test", pass: "password" },
-                    { role: "Viewer", email: "viewer@infraverse.test", pass: "password" },
-                  ].map((acc) => (
-                    <button
-                      key={acc.role}
-                      type="button"
-                      onClick={() => setForm({ email: acc.email, password: acc.pass })}
-                      className="px-2.5 py-2 rounded-xl text-xs font-bold bg-slate-800/80 hover:bg-blue-600/30 border border-slate-700/70 hover:border-blue-500/50 text-slate-300 hover:text-blue-300 transition-all text-center"
-                    >
-                      {acc.role}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
+            <form onSubmit={handleSubmit} className="space-y-6">
               {/* Email with Separate Addon Box (No overlap guaranteed) */}
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider mb-2 text-slate-300">
                   Alamat Email Pengguna
                 </label>
-                <div className="flex rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900/90 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all shadow-inner">
+                <div className="flex h-12 rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900/90 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all shadow-inner">
                   <div className="flex items-center justify-center px-4 bg-slate-800/60 border-r border-slate-700/60 text-blue-400 flex-shrink-0">
-                    <Mail size={18} />
+                    <Mail size={19} />
                   </div>
                   <input
                     type="email"
                     required
                     value={form.email}
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    placeholder="Masukkan alamat email"
-                    className="w-full px-4 py-3.5 text-[15px] font-medium bg-transparent text-slate-100 outline-none placeholder:text-slate-500"
+                    placeholder="nama@perusahaan.co.id"
+                    className="w-full px-4 text-[15px] font-medium bg-transparent text-slate-100 outline-none placeholder:text-slate-500"
                   />
                 </div>
               </div>
@@ -200,24 +177,24 @@ export default function LoginPage() {
                 <label className="block text-xs font-bold uppercase tracking-wider mb-2 text-slate-300">
                   Kata Sandi Akun
                 </label>
-                <div className="flex rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900/90 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all shadow-inner">
+                <div className="flex h-12 rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900/90 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all shadow-inner">
                   <div className="flex items-center justify-center px-4 bg-slate-800/60 border-r border-slate-700/60 text-blue-400 flex-shrink-0">
-                    <Lock size={18} />
+                    <Lock size={19} />
                   </div>
                   <input
                     type={showPass ? "text" : "password"}
                     required
                     value={form.password}
                     onChange={(e) => setForm({ ...form, password: e.target.value })}
-                    placeholder="Masukkan kata sandi"
-                    className="w-full px-4 py-3.5 text-[15px] font-medium bg-transparent text-slate-100 outline-none placeholder:text-slate-500"
+                    placeholder="Masukkan kata sandi Anda"
+                    className="w-full px-4 text-[15px] font-medium bg-transparent text-slate-100 outline-none placeholder:text-slate-500"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPass(v => !v)}
-                    className="px-4 text-slate-400 hover:text-slate-200 transition-colors flex items-center justify-center"
+                    className="px-4 text-slate-400 hover:text-slate-200 transition-colors flex items-center justify-center cursor-pointer"
                   >
-                    {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                    {showPass ? <EyeOff size={19} /> : <Eye size={19} />}
                   </button>
                 </div>
               </div>
@@ -226,7 +203,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 text-base font-black text-white rounded-2xl mt-4 transition-all shadow-[0_4px_25px_rgba(59,130,246,0.4)] bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 hover:from-blue-500 hover:to-indigo-500 active:scale-[0.99]"
+                className="w-full h-12 text-base font-black text-white rounded-2xl transition-all shadow-[0_4px_25px_rgba(59,130,246,0.4)] bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 hover:from-blue-500 hover:to-indigo-500 active:scale-[0.99] cursor-pointer"
               >
                 {loading ? "Memproses Autentikasi..." : "Masuk ke Sistem InfraVerse"}
               </button>
