@@ -26,15 +26,18 @@ class MappingController extends Controller
                               . ($d->rack ? ' / ' . $d->rack->name : ''),
             ]);
 
-        $connections = DeviceConnection::all()->map(fn($c) => [
-            'id'              => $c->id,
-            'source'          => $c->source_device_id,
-            'target'          => $c->target_device_id,
-            'type'            => $c->connection_type,
-            'port_source'     => $c->port_source,
-            'port_target'     => $c->port_target,
-            'status'          => $c->status,
-        ]);
+        $connections = DeviceConnection::whereHas('sourceDevice')
+            ->whereHas('targetDevice')
+            ->get()
+            ->map(fn($c) => [
+                'id'              => $c->id,
+                'source'          => $c->source_device_id,
+                'target'          => $c->target_device_id,
+                'type'            => $c->connection_type,
+                'port_source'     => $c->port_source,
+                'port_target'     => $c->port_target,
+                'status'          => $c->status,
+            ]);
 
         return response()->json([
             'nodes' => $devices,

@@ -19,6 +19,20 @@ class Rack extends Model
         'pos_x' => 'float', 'pos_y' => 'float', 'pos_z' => 'float',
     ];
 
+    protected static function booted(): void
+    {
+        static::deleting(function (Rack $rack) {
+            $rack->devices()->each(function ($device) {
+                $device->sourceConnections()->delete();
+                $device->targetConnections()->delete();
+                $device->documents()->delete();
+                $device->maintenances()->delete();
+                $device->simulationScenarios()->delete();
+                $device->delete();
+            });
+        });
+    }
+
     public function room()
     {
         return $this->belongsTo(Room::class);

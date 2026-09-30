@@ -16,6 +16,7 @@ import {
   RotateCcw, X, Filter
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { refreshAlerts } from "../../stores/useNotificationStore";
 
 const DEVICE_TYPES    = ["router","switch","firewall","server","access_point","ups","other"];
 const DEVICE_STATUSES = ["active","inactive","maintenance","down"];
@@ -104,7 +105,9 @@ export default function AssetsPage() {
 
   const handleDelete = async () => {
     await deviceService.remove(deleting.id);
-    setDeleting(null); load();
+    setDeleting(null); 
+    load();
+    refreshAlerts();
   };
 
   return (

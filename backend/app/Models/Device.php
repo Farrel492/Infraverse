@@ -22,6 +22,17 @@ class Device extends Model
         'warranty_expiry' => 'date',
     ];
 
+    protected static function booted(): void
+    {
+        static::deleting(function (Device $device) {
+            $device->sourceConnections()->delete();
+            $device->targetConnections()->delete();
+            $device->documents()->delete();
+            $device->maintenances()->delete();
+            $device->simulationScenarios()->delete();
+        });
+    }
+
     public function rack()
     {
         return $this->belongsTo(Rack::class);

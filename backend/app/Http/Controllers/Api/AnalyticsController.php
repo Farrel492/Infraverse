@@ -35,18 +35,39 @@ class AnalyticsController extends Controller
                 && Carbon::parse($d->purchase_date)->diffInYears($today) >= 5
         )->count();
 
-        $maintenances = Maintenance::with('device')->get();
+        $maintenances = Maintenance::whereHas('device')->with('device')->get();
+
         $upcoming = $maintenances
             ->filter(fn($m) => $m->status === 'scheduled'
                 && Carbon::parse($m->scheduled_date)->gte($today)
                 && Carbon::parse($m->scheduled_date)->lte($nextMonth))
             ->values()
             ->map(fn($m) => [
+                'id'             => $m->id,
                 'device'         => $m->device?->name,
                 'type'           => $m->type,
                 'scheduled_date' => $m->scheduled_date,
                 'status'         => $m->status,
             ]);
+
+        $overdue = $maintenances
+            ->filter(fn($m) => $m->status === 'scheduled'
+                && Carbon::parse($m->scheduled_date)->lt($today))
+            ->values()
+            ->map(fn($m) => [
+                'id'             => $m->id,
+                'device'         => $m->device?->name,
+                'type'           => $m->type,
+                'scheduled_date' => $m->scheduled_date,
+                'status'         => $m->status,
+            ]);
+
+        $downDevices = $devices->where('status', 'down')->values()->map(fn($d) => [
+            'id'         => $d->id,
+            'name'       => $d->name,
+            'type'       => $d->type,
+            'ip_address' => $d->ip_address,
+        ]);
 
         $simLogs = SimulationLog::all();
 
@@ -58,6 +79,8 @@ class AnalyticsController extends Controller
             'warranty_expiring_soon' => $warrantyExpiringSoon,
             'old_devices'            => $oldDevices,
             'upcoming_maintenances'  => $upcoming,
+            'overdue_maintenances'   => $overdue,
+            'down_devices'           => $downDevices,
             'total_maintenances'     => $maintenances->count(),
             'simulations_run'        => $simLogs->count(),
             'simulations_resolved'   => $simLogs->where('resolved', true)->count(),

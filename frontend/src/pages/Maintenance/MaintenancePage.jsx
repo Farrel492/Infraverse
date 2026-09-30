@@ -11,9 +11,11 @@ import Breadcrumb from "../../components/shared/Breadcrumb.jsx";
 import { SkeletonTable } from "../../components/shared/Skeleton.jsx";
 import {
   Wrench, Plus, Edit2, Trash2, CheckCircle,
-  Clock, AlertCircle, XCircle, Calendar, ShieldAlert, Activity, CheckCircle2, UserCheck, AlertTriangle
+  Clock, AlertCircle, XCircle, Calendar, ShieldAlert, Activity, CheckCircle2, UserCheck, AlertTriangle,
+  Cpu, FileText, Save
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { refreshAlerts } from "../../stores/useNotificationStore";
 
 const STATUS_MAP = {
   scheduled:   { label:"Terjadwal",   cls:"bg-blue-500/10 text-blue-400 border-blue-500/25 shadow-[0_0_10px_rgba(59,130,246,0.15)]", Icon: Clock },
@@ -87,6 +89,7 @@ export default function MaintenancePage() {
       else await maintenanceService.create(form);
       toast.success(editing ? "Jadwal diperbarui." : "Jadwal ditambahkan.");
       setShowForm(false); load();
+      refreshAlerts();
     } catch (err) {
       toast.error(err.response?.data?.message ?? "Terjadi kesalahan.");
     } finally { setSaving(false); }
@@ -96,6 +99,7 @@ export default function MaintenancePage() {
     await maintenanceService.remove(deleting.id);
     toast.success("Jadwal dihapus.");
     setDeleting(null); load();
+    refreshAlerts();
   };
 
   const handleStatusChange = async (item, newStatus) => {
@@ -103,6 +107,7 @@ export default function MaintenancePage() {
       await maintenanceService.update(item.id, { ...item, status: newStatus });
       toast.success(`Status diubah ke ${STATUS_MAP[newStatus]?.label}.`);
       load();
+      refreshAlerts();
     } catch { toast.error("Gagal mengubah status."); }
   };
 
@@ -222,7 +227,7 @@ export default function MaintenancePage() {
           icon={<Wrench size={36} className="text-amber-400" />}
           title="Belum Ada Jadwal Perawatan"
           description="Tambahkan jadwal maintenance untuk memantau kondisi perangkat secara berkala."
-          action={canWrite ? { label:"Tambah Jadwal", onClick: openAdd } : null}
+          action={canWrite ? { label:"Tambah Jadwal Maintenance", onClick: () => navigate("/maintenance/create") } : null}
         />
       ) : (
         <div className="glass-strong rounded-2xl border border-slate-700/60 overflow-hidden shadow-[0_15px_40px_rgba(0,0,0,0.5)]">

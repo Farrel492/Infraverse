@@ -1,4 +1,4 @@
-import { Outlet, NavLink, useNavigate } from "react-router-dom";
+import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
   LayoutDashboard, Building2, Server, Network,
@@ -7,7 +7,8 @@ import {
 } from "lucide-react";
 import useAuthStore from "../../stores/authStore";
 import { authService } from "../../services/authService";
-import { analyticsService } from "../../services/analyticsService";
+import useNotificationStore from "../../stores/useNotificationStore";
+import NotificationModal from "./NotificationModal";
 import toast from "react-hot-toast";
 
 const navItems = [
@@ -27,18 +28,38 @@ const roleBadgeBg = { admin: "rgba(239,68,68,0.15)", teknisi: "rgba(59,130,246,0
 export default function MainLayout() {
   const { user, clearAuth } = useAuthStore();
   const navigate = useNavigate();
-  const [alerts, setAlerts]     = useState({ down: 0, maintenance: 0 });
+  const location = useLocation();
+  const { alerts, fetchAlerts, setModalOpen } = useNotificationStore();
   const [clock, setClock]       = useState(new Date());
   const [collapsed, setCollapsed] = useState(false);
 
+  // 1. Initial & Realtime Polling (setiap 5 detik)
   useEffect(() => {
-    analyticsService.getSummary().then(res => {
-      setAlerts({
-        down:        res.data.by_status?.down ?? 0,
-        maintenance: res.data.upcoming_maintenances?.length ?? 0,
-      });
-    }).catch(() => {});
-  }, []);
+    fetchAlerts(true);
+    const interval = setInterval(() => {
+      fetchAlerts(true);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [fetchAlerts]);
+
+  // 2. Refresh setiap kali berpindah rute/halaman
+  useEffect(() => {
+    fetchAlerts(true);
+  }, [location.pathname, fetchAlerts]);
+
+  // 3. Refresh saat tab kembali aktif atau event kustom terpicu
+  useEffect(() => {
+    const handleFocus = () => fetchAlerts(true);
+    const handleCustom = () => fetchAlerts(true);
+
+    window.addEventListener("focus", handleFocus);
+    window.addEventListener("infraverse:refresh-alerts", handleCustom);
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      window.removeEventListener("infraverse:refresh-alerts", handleCustom);
+    };
+  }, [fetchAlerts]);
 
   useEffect(() => {
     const t = setInterval(() => setClock(new Date()), 1000);
@@ -50,7 +71,7 @@ export default function MainLayout() {
     finally { clearAuth(); navigate("/login"); }
   };
 
-  const totalAlerts = (alerts.down ?? 0) + (alerts.maintenance ?? 0);
+  const totalAlerts = alerts?.total ?? 0;
 
   const activeNavItems = user?.role === "admin"
     ? [...navItems, { to: "/users", label: "Kelola User", Icon: Users, alertKey: null, desc: "Manajemen Akun" }]
@@ -121,22 +142,44 @@ export default function MainLayout() {
                 {clock.toLocaleDateString("id-ID", { weekday: "short", day: "numeric", month: "short" })}
               </p>
             </div>
-            {totalAlerts > 0 && (
-              <div
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-red-500/30"
-                style={{ background: "rgba(239,68,68,0.1)" }}
+            {totalAlerts > 0 ? (
+              <button
+                onClick={() => setModalOpen(true)}
+                title="Buka Pusat Notifikasi & Alarm Realtime"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-red-500/30 hover:border-red-400/60 hover:bg-red-500/20 transition-all cursor-pointer shadow-[0_0_12px_rgba(239,68,68,0.2)]"
+                style={{ background: "rgba(239,68,68,0.12)" }}
               >
                 <Bell size={13} className="text-red-400 animate-bounce" />
                 <span className="text-xs font-black text-red-400">{totalAlerts}</span>
-              </div>
-            )}
-            {totalAlerts === 0 && (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-500/20"
-                style={{ background: "rgba(16,185,129,0.08)" }}>
+              </button>
+            ) : (
+              <button
+                onClick={() => setModalOpen(true)}
+                title="Sistem Normal - Klik untuk rincian"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-500/20 hover:border-emerald-500/40 hover:bg-emerald-500/15 transition-all cursor-pointer"
+                style={{ background: "rgba(16,185,129,0.08)" }}
+              >
                 <Activity size={13} className="text-emerald-400" />
                 <span className="text-[10px] font-black text-emerald-400 uppercase tracking-wider">Normal</span>
-              </div>
+              </button>
             )}
+          </div>
+        )}
+
+        {/* Collapsed Alert Icon */}
+        {collapsed && (
+          <div className="px-3 py-2.5 flex justify-center border-b border-slate-800/40">
+            <button
+              onClick={() => setModalOpen(true)}
+              title={totalAlerts > 0 ? `${totalAlerts} Alarm Aktif` : "Status Normal"}
+              className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-all cursor-pointer ${
+                totalAlerts > 0
+                  ? "bg-red-500/15 border-red-500/40 text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.3)]"
+                  : "bg-slate-800/60 border-slate-700/60 text-emerald-400 hover:bg-slate-700"
+              }`}
+            >
+              <Bell size={18} className={totalAlerts > 0 ? "animate-bounce" : ""} />
+            </button>
           </div>
         )}
 
@@ -267,6 +310,9 @@ export default function MainLayout() {
       <main className="flex-1 overflow-auto min-w-0">
         <Outlet />
       </main>
+
+      {/* ===== REALTIME NOTIFICATION CENTER MODAL ===== */}
+      <NotificationModal />
     </div>
   );
 }

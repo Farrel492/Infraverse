@@ -21,6 +21,31 @@ class Building extends Model
         'pos_z' => 'float',
     ];
 
+    protected static function booted(): void
+    {
+        static::deleting(function (Building $building) {
+            // Cascade soft-delete: Building -> Floor -> Room -> Rack -> Device
+            $building->floors()->each(function ($floor) {
+                $floor->rooms()->each(function ($room) {
+                    $room->racks()->each(function ($rack) {
+                        // Delete device connections, documents, maintenances, simulations
+                        $rack->devices()->each(function ($device) {
+                            $device->sourceConnections()->delete();
+                            $device->targetConnections()->delete();
+                            $device->documents()->delete();
+                            $device->maintenances()->delete();
+                            $device->simulationScenarios()->delete();
+                            $device->delete();
+                        });
+                        $rack->delete();
+                    });
+                    $room->delete();
+                });
+                $floor->delete();
+            });
+        });
+    }
+
     public function floors()
     {
         return $this->hasMany(Floor::class);

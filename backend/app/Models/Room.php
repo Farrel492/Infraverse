@@ -20,6 +20,23 @@ class Room extends Model
         'width' => 'float', 'depth' => 'float', 'height' => 'float',
     ];
 
+    protected static function booted(): void
+    {
+        static::deleting(function (Room $room) {
+            $room->racks()->each(function ($rack) {
+                $rack->devices()->each(function ($device) {
+                    $device->sourceConnections()->delete();
+                    $device->targetConnections()->delete();
+                    $device->documents()->delete();
+                    $device->maintenances()->delete();
+                    $device->simulationScenarios()->delete();
+                    $device->delete();
+                });
+                $rack->delete();
+            });
+        });
+    }
+
     public function floor()
     {
         return $this->belongsTo(Floor::class);

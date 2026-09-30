@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
+import { refreshAlerts } from "../../stores/useNotificationStore";
 
 export default function BuildingPage() {
   const { user } = useAuthStore();
@@ -41,6 +42,7 @@ export default function BuildingPage() {
       toast.success(`Gedung ${deleting.name} berhasil dihapus.`);
       setDeleting(null); 
       load();
+      refreshAlerts();
     } catch (err) {
       toast.error(err.response?.data?.message ?? "Gagal menghapus gedung.");
     }

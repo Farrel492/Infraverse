@@ -10,6 +10,7 @@ import {
   CalendarDays, CheckSquare
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { refreshAlerts } from "../../stores/useNotificationStore";
 
 const STATUS_OPTIONS = [
   { value: "scheduled",   label: "Terjadwal",   dot: "bg-blue-400",    borderActive: "border-blue-500/80 bg-blue-500/10 shadow-[0_0_15px_rgba(59,130,246,0.2)]", textActive: "text-blue-300" },
@@ -115,6 +116,7 @@ export default function MaintenanceFormPage() {
         await maintenanceService.create(form);
         toast.success("Jadwal maintenance baru berhasil ditambahkan!");
       }
+      refreshAlerts();
       navigate("/maintenance");
     } catch (err) {
       setError(err.response?.data?.message ?? "Terjadi kesalahan saat menyimpan jadwal.");
