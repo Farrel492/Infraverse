@@ -134,31 +134,37 @@ export default function UserListPage() {
       </div>
 
       {/* Filter Bar */}
-      <div className="glass p-4 rounded-2xl border border-slate-700/60 flex items-center justify-between flex-wrap gap-4">
+      <div className="glass p-4 rounded-3xl border border-slate-700/60 flex items-center justify-between flex-wrap gap-4 shadow-xl">
         <div className="flex items-center gap-4 flex-wrap flex-1">
           {/* Search */}
-          <div className="relative min-w-[280px]">
-            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input type="text" placeholder="Cari nama, email, telepon..."
-              value={search} onChange={e => setSearch(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 text-xs font-semibold focus:outline-none focus:border-blue-500 transition-all" />
+          <div className="input-group min-w-[280px] flex-1">
+            <div className="input-icon-box text-blue-400">
+              <Search size={16} />
+            </div>
+            <input
+              type="text"
+              placeholder="Cari nama, email login, nomor telepon..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="input-control text-xs font-semibold"
+            />
           </div>
 
           {/* Role Filter */}
-          <div className="relative">
-            <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-              <ShieldCheck size={14} />
+          <div className="input-group min-w-[210px]">
+            <div className="input-icon-box text-indigo-400">
+              <ShieldCheck size={16} />
             </div>
-            <select value={filterRole} onChange={e => setFilterRole(e.target.value)}
-              className="pl-9 pr-8 py-3 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-300 text-xs font-bold focus:outline-none focus:border-blue-500 transition-all appearance-none cursor-pointer">
-              <option value="">Semua Peran</option>
+            <select
+              value={filterRole}
+              onChange={e => setFilterRole(e.target.value)}
+              className="select-control text-xs font-bold"
+            >
+              <option value="">Semua Peran Otorisasi</option>
               <option value="admin">Administrator</option>
-              <option value="teknisi">Teknisi IT</option>
-              <option value="viewer">Viewer</option>
+              <option value="teknisi">Teknisi IT & Jaringan</option>
+              <option value="viewer">Viewer (Hanya Lihat)</option>
             </select>
-            <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
-              <ChevronDown size={13} />
-            </div>
           </div>
         </div>
       </div>
@@ -267,11 +273,27 @@ export default function UserListPage() {
 
           <form onSubmit={handleResetPassword} className="space-y-5">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
-                Kata Sandi Baru <span className="text-amber-400">*</span>
-              </label>
-              <div className="flex rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900/90 focus-within:border-amber-500 focus-within:ring-2 focus-within:ring-amber-500/20 transition-all shadow-inner">
-                <div className="flex items-center justify-center px-4 bg-slate-800/60 border-r border-slate-700/60 text-amber-400 flex-shrink-0">
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-300">
+                  Kata Sandi Baru <span className="text-amber-400">*</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%";
+                    let gen = "";
+                    for (let i = 0; i < 12; i++) gen += chars.charAt(Math.floor(Math.random() * chars.length));
+                    setNewPassword(gen);
+                    setShowNewPass(true);
+                    toast.success("Kata sandi acak dibuat!");
+                  }}
+                  className="text-[11px] font-bold text-amber-400 hover:text-amber-300 underline cursor-pointer"
+                >
+                  ⚡ Acak Kata Sandi
+                </button>
+              </div>
+              <div className="input-group">
+                <div className="input-icon-box text-amber-400">
                   <Lock size={18} />
                 </div>
                 <input 
@@ -280,44 +302,50 @@ export default function UserListPage() {
                   value={newPassword}
                   onChange={e => setNewPassword(e.target.value)}
                   placeholder="Minimal 8 karakter"
-                  className="w-full px-4 py-3.5 text-sm font-semibold bg-transparent text-slate-100 outline-none placeholder:text-slate-500" 
+                  className="input-control font-mono" 
                 />
                 <button
                   type="button"
                   onClick={() => setShowNewPass(v => !v)}
-                  className="px-4 text-slate-400 hover:text-slate-200 transition-colors flex items-center justify-center flex-shrink-0"
+                  className="px-4 text-slate-400 hover:text-slate-200 transition-colors flex items-center justify-center flex-shrink-0 cursor-pointer"
                 >
                   {showNewPass ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
               {/* Password strength indicator */}
               {newPassword.length > 0 && (
-                <div className="mt-2 space-y-1">
-                  <div className="flex gap-1">
+                <div className="mt-2.5 space-y-1.5">
+                  <div className="flex gap-1.5">
                     {[1,2,3,4].map(i => (
-                      <div key={i} className={`h-1 flex-1 rounded-full transition-all ${
+                      <div key={i} className={`h-1.5 flex-1 rounded-full transition-all ${
                         newPassword.length >= i * 3
-                          ? (newPassword.length >= 12 ? "bg-emerald-400" : newPassword.length >= 8 ? "bg-amber-400" : "bg-red-400")
-                          : "bg-slate-700"
+                          ? (newPassword.length >= 12 ? "bg-emerald-400 shadow-[0_0_8px_#34d399]" : newPassword.length >= 8 ? "bg-amber-400" : "bg-red-400")
+                          : "bg-slate-800"
                       }`} />
                     ))}
                   </div>
-                  <p className={`text-[11px] font-semibold ${
+                  <p className={`text-[11px] font-bold ${
                     newPassword.length >= 12 ? "text-emerald-400" : newPassword.length >= 8 ? "text-amber-400" : "text-red-400"
                   }`}>
-                    {newPassword.length >= 12 ? "Kata sandi kuat" : newPassword.length >= 8 ? "Minimal terpenuhi" : `${8 - newPassword.length} karakter lagi dibutuhkan`}
+                    {newPassword.length >= 12 ? "✓ Kata sandi sangat kuat & aman" : newPassword.length >= 8 ? "✓ Minimal 8 karakter terpenuhi" : `${8 - newPassword.length} karakter lagi dibutuhkan`}
                   </p>
                 </div>
               )}
             </div>
 
-            <div className="flex gap-4 pt-1">
-              <button type="button" onClick={() => { setResetting(null); setNewPassword(""); setShowNewPass(false); }}
-                className="flex-1 py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold transition-all">
+            <div className="flex gap-4 pt-2">
+              <button 
+                type="button" 
+                onClick={() => { setResetting(null); setNewPassword(""); setShowNewPass(false); }}
+                className="flex-1 py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-bold transition-all cursor-pointer"
+              >
                 Batal
               </button>
-              <button type="submit" disabled={saving || newPassword.length < 8}
-                className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white text-sm font-bold shadow-[0_0_20px_rgba(245,158,11,0.35)] transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+              <button 
+                type="submit" 
+                disabled={saving || newPassword.length < 8}
+                className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-400 text-white text-sm font-black shadow-[0_0_20px_rgba(245,158,11,0.35)] transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+              >
                 <KeyRound size={16} />
                 {saving ? "Memperbarui..." : "Update Kata Sandi"}
               </button>

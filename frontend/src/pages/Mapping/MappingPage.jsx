@@ -398,56 +398,71 @@ export default function MappingPage() {
 
         <div className="flex items-center gap-3 flex-wrap">
           {/* Layout Mode Selector */}
-          <select 
-            value={layoutMode} 
-            onChange={e => setLayoutMode(e.target.value)}
-            className="px-4 py-3 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 text-xs font-bold focus:outline-none focus:border-blue-500 transition-all shadow-sm"
-          >
-            <option value="tier">📐 Tata Letak Hirarki NOC (Tiered)</option>
-            <option value="radial">🪐 Tata Letak Orbit 3D Melingkar (Radial)</option>
-          </select>
+          <div className="input-group min-w-[210px]">
+            <div className="input-icon-box text-blue-400">
+              <Layers size={16} />
+            </div>
+            <select 
+              value={layoutMode} 
+              onChange={e => setLayoutMode(e.target.value)}
+              className="select-control text-xs font-bold"
+            >
+              <option value="tier">Tata Letak Hirarki NOC (Tiered)</option>
+              <option value="radial">Tata Letak Orbit 3D (Radial)</option>
+            </select>
+          </div>
 
           {/* Filter Tipe Hardware */}
-          <select 
-            value={filterType} 
-            onChange={e => setFilterType(e.target.value)}
-            className="px-4 py-3 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-200 text-xs font-bold focus:outline-none focus:border-blue-500 transition-all shadow-sm"
-          >
-            <option value="">Semua Tipe Hardware</option>
-            <option value="router">Router (Cylinder Cyan)</option>
-            <option value="switch">Switch (Hub Indigo)</option>
-            <option value="server">Server (Tower Emerald)</option>
-            <option value="firewall">Firewall (Benteng Red)</option>
-            <option value="access_point">Access Point (Dish Amber)</option>
-            <option value="ups">UPS Battery (Pink)</option>
-          </select>
+          <div className="input-group min-w-[190px]">
+            <div className="input-icon-box text-indigo-400">
+              <Server size={16} />
+            </div>
+            <select 
+              value={filterType} 
+              onChange={e => setFilterType(e.target.value)}
+              className="select-control text-xs font-bold"
+            >
+              <option value="">Semua Tipe Hardware</option>
+              <option value="router">Router (Cyan)</option>
+              <option value="switch">Switch (Indigo)</option>
+              <option value="server">Server (Emerald)</option>
+              <option value="firewall">Firewall (Red)</option>
+              <option value="access_point">Access Point (Amber)</option>
+              <option value="ups">UPS Battery (Pink)</option>
+            </select>
+          </div>
 
           {/* Filter Status */}
-          <select 
-            value={filterStatus} 
-            onChange={e => setFilterStatus(e.target.value)}
-            className="px-4 py-3 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-200 text-xs font-bold focus:outline-none focus:border-blue-500 transition-all shadow-sm"
-          >
-            <option value="">Semua Status Operasional</option>
-            {["active","inactive","maintenance","down"].map(s =>
-              <option key={s} value={s} className="capitalize">{s}</option>
-            )}
-          </select>
+          <div className="input-group min-w-[180px]">
+            <div className="input-icon-box text-emerald-400">
+              <Activity size={16} />
+            </div>
+            <select 
+              value={filterStatus} 
+              onChange={e => setFilterStatus(e.target.value)}
+              className="select-control text-xs font-bold"
+            >
+              <option value="">Semua Status Operasional</option>
+              {["active","inactive","maintenance","down"].map(s =>
+                <option key={s} value={s} className="capitalize">{s.toUpperCase()}</option>
+              )}
+            </select>
+          </div>
 
           {simFailed && (
             <button onClick={() => setSimFailed(null)}
-              className="px-4 py-3 bg-red-500/20 border border-red-500/40 text-red-400 text-xs font-bold rounded-2xl animate-pulse backdrop-blur-md shadow-md">
+              className="px-4 py-3 bg-red-500/20 border border-red-500/40 text-red-400 text-xs font-bold rounded-2xl animate-pulse backdrop-blur-md shadow-md cursor-pointer">
               Matikan Simulasi Kegagalan
             </button>
           )}
 
-          {/* "+ Tambah Koneksi Baru" Button - Always visible and clickable */}
+          {/* "+ Tambah Koneksi Baru" Button */}
           <button 
             id="btn-add-connection"
             onClick={() => navigate("/mapping/create-connection")}
-            className="flex items-center gap-2 px-6 py-3.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 shadow-[0_0_25px_rgba(59,130,246,0.45)] hover:shadow-[0_0_35px_rgba(59,130,246,0.7)] text-white text-sm font-black rounded-2xl transition-all cursor-pointer"
+            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 shadow-[0_0_25px_rgba(59,130,246,0.45)] hover:shadow-[0_0_35px_rgba(59,130,246,0.7)] text-white text-xs font-black rounded-2xl transition-all cursor-pointer"
           >
-            <Plus size={18} />
+            <Plus size={16} />
             <span>Tambah Koneksi Baru</span>
           </button>
         </div>

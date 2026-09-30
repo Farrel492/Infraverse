@@ -6,7 +6,8 @@ import Breadcrumb from "../../components/shared/Breadcrumb.jsx";
 import { 
   Plus, Server, ArrowLeft, Layers, DoorOpen, HardDrive, 
   Cpu, ShieldAlert, Activity, ChevronRight, Zap, CheckCircle2, 
-  AlertTriangle, Wrench, Eye, Sparkles, ExternalLink, Settings2, X
+  AlertTriangle, Wrench, Eye, Sparkles, ExternalLink, Settings2, X,
+  Edit2, Trash2, Save
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
@@ -28,6 +29,18 @@ export default function BuildingDetailPage() {
   const [capValue, setCapValue]         = useState("");
   const [savingCap, setSavingCap]       = useState(false);
   const capInputRef = useRef(null);
+
+  // Floor Edit/Delete
+  const [editFloor, setEditFloor]       = useState(null); // {id, name, floor_number}
+  const [deleteFloor, setDeleteFloor]   = useState(null);
+  const [savingFloor, setSavingFloor]   = useState(false);
+  const [deletingFloor, setDeletingFloor] = useState(false);
+
+  // Room Edit/Delete
+  const [editRoom, setEditRoom]         = useState(null); // {id, name, type, floor_id}
+  const [deleteRoom, setDeleteRoom]     = useState(null);
+  const [savingRoom, setSavingRoom]     = useState(false);
+  const [deletingRoom, setDeletingRoom] = useState(false);
 
   const load = async () => {
     try {
@@ -118,6 +131,79 @@ export default function BuildingDetailPage() {
       toast.error(msg);
     } finally {
       setSavingCap(false);
+    }
+  };
+
+  // ===== FLOOR EDIT/DELETE HANDLERS =====
+  const handleSaveFloor = async () => {
+    if (!editFloor?.name?.trim()) { toast.error("Nama lantai wajib diisi."); return; }
+    setSavingFloor(true);
+    try {
+      await buildingService.updateFloor(id, editFloor.id, {
+        name: editFloor.name.trim(),
+        floor_number: parseInt(editFloor.floor_number) || editFloor.floor_number,
+        building_id: parseInt(id),
+      });
+      toast.success("Data lantai berhasil diperbarui!");
+      setEditFloor(null);
+      load();
+    } catch (err) {
+      toast.error(err.response?.data?.message ?? "Gagal memperbarui lantai.");
+    } finally {
+      setSavingFloor(false);
+    }
+  };
+
+  const handleDeleteFloor = async () => {
+    setDeletingFloor(true);
+    try {
+      await buildingService.deleteFloor(id, deleteFloor.id);
+      toast.success(`Lantai "${deleteFloor.name}" berhasil dihapus.`);
+      setDeleteFloor(null);
+      setActiveFloor(null);
+      setActiveRoom(null);
+      setActiveRack(null);
+      load();
+    } catch (err) {
+      toast.error(err.response?.data?.message ?? "Gagal menghapus lantai.");
+    } finally {
+      setDeletingFloor(false);
+    }
+  };
+
+  // ===== ROOM EDIT/DELETE HANDLERS =====
+  const handleSaveRoom = async () => {
+    if (!editRoom?.name?.trim()) { toast.error("Nama ruangan wajib diisi."); return; }
+    setSavingRoom(true);
+    try {
+      await buildingService.updateRoom(editRoom.floor_id, editRoom.id, {
+        name: editRoom.name.trim(),
+        type: editRoom.type,
+        floor_id: editRoom.floor_id,
+      });
+      toast.success("Data ruangan berhasil diperbarui!");
+      setEditRoom(null);
+      load();
+    } catch (err) {
+      toast.error(err.response?.data?.message ?? "Gagal memperbarui ruangan.");
+    } finally {
+      setSavingRoom(false);
+    }
+  };
+
+  const handleDeleteRoom = async () => {
+    setDeletingRoom(true);
+    try {
+      await buildingService.deleteRoom(deleteRoom.floor_id, deleteRoom.id);
+      toast.success(`Ruangan "${deleteRoom.name}" berhasil dihapus.`);
+      setDeleteRoom(null);
+      setActiveRoom(null);
+      setActiveRack(null);
+      load();
+    } catch (err) {
+      toast.error(err.response?.data?.message ?? "Gagal menghapus ruangan.");
+    } finally {
+      setDeletingRoom(false);
     }
   };
 
@@ -225,32 +311,59 @@ export default function BuildingDetailPage() {
               const isActive = activeFloor?.id === f.id;
               const roomCount = f.rooms?.length ?? 0;
               return (
-                <button
+                <div
                   key={f.id}
                   onClick={() => handleSelectFloor(f)}
-                  className={`w-full text-left p-4 rounded-2xl border transition-all flex items-center justify-between group shadow-md ${
+                  className={`w-full text-left p-4 rounded-2xl border transition-all shadow-md cursor-pointer ${
                     isActive
                       ? "bg-gradient-to-r from-blue-600 to-indigo-600 border-blue-400 text-white shadow-[0_4px_25px_rgba(59,130,246,0.35)] ring-1 ring-white/20"
                       : "glass border-slate-700/60 text-slate-300 hover:border-slate-600 hover:bg-slate-800/60"
                   }`}
                 >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className={`text-[10px] font-mono px-2 py-0.5 rounded-md font-bold ${
-                        isActive ? "bg-white/20 text-white" : "bg-slate-800 text-blue-400 border border-slate-700"
-                      }`}>
-                        Tingkat {f.floor_number}
-                      </span>
-                      <p className={`font-bold text-sm leading-tight ${isActive ? "text-white" : "text-slate-100 group-hover:text-blue-300"}`}>
-                        {f.name}
-                      </p>
-                    </div>
-                    <p className={`text-xs ${isActive ? "text-blue-100 opacity-90" : "text-slate-400"}`}>
-                      {roomCount} Ruangan Terdaftar
-                    </p>
+                  {/* Card Header: Level badge on left, Edit/Delete on right (no overlapping) */}
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <span className={`text-[10px] font-mono px-2.5 py-0.5 rounded-md font-bold ${
+                      isActive ? "bg-white/25 text-white" : "bg-slate-800 text-blue-400 border border-slate-700"
+                    }`}>
+                      Tingkat {f.floor_number}
+                    </span>
+                    {canWrite && (
+                      <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
+                        <button
+                          onClick={() => setEditFloor({ id: f.id, name: f.name, floor_number: f.floor_number })}
+                          className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${
+                            isActive ? "bg-white/20 hover:bg-white/30 text-white" : "bg-slate-800 hover:bg-blue-600 text-slate-300 hover:text-white border border-slate-700"
+                          }`}
+                          title="Edit Lantai"
+                        >
+                          <Edit2 size={12} />
+                        </button>
+                        <button
+                          onClick={() => setDeleteFloor(f)}
+                          className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${
+                            isActive ? "bg-red-500/40 hover:bg-red-500/70 text-white" : "bg-slate-800 hover:bg-red-600 text-slate-300 hover:text-white border border-slate-700"
+                          }`}
+                          title="Hapus Lantai"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                    )}
                   </div>
-                  <ChevronRight size={16} className={isActive ? "text-white" : "text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity"} />
-                </button>
+
+                  {/* Floor Name */}
+                  <p className={`font-extrabold text-sm leading-snug break-words ${isActive ? "text-white" : "text-slate-100"}`}>
+                    {f.name}
+                  </p>
+
+                  {/* Floor Footer */}
+                  <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-white/10 text-xs">
+                    <span className={isActive ? "text-blue-100 opacity-90" : "text-slate-400"}>
+                      {roomCount} Ruangan Terdaftar
+                    </span>
+                    <ChevronRight size={16} className={`flex-shrink-0 ${isActive ? "text-white" : "text-slate-500"}`} />
+                  </div>
+                </div>
               );
             })}
 
@@ -296,32 +409,59 @@ export default function BuildingDetailPage() {
               const isActive = activeRoom?.id === r.id;
               const rackCount = r.racks?.length ?? 0;
               return (
-                <button
+                <div
                   key={r.id}
                   onClick={() => handleSelectRoom(r)}
-                  className={`w-full text-left p-4 rounded-2xl border transition-all flex items-center justify-between group shadow-md ${
+                  className={`w-full text-left p-4 rounded-2xl border transition-all shadow-md cursor-pointer ${
                     isActive
                       ? "bg-gradient-to-r from-emerald-600 to-teal-600 border-emerald-400 text-white shadow-[0_4px_25px_rgba(16,185,129,0.35)] ring-1 ring-white/20"
                       : "glass border-slate-700/60 text-slate-300 hover:border-slate-600 hover:bg-slate-800/60"
                   }`}
                 >
-                  <div className="space-y-1.5">
-                    <p className={`font-bold text-sm leading-tight ${isActive ? "text-white" : "text-slate-100 group-hover:text-emerald-300"}`}>
-                      {r.name}
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <span className={`text-[10px] px-2 py-0.5 rounded-md font-semibold capitalize ${
-                        isActive ? "bg-white/20 text-white" : "bg-slate-800 text-emerald-300 border border-slate-700"
-                      }`}>
-                        {r.type.replace("_"," ")}
-                      </span>
-                      <span className={`text-xs ${isActive ? "text-emerald-100 opacity-90" : "text-slate-400 font-medium"}`}>
-                        {rackCount} Rack Server
-                      </span>
-                    </div>
+                  {/* Card Header: Type badge on left, Edit/Delete on right (no overlapping) */}
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <span className={`text-[10px] px-2.5 py-0.5 rounded-md font-semibold capitalize ${
+                      isActive ? "bg-white/20 text-white" : "bg-slate-800 text-emerald-300 border border-slate-700"
+                    }`}>
+                      {r.type.replace("_"," ")}
+                    </span>
+                    {canWrite && (
+                      <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
+                        <button
+                          onClick={() => setEditRoom({ id: r.id, name: r.name, type: r.type, floor_id: r.floor_id ?? activeFloor?.id })}
+                          className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${
+                            isActive ? "bg-white/20 hover:bg-white/30 text-white" : "bg-slate-800 hover:bg-emerald-600 text-slate-300 hover:text-white border border-slate-700"
+                          }`}
+                          title="Edit Ruangan"
+                        >
+                          <Edit2 size={12} />
+                        </button>
+                        <button
+                          onClick={() => setDeleteRoom({ ...r, floor_id: r.floor_id ?? activeFloor?.id })}
+                          className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${
+                            isActive ? "bg-red-500/40 hover:bg-red-500/70 text-white" : "bg-slate-800 hover:bg-red-600 text-slate-300 hover:text-white border border-slate-700"
+                          }`}
+                          title="Hapus Ruangan"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                    )}
                   </div>
-                  <ChevronRight size={16} className={isActive ? "text-white" : "text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity"} />
-                </button>
+
+                  {/* Room Name */}
+                  <p className={`font-extrabold text-sm leading-snug break-words ${isActive ? "text-white" : "text-slate-100"}`}>
+                    {r.name}
+                  </p>
+
+                  {/* Room Footer */}
+                  <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-white/10 text-xs">
+                    <span className={isActive ? "text-emerald-100 opacity-90" : "text-slate-400 font-medium"}>
+                      {rackCount} Rack Terpasang
+                    </span>
+                    <ChevronRight size={16} className={isActive ? "text-white" : "text-slate-500"} />
+                  </div>
+                </div>
               );
             })}
 
@@ -533,60 +673,179 @@ export default function BuildingDetailPage() {
 
       {/* ===== RACK CAPACITY MODAL ===== */}
       {showCapModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.75)" }}>
-          <div className="glass rounded-3xl border border-slate-700/70 shadow-2xl p-8 w-full max-w-md relative">
-            <div className="absolute top-0 left-0 right-0 h-1 rounded-t-3xl" style={{ background: "linear-gradient(90deg, #f59e0b, #d97706)" }} />
-            <button
-              onClick={() => setShowCapModal(false)}
-              className="absolute top-4 right-4 w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-all"
-            >
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md">
+          <div className="glass-strong rounded-3xl border border-slate-700/70 shadow-2xl p-8 w-full max-w-md relative my-auto">
+            <div className="absolute top-0 left-0 right-0 h-1.5 rounded-t-3xl bg-gradient-to-r from-amber-500 to-orange-500" />
+            <button onClick={() => setShowCapModal(false)} className="absolute top-5 right-5 w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-all cursor-pointer">
               <X size={16} />
             </button>
-
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-11 h-11 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                <Settings2 size={20} />
-              </div>
+              <div className="w-11 h-11 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400"><Settings2 size={20} /></div>
               <div>
                 <h3 className="text-base font-black text-slate-100">Ubah Kapasitas Slot Rak</h3>
                 <p className="text-xs text-slate-400 mt-0.5">Rack: <span className="text-amber-400 font-bold">{activeRack?.name}</span></p>
               </div>
             </div>
-
             <div className="space-y-5">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
-                  Kapasitas Baru (Unit U) <span className="text-amber-400">*</span>
+                <label className="form-label">
+                  <span>Kapasitas Baru (Unit U) <span className="text-amber-400">*</span></span>
                 </label>
-                <input
-                  ref={capInputRef}
-                  type="number"
-                  min={1}
-                  max={100}
-                  value={capValue}
-                  onChange={e => setCapValue(e.target.value)}
-                  className="w-full px-5 py-4 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 text-sm font-semibold focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
-                  placeholder="Contoh: 42"
-                />
-                <p className="text-xs text-slate-500 mt-2">
-                  Kapasitas saat ini: <span className="text-amber-400 font-bold">{activeRack?.total_u ?? 42}U</span>. 
-                  Tidak bisa dikurangi di bawah slot perangkat tertinggi yang terpasang.
-                </p>
+                <div className="input-group">
+                  <div className="input-icon-box text-amber-400">
+                    <Settings2 size={18} />
+                  </div>
+                  <input ref={capInputRef} type="number" min={1} max={100} value={capValue} onChange={e => setCapValue(e.target.value)}
+                    className="input-control font-mono font-bold" placeholder="Contoh: 42" />
+                </div>
+                <p className="text-xs text-slate-500 mt-2 font-medium">Kapasitas saat ini: <span className="text-amber-400 font-bold">{activeRack?.total_u ?? 42}U</span>. Tidak bisa dikurangi di bawah slot yang terpakai.</p>
               </div>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowCapModal(false)}
-                  className="flex-1 py-3 rounded-2xl text-sm font-bold text-slate-300 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-all"
-                >
-                  Batalkan
-                </button>
-                <button
-                  onClick={handleSaveCapacity}
-                  disabled={savingCap}
-                  className="flex-1 py-3 rounded-2xl text-sm font-black text-white bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 shadow-[0_0_20px_rgba(245,158,11,0.4)] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                >
+              <div className="flex gap-3 pt-2">
+                <button onClick={() => setShowCapModal(false)} className="flex-1 py-3.5 rounded-2xl text-sm font-bold text-slate-300 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-all cursor-pointer">Batalkan</button>
+                <button onClick={handleSaveCapacity} disabled={savingCap} className="flex-1 py-3.5 rounded-2xl text-sm font-black text-white bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 shadow-[0_0_20px_rgba(245,158,11,0.4)] transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer">
                   {savingCap ? "Menyimpan..." : <><CheckCircle2 size={16} /> Simpan Kapasitas</>}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== FLOOR EDIT MODAL ===== */}
+      {editFloor && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md">
+          <div className="glass-strong rounded-3xl border border-slate-700/70 shadow-2xl p-8 w-full max-w-md relative my-auto">
+            <div className="absolute top-0 left-0 right-0 h-1.5 rounded-t-3xl bg-gradient-to-r from-blue-500 to-indigo-500" />
+            <button onClick={() => setEditFloor(null)} className="absolute top-5 right-5 w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-all cursor-pointer">
+              <X size={16} />
+            </button>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-11 h-11 rounded-2xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400"><Layers size={20} /></div>
+              <div>
+                <h3 className="text-base font-black text-slate-100">Edit Lantai Fisik</h3>
+                <p className="text-xs text-slate-400 mt-0.5">Perbarui nama atau nomor tingkat lantai gedung</p>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="form-label"><span>Nama / Label Lantai <span className="text-blue-400">*</span></span></label>
+                <div className="input-group">
+                  <div className="input-icon-box text-blue-400">
+                    <Layers size={18} />
+                  </div>
+                  <input type="text" value={editFloor.name} onChange={e => setEditFloor(f => ({ ...f, name: e.target.value }))}
+                    className="input-control" />
+                </div>
+              </div>
+              <div>
+                <label className="form-label"><span>Nomor Tingkat Lantai</span></label>
+                <div className="input-group">
+                  <div className="input-icon-box text-indigo-400 font-mono font-bold">#</div>
+                  <input type="number" value={editFloor.floor_number} onChange={e => setEditFloor(f => ({ ...f, floor_number: e.target.value }))}
+                    className="input-control font-mono font-bold" />
+                </div>
+              </div>
+              <div className="flex gap-3 pt-3">
+                <button onClick={() => setEditFloor(null)} className="flex-1 py-3.5 rounded-2xl text-sm font-bold text-slate-300 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-all cursor-pointer">Batal</button>
+                <button onClick={handleSaveFloor} disabled={savingFloor} className="flex-1 py-3.5 rounded-2xl text-sm font-black text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-[0_0_20px_rgba(59,130,246,0.4)] transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer">
+                  <Save size={16} /> {savingFloor ? "Menyimpan..." : "Simpan Perubahan"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== FLOOR DELETE CONFIRM ===== */}
+      {deleteFloor && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.75)" }}>
+          <div className="glass rounded-3xl border border-red-500/40 shadow-2xl p-8 w-full max-w-sm">
+            <div className="text-center space-y-4">
+              <div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400 mx-auto">
+                <Trash2 size={24} />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-slate-100">Hapus Lantai?</h3>
+                <p className="text-sm text-slate-400 mt-1.5">Lantai <span className="text-red-400 font-bold">"{deleteFloor.name}"</span> beserta semua ruangan dan rack di dalamnya akan dihapus permanen.</p>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button onClick={() => setDeleteFloor(null)} className="flex-1 py-3 rounded-2xl text-sm font-bold text-slate-300 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-all cursor-pointer">Batal</button>
+                <button onClick={handleDeleteFloor} disabled={deletingFloor} className="flex-1 py-3 rounded-2xl text-sm font-black text-white bg-red-600 hover:bg-red-500 shadow-[0_0_20px_rgba(239,68,68,0.4)] transition-all disabled:opacity-50 cursor-pointer">
+                  {deletingFloor ? "Menghapus..." : "Ya, Hapus"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== ROOM EDIT MODAL ===== */}
+      {editRoom && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md">
+          <div className="glass-strong rounded-3xl border border-slate-700/70 shadow-2xl p-8 w-full max-w-md relative my-auto">
+            <div className="absolute top-0 left-0 right-0 h-1.5 rounded-t-3xl bg-gradient-to-r from-emerald-500 to-teal-500" />
+            <button onClick={() => setEditRoom(null)} className="absolute top-5 right-5 w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-all cursor-pointer">
+              <X size={16} />
+            </button>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-11 h-11 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400"><DoorOpen size={20} /></div>
+              <div>
+                <h3 className="text-base font-black text-slate-100">Edit Ruangan Spasial</h3>
+                <p className="text-xs text-slate-400 mt-0.5">Perbarui nama dan tipe peruntukan ruangan</p>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="form-label"><span>Nama Ruangan <span className="text-emerald-400">*</span></span></label>
+                <div className="input-group">
+                  <div className="input-icon-box text-emerald-400">
+                    <DoorOpen size={18} />
+                  </div>
+                  <input type="text" value={editRoom.name} onChange={e => setEditRoom(r => ({ ...r, name: e.target.value }))}
+                    className="input-control" />
+                </div>
+              </div>
+              <div>
+                <label className="form-label"><span>Tipe Peruntukan Ruangan</span></label>
+                <div className="input-group">
+                  <select value={editRoom.type} onChange={e => setEditRoom(r => ({ ...r, type: e.target.value }))}
+                    className="select-control">
+                    <option value="server_room">Ruang Server / Data Center NOC</option>
+                    <option value="office">Ruang Kantor Staf IT</option>
+                    <option value="classroom">Ruang Kelas / Pelatihan</option>
+                    <option value="lab">Laboratorium Jaringan & IoT</option>
+                    <option value="storage">Gudang Sparepart & Kabel</option>
+                    <option value="other">Fasilitas Lainnya</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex gap-3 pt-3">
+                <button onClick={() => setEditRoom(null)} className="flex-1 py-3.5 rounded-2xl text-sm font-bold text-slate-300 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-all cursor-pointer">Batal</button>
+                <button onClick={handleSaveRoom} disabled={savingRoom} className="flex-1 py-3.5 rounded-2xl text-sm font-black text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer">
+                  <Save size={16} /> {savingRoom ? "Menyimpan..." : "Simpan Perubahan"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== ROOM DELETE CONFIRM ===== */}
+      {deleteRoom && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.75)" }}>
+          <div className="glass rounded-3xl border border-red-500/40 shadow-2xl p-8 w-full max-w-sm">
+            <div className="text-center space-y-4">
+              <div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400 mx-auto">
+                <Trash2 size={24} />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-slate-100">Hapus Ruangan?</h3>
+                <p className="text-sm text-slate-400 mt-1.5">Ruangan <span className="text-red-400 font-bold">"{deleteRoom.name}"</span> beserta semua rack dan perangkat di dalamnya akan dihapus permanen.</p>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button onClick={() => setDeleteRoom(null)} className="flex-1 py-3 rounded-2xl text-sm font-bold text-slate-300 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-all">Batal</button>
+                <button onClick={handleDeleteRoom} disabled={deletingRoom} className="flex-1 py-3 rounded-2xl text-sm font-black text-white bg-red-600 hover:bg-red-500 shadow-[0_0_20px_rgba(239,68,68,0.4)] transition-all disabled:opacity-50">
+                  {deletingRoom ? "Menghapus..." : "Ya, Hapus"}
                 </button>
               </div>
             </div>

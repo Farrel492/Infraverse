@@ -4,7 +4,8 @@ import { userService } from "../../services/userService.js";
 import Breadcrumb from "../../components/shared/Breadcrumb.jsx";
 import {
   Users, ArrowLeft, Save, ShieldCheck, Mail, Lock, Phone,
-  Eye, EyeOff, UserCheck, Shield, AlertCircle, Sparkles, CheckCircle2
+  Eye, EyeOff, UserCheck, Shield, AlertCircle, Sparkles, CheckCircle2,
+  Wrench, Eye as EyeIcon, Compass, KeyRound
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -14,14 +15,20 @@ const ROLES = [
     label: "Administrator System",
     badge: "Full Privilege",
     color: "red",
+    icon: Shield,
+    borderActive: "border-red-500/80 bg-red-500/10 shadow-[0_0_20px_rgba(239,68,68,0.25)]",
+    textActive: "text-red-300",
     desc: "Hak akses penuh ke seluruh modul sistem: Manajemen Gedung, Aset, Pengguna, Topologi, dan Simulasi Disaster Recovery.",
-    capabilities: ["Kelola Gedung & Rack", "Manajemen User & Reset Password", "Konfigurasi Perangkat IT", "Uji Simulasi & Maintenance"],
+    capabilities: ["Kelola Gedung & Rack 42U", "Manajemen User & Reset Sandi", "Konfigurasi Perangkat IT", "Uji Simulasi & Maintenance"],
   },
   {
     value: "teknisi",
     label: "Teknisi IT & Network",
     badge: "Operasional NOC",
     color: "blue",
+    icon: Wrench,
+    borderActive: "border-blue-500/80 bg-blue-500/10 shadow-[0_0_20px_rgba(59,130,246,0.25)]",
+    textActive: "text-blue-300",
     desc: "Akses operasional lapangan: Inventarisasi hardware aset, update status inspeksi rack 42U, eksekusi maintenance, dan topologi.",
     capabilities: ["Input & Edit Aset IT", "Konfigurasi Rack & Port", "Update Status Pemeliharaan", "Monitoring Topologi Jaringan"],
   },
@@ -30,6 +37,9 @@ const ROLES = [
     label: "System Viewer",
     badge: "Read Only",
     color: "emerald",
+    icon: EyeIcon,
+    borderActive: "border-emerald-500/80 bg-emerald-500/10 shadow-[0_0_20px_rgba(16,185,129,0.25)]",
+    textActive: "text-emerald-300",
     desc: "Akses pemantauan (Read-Only) untuk pimpinan institusi dan auditor: Dashboard KPI, Digital Twin 3D, dan analitik energi.",
     capabilities: ["Monitoring Dashboard Real-Time", "Inspeksi Visual Digital Twin 3D", "Melihat Laporan Aset & Servis", "Tinjau Riwayat Simulasi"],
   },
@@ -127,6 +137,7 @@ export default function UserFormPage() {
   };
 
   const selectedRoleObj = ROLES.find(r => r.value === form.role) || ROLES[1];
+  const RoleIcon = selectedRoleObj.icon;
 
   if (loading) {
     return (
@@ -156,7 +167,7 @@ export default function UserFormPage() {
             <button 
               type="button"
               onClick={() => navigate("/users")}
-              className="w-12 h-12 rounded-2xl bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/80 flex items-center justify-center transition-all shadow-lg"
+              className="w-12 h-12 rounded-2xl bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/80 flex items-center justify-center transition-all shadow-lg hover:shadow-slate-800/50 cursor-pointer"
             >
               <ArrowLeft size={22} />
             </button>
@@ -166,13 +177,13 @@ export default function UserFormPage() {
                   {isEditing ? "Mode Edit Pengguna" : "Pendaftaran Akun Baru"}
                 </span>
                 <span className="text-slate-500 text-xs">•</span>
-                <span className="text-slate-400 text-xs font-semibold">Manajemen Identitas & Hak Akses</span>
+                <span className="text-slate-400 text-xs font-semibold">Manajemen Identitas & Hak Akses RBAC</span>
               </div>
               <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-200 to-white mt-2">
-                {isEditing ? `Edit Konfigurasi Akun: ${form.name}` : "Pendaftaran Pengguna & Hak Akses Baru"}
+                {isEditing ? `Edit Konfigurasi Akun: ${form.name}` : "Pendaftaran Pengguna & Otorisasi Sistem Baru"}
               </h1>
               <p className="text-slate-300 text-sm mt-1 max-w-2xl leading-relaxed">
-                Konfigurasikan kredensial, peran operasional (Admin, Teknisi IT, atau Viewer), serta otorisasi kontrol platform InfraVerse.
+                Konfigurasikan akun login personil, peran operasional (Administrator, Teknisi IT, atau Viewer), serta otorisasi modul platform InfraVerse.
               </p>
             </div>
           </div>
@@ -181,9 +192,9 @@ export default function UserFormPage() {
             <button
               type="button"
               onClick={() => navigate("/users")}
-              className="px-6 py-3 rounded-2xl bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 font-semibold text-sm transition-all"
+              className="px-6 py-3 rounded-2xl bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 font-semibold text-sm transition-all cursor-pointer"
             >
-              Batal & Kembali
+              Kembali ke Kelola User
             </button>
           </div>
         </div>
@@ -196,32 +207,34 @@ export default function UserFormPage() {
         </div>
       )}
 
-      {/* Main Grid: Form Inputs (7 cols) & Live User Card (5 cols) */}
+      {/* Main Grid: Form (7 cols) & Live ID Badge Preview (5 cols) */}
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
-        {/* Left Side: Form Controls (7 cols) */}
+        {/* Left Form Column (7 cols) */}
         <div className="lg:col-span-7 space-y-6">
           
           {/* Section 1: Identitas Akun */}
           <div className="glass p-8 rounded-3xl border border-slate-700/60 space-y-6 shadow-2xl">
-            <div className="flex items-center gap-4 border-b border-slate-800 pb-5">
+            <div className="flex items-center gap-3.5 border-b border-slate-800 pb-5">
               <div className="w-11 h-11 rounded-2xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 shadow-inner">
                 <Users size={22} />
               </div>
               <div>
                 <h2 className="text-base font-bold text-slate-100 uppercase tracking-wider">Informasi Kredensial Pengguna</h2>
-                <p className="text-xs text-slate-400 mt-0.5">Nama lengkap, email login, dan nomor telepon kontak</p>
+                <p className="text-xs text-slate-400 mt-0.5">Nama lengkap personil, alamat email login resmi, dan nomor kontak telepon</p>
               </div>
             </div>
 
-            <div className="space-y-5">
+            <div className="space-y-6">
+              {/* Full Name */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-2">
-                  Nama Lengkap Pengguna <span className="text-blue-400">*</span>
+                <label className="form-label">
+                  <span>Nama Lengkap Pengguna <span className="text-blue-400">*</span></span>
+                  <span className="text-[11px] font-semibold text-slate-500">Wajib Diisi</span>
                 </label>
-                <div className="flex rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900/90 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all shadow-inner">
-                  <div className="flex items-center justify-center px-4 bg-slate-800/60 border-r border-slate-700/60 text-blue-400">
-                    <UserCheck size={18} />
+                <div className="input-group">
+                  <div className="input-icon-box text-blue-400">
+                    <UserCheck size={20} />
                   </div>
                   <input
                     type="text"
@@ -229,18 +242,19 @@ export default function UserFormPage() {
                     value={form.name}
                     onChange={e => setForm({ ...form, name: e.target.value })}
                     placeholder="Contoh: Muhammad Farrel"
-                    className="w-full px-4 py-3.5 text-sm font-semibold bg-transparent text-slate-100 outline-none placeholder:text-slate-500"
+                    className="input-control"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {/* Email & Phone */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-2">
-                    Alamat Email Login <span className="text-blue-400">*</span>
+                  <label className="form-label">
+                    <span>Alamat Email Login <span className="text-blue-400">*</span></span>
                   </label>
-                  <div className="flex rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900/90 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all shadow-inner">
-                    <div className="flex items-center justify-center px-4 bg-slate-800/60 border-r border-slate-700/60 text-blue-400">
+                  <div className="input-group">
+                    <div className="input-icon-box text-blue-400">
                       <Mail size={18} />
                     </div>
                     <input
@@ -248,18 +262,18 @@ export default function UserFormPage() {
                       required
                       value={form.email}
                       onChange={e => setForm({ ...form, email: e.target.value })}
-                      placeholder="user@infraverse.ac.id"
-                      className="w-full px-4 py-3.5 text-sm font-semibold bg-transparent text-slate-100 outline-none placeholder:text-slate-500"
+                      placeholder="farrel@infraverse.id"
+                      className="input-control font-mono"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-2">
-                    Nomor Telepon / WhatsApp
+                  <label className="form-label">
+                    <span>Nomor Telepon / WhatsApp</span>
                   </label>
-                  <div className="flex rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900/90 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all shadow-inner">
-                    <div className="flex items-center justify-center px-4 bg-slate-800/60 border-r border-slate-700/60 text-blue-400">
+                  <div className="input-group">
+                    <div className="input-icon-box text-indigo-400">
                       <Phone size={18} />
                     </div>
                     <input
@@ -267,7 +281,7 @@ export default function UserFormPage() {
                       value={form.phone}
                       onChange={e => setForm({ ...form, phone: e.target.value })}
                       placeholder="0812-3456-7890"
-                      className="w-full px-4 py-3.5 text-sm font-semibold bg-transparent text-slate-100 outline-none placeholder:text-slate-500"
+                      className="input-control font-mono"
                     />
                   </div>
                 </div>
@@ -275,11 +289,15 @@ export default function UserFormPage() {
 
               {/* Password */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-2">
-                  Kata Sandi {isEditing ? "(Kosongkan jika tidak ingin mengubah)" : <span className="text-blue-400">*</span>}
+                <label className="form-label">
+                  <span>
+                    {isEditing ? "Ganti Kata Sandi (Kosongkan jika tidak diubah)" : "Kata Sandi Akun Baru "}
+                    {!isEditing && <span className="text-blue-400">*</span>}
+                  </span>
+                  <span className="text-[11px] font-semibold text-slate-500">Minimal 8 Karakter</span>
                 </label>
-                <div className="flex rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900/90 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all shadow-inner">
-                  <div className="flex items-center justify-center px-4 bg-slate-800/60 border-r border-slate-700/60 text-blue-400">
+                <div className="input-group">
+                  <div className="input-icon-box text-amber-400">
                     <Lock size={18} />
                   </div>
                   <input
@@ -287,13 +305,13 @@ export default function UserFormPage() {
                     required={!isEditing}
                     value={form.password}
                     onChange={e => setForm({ ...form, password: e.target.value })}
-                    placeholder={isEditing ? "Ketik sandi baru untuk mengganti..." : "Minimal 8 karakter rahasia"}
-                    className="w-full px-4 py-3.5 text-sm font-semibold bg-transparent text-slate-100 outline-none placeholder:text-slate-500"
+                    placeholder={isEditing ? "Biarkan kosong untuk mempertahankan kata sandi lama" : "Minimal 8 karakter aman"}
+                    className="input-control"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPass(v => !v)}
-                    className="px-4 text-slate-400 hover:text-slate-200 transition-colors flex items-center justify-center"
+                    className="px-4 text-slate-400 hover:text-slate-200 transition-colors flex items-center justify-center cursor-pointer"
                   >
                     {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -302,158 +320,174 @@ export default function UserFormPage() {
             </div>
           </div>
 
-          {/* Section 2: Role Selection Cards */}
+          {/* Section 2: Peran Otorisasi (RBAC) */}
           <div className="glass p-8 rounded-3xl border border-slate-700/60 space-y-6 shadow-2xl">
-            <div className="flex items-center gap-4 border-b border-slate-800 pb-5">
+            <div className="flex items-center gap-3.5 border-b border-slate-800 pb-5">
               <div className="w-11 h-11 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shadow-inner">
-                <Shield size={22} />
+                <ShieldCheck size={22} />
               </div>
               <div>
-                <h2 className="text-base font-bold text-slate-100 uppercase tracking-wider">Peran & Tingkat Hak Akses</h2>
-                <p className="text-xs text-slate-400 mt-0.5">Pilih wewenang pengguna dalam ekosistem InfraVerse</p>
+                <h2 className="text-base font-bold text-slate-100 uppercase tracking-wider">Peran Otorisasi & Hak Akses (RBAC)</h2>
+                <p className="text-xs text-slate-400 mt-0.5">Pilih tingkat otorisasi yang menentukan wewenang pengguna dalam platform</p>
               </div>
             </div>
 
-            <div className="space-y-3.5">
-              {ROLES.map((r) => {
+            <div className="space-y-4">
+              {ROLES.map(r => {
+                const IconComp = r.icon;
                 const isSelected = form.role === r.value;
                 return (
-                  <div
+                  <label
                     key={r.value}
                     onClick={() => setForm({ ...form, role: r.value })}
-                    className={`block p-5 rounded-2xl border cursor-pointer transition-all duration-200 ${
+                    className={`p-5 rounded-2xl border cursor-pointer transition-all flex flex-col gap-3 ${
                       isSelected
-                        ? "bg-blue-600/15 border-blue-500/80 shadow-[0_0_25px_rgba(59,130,246,0.25)] ring-1 ring-blue-400/30"
-                        : "bg-slate-900/70 border-slate-800/80 hover:border-slate-700 hover:bg-slate-850/80"
+                        ? r.borderActive
+                        : "bg-slate-900/70 border-slate-800 hover:border-slate-700 hover:bg-slate-800/40"
                     }`}
                   >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-start gap-3.5">
-                        {/* Custom Modern Radio Indicator */}
-                        <div className={`w-5 h-5 rounded-full flex items-center justify-center border transition-all mt-1 flex-shrink-0 ${
-                          isSelected ? 'border-blue-400 bg-blue-500 shadow-[0_0_12px_rgba(59,130,246,0.8)]' : 'border-slate-600 bg-slate-800/80'
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center border ${
+                          isSelected ? "bg-white/10 border-white/20 text-white" : "bg-slate-800 border-slate-700 text-slate-400"
                         }`}>
-                          {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
+                          <IconComp size={18} />
                         </div>
                         <div>
-                          <div className="flex items-center gap-2.5">
-                            <span className={`text-base font-black ${isSelected ? "text-white" : "text-slate-200"}`}>
+                          <div className="flex items-center gap-2">
+                            <span className={`text-sm font-bold ${isSelected ? r.textActive : "text-slate-200"}`}>
                               {r.label}
                             </span>
-                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                              r.value === 'admin' ? 'bg-red-500/20 text-red-400 border border-red-500/40' :
-                              r.value === 'teknisi' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40' :
-                              'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                            <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
+                              isSelected ? "bg-white/15 text-white" : "bg-slate-800 text-slate-400"
                             }`}>
                               {r.badge}
                             </span>
                           </div>
-                          <p className="text-xs text-slate-400 mt-1.5 leading-relaxed font-medium">{r.desc}</p>
                         </div>
                       </div>
+                      <input
+                        type="radio"
+                        name="user_role"
+                        value={r.value}
+                        checked={isSelected}
+                        onChange={() => setForm({ ...form, role: r.value })}
+                        className="accent-blue-500 w-4 h-4"
+                      />
                     </div>
-
-                    {/* Permissions tags */}
-                    <div className="flex flex-wrap gap-2 mt-3.5 pt-3 border-t border-slate-800/80 pl-8">
-                      {r.capabilities.map((c, i) => (
-                        <span key={i} className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border transition-colors flex items-center gap-1.5 ${
-                          isSelected ? 'bg-blue-500/15 border-blue-500/30 text-blue-200' : 'bg-slate-800/80 border-slate-700/60 text-slate-300'
-                        }`}>
-                          <CheckCircle2 size={11} className="flex-shrink-0" /> {c}
+                    <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                      {r.desc}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-800/60">
+                      {r.capabilities.map((cap, i) => (
+                        <span
+                          key={i}
+                          className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-900/90 border border-slate-800 text-slate-300 flex items-center gap-1"
+                        >
+                          <CheckCircle2 size={11} className={isSelected ? "text-emerald-400" : "text-slate-500"} />
+                          {cap}
                         </span>
                       ))}
                     </div>
-                  </div>
+                  </label>
                 );
               })}
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-slate-800">
-              <button 
-                type="button" 
+            <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-slate-800">
+              <button
+                type="button"
                 onClick={() => navigate("/users")}
-                className="w-full sm:w-1/3 py-4 rounded-2xl bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white text-sm font-semibold transition-all shadow-md"
+                className="w-full sm:w-1/3 py-4 rounded-2xl bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white text-sm font-bold transition-all shadow-md cursor-pointer"
               >
                 Batal
               </button>
-              <button 
-                type="submit" 
-                disabled={saving}
-                className="w-full sm:w-2/3 py-4 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white text-sm font-bold shadow-[0_0_30px_rgba(59,130,246,0.4)] transition-all disabled:opacity-50 flex items-center justify-center gap-2.5"
+              <button
+                type="submit"
+                disabled={saving || !form.name || !form.email}
+                className="w-full sm:w-2/3 py-4 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white text-sm font-black shadow-[0_0_30px_rgba(59,130,246,0.4)] hover:shadow-[0_0_40px_rgba(59,130,246,0.6)] transition-all disabled:opacity-50 flex items-center justify-center gap-2.5 cursor-pointer"
               >
-                <Save size={20} />
-                <span>{saving ? "Menyimpan Akun..." : isEditing ? "Simpan Perubahan Akun" : "Daftarkan Pengguna Baru"}</span>
+                <Save size={18} />
+                <span>{saving ? "Menyimpan Akun..." : (isEditing ? "Simpan Perubahan Akun" : "Daftarkan Pengguna Baru")}</span>
               </button>
             </div>
           </div>
 
         </div>
 
-        {/* Right Side: Live User Card Preview (5 cols) */}
+        {/* Right Live ID Badge Preview Column (5 cols) */}
         <div className="lg:col-span-5 space-y-6 lg:sticky lg:top-8">
           <div className="glass p-8 rounded-3xl border border-slate-700/60 space-y-6 shadow-2xl relative overflow-hidden">
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
               <div className="flex items-center gap-2.5">
                 <Sparkles size={18} className="text-amber-400" />
-                <h3 className="text-xs font-bold text-slate-100 uppercase tracking-wider">Live Preview Kartu Akun</h3>
+                <h3 className="text-xs font-bold text-slate-100 uppercase tracking-wider">Live Preview Kartu Identitas</h3>
               </div>
-              <span className="px-3 py-1 rounded-full text-[11px] font-extrabold uppercase bg-blue-500/10 text-blue-400 border border-blue-500/30">
-                {form.role.toUpperCase()}
+              <span className={`px-3 py-1 rounded-full text-[11px] font-extrabold uppercase border ${selectedRoleObj.textActive} bg-slate-900 border-slate-700`}>
+                {selectedRoleObj.badge}
               </span>
             </div>
 
-            {/* Identity Card */}
-            <div className="glass rounded-3xl p-7 border border-blue-500/40 bg-gradient-to-b from-slate-900/90 to-slate-950/95 space-y-6 shadow-2xl relative overflow-hidden">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center text-2xl font-black text-white shadow-lg border border-white/20 flex-shrink-0">
+            {/* Cyber Access ID Card */}
+            <div className="glass rounded-3xl p-7 border border-blue-500/40 bg-gradient-to-b from-slate-900/90 to-slate-950/95 space-y-5 shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
+
+              <div className="flex items-start justify-between relative z-10">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 border border-blue-400/40 flex items-center justify-center text-white text-xl font-black shadow-lg">
                   {form.name ? form.name.charAt(0).toUpperCase() : "U"}
                 </div>
-                <div className="min-w-0">
-                  <h4 className="text-lg font-black text-slate-100 truncate">
-                    {form.name || "Nama Pengguna"}
-                  </h4>
-                  <p className="text-xs text-blue-400 font-mono truncate mt-0.5">
-                    {form.email || "email@infraverse.ac.id"}
-                  </p>
-                  <span className={`inline-block mt-2 px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                    form.role === 'admin' ? 'bg-red-500/20 text-red-400 border border-red-500/40' :
-                    form.role === 'teknisi' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40' :
-                    'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
-                  }`}>
+                <div className="text-right">
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase border ${selectedRoleObj.textActive} bg-slate-900 border-slate-700`}>
                     {selectedRoleObj.label}
                   </span>
+                  <p className="text-[11px] text-slate-400 mt-1 font-mono">InfraVerse ID</p>
                 </div>
               </div>
 
-              <div className="space-y-3 pt-4 border-t border-slate-800 text-xs">
-                <div className="flex justify-between py-1 border-b border-slate-800/60">
-                  <span className="text-slate-400">Kontak Telepon:</span>
-                  <span className="font-semibold text-slate-200">{form.phone || "-"}</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-slate-800/60">
-                  <span className="text-slate-400">Status Akun:</span>
-                  <span className="font-bold text-emerald-400 flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> Aktif
-                  </span>
-                </div>
-                <div className="flex justify-between py-1">
-                  <span className="text-slate-400">Tingkat Hak Akses:</span>
-                  <span className="font-semibold text-indigo-300">{selectedRoleObj.badge}</span>
-                </div>
+              <div className="relative z-10">
+                <h4 className="font-extrabold text-slate-100 text-xl leading-snug">
+                  {form.name || "Nama Lengkap Personil"}
+                </h4>
+                <p className="text-xs text-blue-400 font-mono mt-1 flex items-center gap-1.5">
+                  <Mail size={13} /> {form.email || "email.personil@infraverse.id"}
+                </p>
+                {form.phone && (
+                  <p className="text-xs text-slate-400 font-mono mt-0.5 flex items-center gap-1.5">
+                    <Phone size={13} /> {form.phone}
+                  </p>
+                )}
               </div>
 
-              <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2">
-                <span className="text-[11px] font-bold text-slate-300 block uppercase tracking-wider">Cakupan Akses:</span>
-                <ul className="text-xs text-slate-400 space-y-1">
-                  {selectedRoleObj.capabilities.map((c, i) => (
-                    <li key={i} className="flex items-center gap-2">
+              {/* Granted Capabilities Summary */}
+              <div className="bg-slate-950/90 p-4 rounded-2xl border border-slate-800 space-y-2 relative z-10 shadow-inner">
+                <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Hak Akses Modul:</p>
+                <div className="space-y-1.5 text-xs text-slate-300">
+                  {selectedRoleObj.capabilities.map((cap, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
                       <CheckCircle2 size={13} className="text-emerald-400 flex-shrink-0" />
-                      <span>{c}</span>
-                    </li>
+                      <span>{cap}</span>
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
+
+              <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-xs relative z-10">
+                <span className="text-emerald-400 font-bold flex items-center gap-1.5">
+                  <CheckCircle2 size={14} /> Terverifikasi Sistem
+                </span>
+                <span className="text-blue-400 font-bold">RBAC Otorisasi</span>
+              </div>
+            </div>
+
+            {/* Guidance Callout */}
+            <div className="p-5 rounded-2xl bg-blue-500/10 border border-blue-500/30 text-xs text-blue-200 space-y-2 leading-relaxed shadow-lg">
+              <p className="font-bold flex items-center gap-1.5 text-blue-300">
+                <Compass size={16} /> Keamanan Kredensial:
+              </p>
+              <p className="text-slate-300">
+                Pengguna dengan role <strong>Administrator</strong> memiliki kuasa penuh mereset sandi dan mengelola arsitektur gedung. Pastikan penugasan kredensial sesuai dengan kebijakan keamanan institusi.
+              </p>
             </div>
           </div>
         </div>

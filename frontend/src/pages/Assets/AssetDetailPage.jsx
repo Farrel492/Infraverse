@@ -11,7 +11,7 @@ import Modal from "../../components/shared/Modal.jsx";
 import {
   Router, Shield, Network, Server, Wifi, Battery, Package,
   ArrowLeft, Edit2, FileText, Plus, ExternalLink, CheckCircle,
-  AlertTriangle, XCircle, Clock, ShieldCheck, Activity, MapPin, Cpu, HardDrive
+  AlertTriangle, XCircle, Clock, ShieldCheck, Activity, MapPin, Cpu, HardDrive, Upload
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -420,28 +420,60 @@ export default function AssetDetailPage() {
 
       {/* Document Upload Modal */}
       {showDocModal && (
-        <Modal title="Upload Dokumen Perangkat" subtitle={`Lampirkan berkas untuk ${device.name}`} onClose={() => setShowDocModal(false)}>
+        <Modal title="Upload Dokumen Perangkat" subtitle={`Lampirkan berkas datasheet/manual untuk ${device.name}`} onClose={() => setShowDocModal(false)}>
           <form onSubmit={handleUploadDoc} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">Nama / Judul Dokumen</label>
-              <input value={docName} onChange={e => setDocName(e.target.value)}
-                placeholder="Contoh: Manual Cisco Catalyst 9500 PDF"
-                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700/70 rounded-xl text-slate-100 text-xs focus:outline-none focus:border-blue-500 transition-all" />
+              <label className="form-label">
+                <span>Nama / Judul Dokumen <span className="text-blue-400">*</span></span>
+              </label>
+              <div className="input-group">
+                <div className="input-icon-box text-blue-400">
+                  <FileText size={18} />
+                </div>
+                <input
+                  type="text"
+                  required
+                  value={docName}
+                  onChange={e => setDocName(e.target.value)}
+                  placeholder="Contoh: Manual Cisco Catalyst 9500 Datasheet PDF"
+                  className="input-control text-xs"
+                />
+              </div>
             </div>
+
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">File Berkas (PDF / Image)</label>
-              <input type="file" required accept=".pdf,.jpg,.jpeg,.png,.webp"
-                onChange={e => setDocFile(e.target.files[0])}
-                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700/70 rounded-xl text-slate-300 text-xs focus:outline-none file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-blue-600 file:text-white file:text-xs cursor-pointer" />
+              <label className="form-label">
+                <span>File Berkas (PDF / Image) <span className="text-blue-400">*</span></span>
+              </label>
+              <div className="input-group">
+                <div className="input-icon-box text-indigo-400">
+                  <Upload size={18} />
+                </div>
+                <input
+                  type="file"
+                  required
+                  accept=".pdf,.jpg,.jpeg,.png,.webp"
+                  onChange={e => setDocFile(e.target.files[0])}
+                  className="input-control text-xs file:mr-3 file:py-1 file:px-3 file:rounded-xl file:border-0 file:bg-blue-600 file:text-white file:text-xs file:font-bold cursor-pointer"
+                />
+              </div>
             </div>
-            <div className="flex gap-3 pt-2">
-              <button type="button" onClick={() => setShowDocModal(false)}
-                className="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-all">
+
+            <div className="flex gap-3 pt-3">
+              <button
+                type="button"
+                onClick={() => setShowDocModal(false)}
+                className="flex-1 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold border border-slate-700 transition-all cursor-pointer"
+              >
                 Batal
               </button>
-              <button type="submit" disabled={uploading}
-                className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold shadow-[0_0_15px_rgba(59,130,246,0.3)] transition-all disabled:opacity-50">
-                {uploading ? "Mengupload..." : "Upload Dokumen"}
+              <button
+                type="submit"
+                disabled={uploading}
+                className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white text-xs font-black shadow-[0_0_20px_rgba(59,130,246,0.35)] transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Upload size={15} />
+                {uploading ? "Mengupload..." : "Simpan Dokumen"}
               </button>
             </div>
           </form>

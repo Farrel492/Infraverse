@@ -193,14 +193,14 @@ export default function MainLayout() {
 
                     {!collapsed && badgeCount > 0 && (
                       <span
-                        className="text-white text-[11px] font-black rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 shadow-lg"
+                        className="text-white text-[11px] font-black rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 shadow-lg ml-auto"
                         style={{ background: "linear-gradient(135deg, #ef4444, #dc2626)", boxShadow: "0 2px 10px rgba(239,68,68,0.5)" }}
                       >
                         {badgeCount > 9 ? "9+" : badgeCount}
                       </span>
                     )}
                     {!collapsed && badgeCount === 0 && !isActive && (
-                      <ChevronRight size={14} className="text-slate-700 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                      <ChevronRight size={14} className="text-slate-700 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ml-auto" />
                     )}
                   </>
                 )}

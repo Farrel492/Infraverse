@@ -353,40 +353,56 @@ export default function ProfilePage() {
 
               <form onSubmit={handleUpdateProfile} className="space-y-5">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">Nama Lengkap <span className="text-blue-400">*</span></label>
-                  <input
-                    required
-                    value={profileForm.name}
-                    onChange={e => setProfileForm({ ...profileForm, name: e.target.value })}
-                    placeholder="Masukkan nama lengkap"
-                    className="w-full px-5 py-4 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 text-sm font-semibold focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Alamat Email Login</label>
-                  <div className="relative">
-                    <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+                  <label className="form-label">
+                    <span>Nama Lengkap Akun <span className="text-blue-400">*</span></span>
+                  </label>
+                  <div className="input-group">
+                    <div className="input-icon-box text-blue-400">
+                      <User size={18} />
+                    </div>
                     <input
-                      value={user?.email}
-                      disabled
-                      className="w-full pl-11 pr-4 py-4 bg-slate-900/40 border border-slate-800 rounded-2xl text-slate-500 text-sm font-semibold cursor-not-allowed"
+                      type="text"
+                      required
+                      value={profileForm.name}
+                      onChange={e => setProfileForm({ ...profileForm, name: e.target.value })}
+                      placeholder="Masukkan nama lengkap Anda"
+                      className="input-control text-sm font-semibold"
                     />
                   </div>
-                  <p className="text-[11px] text-slate-500 mt-1.5 font-medium">Email digunakan sebagai identifikasi autentikasi dan tidak bisa diubah.</p>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">Nomor Telepon / WhatsApp</label>
-                  <div className="flex rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900/90 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
-                    <div className="flex items-center px-4 bg-slate-800/60 border-r border-slate-700/60 text-slate-400 text-sm font-bold flex-shrink-0">
+                  <label className="form-label">
+                    <span>Alamat Email Login (Terkunci)</span>
+                  </label>
+                  <div className="input-group opacity-70">
+                    <div className="input-icon-box text-slate-500">
+                      <Mail size={18} />
+                    </div>
+                    <input
+                      type="email"
+                      value={user?.email ?? ""}
+                      disabled
+                      className="input-control text-sm font-semibold text-slate-400 cursor-not-allowed"
+                    />
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-1.5 font-medium">Email digunakan sebagai identitas login utama dan dilindungi oleh sistem.</p>
+                </div>
+
+                <div>
+                  <label className="form-label">
+                    <span>Nomor Telepon / WhatsApp</span>
+                  </label>
+                  <div className="input-group">
+                    <div className="input-icon-box text-emerald-400 font-bold text-xs">
                       +62
                     </div>
                     <input
+                      type="text"
                       value={profileForm.phone}
                       onChange={e => setProfileForm({ ...profileForm, phone: e.target.value })}
                       placeholder="812-3456-7890"
-                      className="w-full px-4 py-4 bg-transparent text-slate-100 text-sm font-semibold outline-none placeholder:text-slate-600"
+                      className="input-control text-sm font-semibold"
                     />
                   </div>
                 </div>
@@ -394,9 +410,10 @@ export default function ProfilePage() {
                 <button
                   type="submit"
                   disabled={savingProfile}
-                  className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-sm font-bold rounded-2xl shadow-[0_0_25px_rgba(59,130,246,0.35)] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full py-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white text-sm font-bold rounded-2xl shadow-[0_0_25px_rgba(59,130,246,0.35)] transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  {savingProfile ? "Menyimpan..." : (<><Edit3 size={16} /> Simpan Perubahan Profil</>)}
+                  <Edit3 size={16} />
+                  <span>{savingProfile ? "Menyimpan Perubahan..." : "Simpan Perubahan Profil"}</span>
                 </button>
               </form>
             </div>
@@ -461,88 +478,105 @@ export default function ProfilePage() {
 
               <form onSubmit={handleChangePassword} className="space-y-5">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">Kata Sandi Saat Ini <span className="text-blue-400">*</span></label>
-                  <div className="flex rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900/90 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
-                    <div className="flex items-center px-4 bg-slate-800/60 border-r border-slate-700/60 text-slate-400 flex-shrink-0">
-                      <Lock size={16} />
+                  <label className="form-label">
+                    <span>Kata Sandi Saat Ini <span className="text-blue-400">*</span></span>
+                  </label>
+                  <div className="input-group">
+                    <div className="input-icon-box text-slate-400">
+                      <Lock size={18} />
                     </div>
                     <input
                       type={showCurrentPass ? "text" : "password"}
                       required
                       value={passForm.current_password}
                       onChange={e => setPassForm({ ...passForm, current_password: e.target.value })}
-                      placeholder="Masukkan password lama"
-                      className="w-full px-4 py-4 bg-transparent text-slate-100 text-sm font-semibold outline-none placeholder:text-slate-600"
+                      placeholder="Masukkan kata sandi lama Anda"
+                      className="input-control text-sm font-semibold"
                     />
-                    <button type="button" onClick={() => setShowCurrentPass(v => !v)} className="px-4 text-slate-400 hover:text-slate-200">
-                      {showCurrentPass ? <Eye size={16} /> : <Lock size={16} />}
+                    <button
+                      type="button"
+                      onClick={() => setShowCurrentPass(v => !v)}
+                      className="px-4 text-slate-400 hover:text-slate-200 cursor-pointer transition-colors"
+                      title={showCurrentPass ? "Sembunyikan" : "Tampilkan"}
+                    >
+                      {showCurrentPass ? <Eye size={17} /> : <Lock size={17} />}
                     </button>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">Kata Sandi Baru <span className="text-blue-400">*</span></label>
-                  <div className="flex rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900/90 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
-                    <div className="flex items-center px-4 bg-slate-800/60 border-r border-slate-700/60 text-slate-400 flex-shrink-0">
-                      <Lock size={16} />
+                  <label className="form-label">
+                    <span>Kata Sandi Baru <span className="text-blue-400">*</span></span>
+                  </label>
+                  <div className="input-group">
+                    <div className="input-icon-box text-indigo-400">
+                      <KeyRound size={18} />
                     </div>
                     <input
                       type={showNewPass ? "text" : "password"}
                       required
                       value={passForm.password}
                       onChange={e => setPassForm({ ...passForm, password: e.target.value })}
-                      placeholder="Minimal 8 karakter"
-                      className="w-full px-4 py-4 bg-transparent text-slate-100 text-sm font-semibold outline-none placeholder:text-slate-600"
+                      placeholder="Minimal 8 karakter kombinasi"
+                      className="input-control text-sm font-semibold"
                     />
-                    <button type="button" onClick={() => setShowNewPass(v => !v)} className="px-4 text-slate-400 hover:text-slate-200">
-                      {showNewPass ? <Eye size={16} /> : <Lock size={16} />}
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPass(v => !v)}
+                      className="px-4 text-slate-400 hover:text-slate-200 cursor-pointer transition-colors"
+                      title={showNewPass ? "Sembunyikan" : "Tampilkan"}
+                    >
+                      {showNewPass ? <Eye size={17} /> : <Lock size={17} />}
                     </button>
                   </div>
                   {/* Password strength bar */}
                   {passForm.password && (
-                    <div className="mt-2">
-                      <div className="h-1 rounded-full bg-slate-800 overflow-hidden">
+                    <div className="mt-2.5">
+                      <div className="h-1.5 rounded-full bg-slate-800 overflow-hidden">
                         <div
                           className={`h-full rounded-full transition-all duration-500 ${
-                            passForm.password.length < 6 ? "w-1/4 bg-red-500" :
-                            passForm.password.length < 10 ? "w-2/4 bg-amber-500" :
-                            "w-full bg-emerald-500"
+                            passForm.password.length < 6 ? "w-1/4 bg-red-500 shadow-[0_0_8px_#ef4444]" :
+                            passForm.password.length < 10 ? "w-2/4 bg-amber-500 shadow-[0_0_8px_#f59e0b]" :
+                            "w-full bg-emerald-500 shadow-[0_0_8px_#10b981]"
                           }`}
                         />
                       </div>
-                      <p className={`text-[10px] font-bold mt-1 ${
+                      <p className={`text-[11px] font-bold mt-1.5 flex items-center gap-1.5 ${
                         passForm.password.length < 6 ? "text-red-400" :
                         passForm.password.length < 10 ? "text-amber-400" : "text-emerald-400"
                       }`}>
-                        {passForm.password.length < 6 ? "Lemah" : passForm.password.length < 10 ? "Sedang" : "Kuat"}
+                        <span>Tingkat Keamanan:</span>
+                        <span className="uppercase">{passForm.password.length < 6 ? "Lemah" : passForm.password.length < 10 ? "Sedang" : "Kuat & Aman"}</span>
                       </p>
                     </div>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">Konfirmasi Kata Sandi <span className="text-blue-400">*</span></label>
-                  <div className={`flex rounded-2xl overflow-hidden border bg-slate-900/90 focus-within:ring-2 transition-all ${
+                  <label className="form-label">
+                    <span>Konfirmasi Kata Sandi Baru <span className="text-blue-400">*</span></span>
+                  </label>
+                  <div className={`input-group ${
                     passForm.password_confirmation && passForm.password !== passForm.password_confirmation
-                      ? "border-red-500/60 focus-within:ring-red-500/20"
-                      : "border-slate-700/80 focus-within:border-indigo-500 focus-within:ring-indigo-500/20"
+                      ? "ring-1 ring-red-500/50"
+                      : ""
                   }`}>
-                    <div className="flex items-center px-4 bg-slate-800/60 border-r border-slate-700/60 text-slate-400 flex-shrink-0">
-                      <Lock size={16} />
+                    <div className="input-icon-box text-slate-400">
+                      <Lock size={18} />
                     </div>
                     <input
                       type="password"
                       required
                       value={passForm.password_confirmation}
                       onChange={e => setPassForm({ ...passForm, password_confirmation: e.target.value })}
-                      placeholder="Ulangi password baru"
-                      className="w-full px-4 py-4 bg-transparent text-slate-100 text-sm font-semibold outline-none placeholder:text-slate-600"
+                      placeholder="Ulangi kata sandi baru untuk verifikasi"
+                      className="input-control text-sm font-semibold"
                     />
                     {passForm.password_confirmation && (
                       <div className="flex items-center px-4">
                         {passForm.password === passForm.password_confirmation
-                          ? <CheckCircle2 size={16} className="text-emerald-400" />
-                          : <AlertCircle size={16} className="text-red-400" />}
+                          ? <CheckCircle2 size={17} className="text-emerald-400" />
+                          : <AlertCircle size={17} className="text-red-400" />}
                       </div>
                     )}
                   </div>
@@ -551,9 +585,10 @@ export default function ProfilePage() {
                 <button
                   type="submit"
                   disabled={savingPass}
-                  className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-sm font-bold rounded-2xl shadow-[0_0_25px_rgba(99,102,241,0.35)] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full py-4 bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700 hover:from-indigo-500 hover:to-blue-500 text-white text-sm font-bold rounded-2xl shadow-[0_0_25px_rgba(99,102,241,0.35)] transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  {savingPass ? "Mengubah Kata Sandi..." : (<><KeyRound size={16} /> Perbarui Kata Sandi</>)}
+                  <KeyRound size={16} />
+                  <span>{savingPass ? "Mengubah Kata Sandi..." : "Perbarui Kata Sandi Akun"}</span>
                 </button>
               </form>
             </div>

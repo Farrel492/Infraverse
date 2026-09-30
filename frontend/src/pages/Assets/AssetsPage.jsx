@@ -12,7 +12,8 @@ import EmptyState from "../../components/shared/EmptyState.jsx";
 import {
   Router, Shield, Network, Server, Wifi,
   Battery, Package, Search, Plus, Edit2, Trash2,
-  LayoutGrid, List, HardDrive, MapPin, Building2, ChevronRight, ShieldCheck
+  LayoutGrid, List, HardDrive, MapPin, Building2, ChevronRight, ShieldCheck,
+  RotateCcw, X, Filter
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -129,53 +130,136 @@ export default function AssetsPage() {
         </button>
       </div>
 
-      {/* Filter Bar + Grid/Table Toggle */}
-      <div className="glass p-3 rounded-2xl border border-slate-700/60 flex items-center justify-between flex-wrap gap-3">
+      {/* Quick Status Filter Tabs / Chips for Laypeople */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1">
+        {[
+          { key: "", label: "Semua Status", icon: "🌐" },
+          { key: "active", label: "Aktif Normal", icon: "🟢" },
+          { key: "down", label: "Terganggu / Down", icon: "🔴" },
+          { key: "maintenance", label: "Dalam Maintenance", icon: "🟡" },
+          { key: "inactive", label: "Nonaktif", icon: "⚪" },
+        ].map(chip => {
+          const isSelected = filterStatus === chip.key;
+          return (
+            <button
+              key={chip.key}
+              onClick={() => setFilterStatus(chip.key)}
+              className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-2 border shadow-sm ${
+                isSelected
+                  ? "bg-gradient-to-r from-blue-600 to-indigo-600 border-blue-400 text-white shadow-[0_0_20px_rgba(59,130,246,0.35)] ring-1 ring-white/20"
+                  : "glass border-slate-700/60 text-slate-400 hover:text-slate-200 hover:border-slate-600 hover:bg-slate-800/60"
+              }`}
+            >
+              <span>{chip.icon}</span>
+              <span>{chip.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Advanced Filter Bar + Grid/Table Toggle */}
+      <div className="glass p-4 rounded-3xl border border-slate-700/60 flex items-center justify-between flex-wrap gap-4 shadow-xl">
         <div className="flex items-center gap-3 flex-wrap flex-1">
-          {/* Search */}
-          <div className="relative min-w-[240px]">
-            <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input type="text" placeholder="Cari nama, IP, vendor, serial..."
-              value={search} onChange={e => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3.5 py-2 bg-slate-900/80 border border-slate-700/70 rounded-xl text-slate-100 text-xs focus:outline-none focus:border-blue-500 transition-all" />
+          {/* Search with input-group (Zero Overlap Guaranteed) */}
+          <div className="input-group min-w-[260px] flex-1">
+            <div className="input-icon-box text-blue-400">
+              <Search size={16} />
+            </div>
+            <input
+              type="text"
+              placeholder="Cari nama, IP, vendor, model, serial..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="input-control text-xs"
+            />
+            {search && (
+              <button
+                onClick={() => setSearch("")}
+                className="px-3 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
+                title="Hapus pencarian"
+              >
+                <X size={14} />
+              </button>
+            )}
           </div>
 
           {/* Type Filter */}
-          <select value={filterType} onChange={e => setFilterType(e.target.value)}
-            className="px-3.5 py-2 bg-slate-900/80 border border-slate-700/70 rounded-xl text-slate-300 text-xs focus:outline-none focus:border-blue-500 transition-all">
-            <option value="">Semua Tipe Hardware</option>
-            {DEVICE_TYPES.map(t => <option key={t} value={t}>{t.replace("_"," ")}</option>)}
-          </select>
-
-          {/* Status Filter */}
-          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
-            className="px-3.5 py-2 bg-slate-900/80 border border-slate-700/70 rounded-xl text-slate-300 text-xs focus:outline-none focus:border-blue-500 transition-all">
-            <option value="">Semua Status</option>
-            {DEVICE_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
+          <div className="input-group min-w-[190px]">
+            <div className="input-icon-box text-indigo-400">
+              <Server size={15} />
+            </div>
+            <select
+              value={filterType}
+              onChange={e => setFilterType(e.target.value)}
+              className="select-control text-xs font-semibold"
+            >
+              <option value="">Semua Tipe Hardware</option>
+              {DEVICE_TYPES.map(t => (
+                <option key={t} value={t}>{t.replace("_"," ").toUpperCase()}</option>
+              ))}
+            </select>
+          </div>
 
           {/* Building Filter */}
-          <select value={filterBuilding} onChange={e => setFilterBuilding(e.target.value)}
-            className="px-3.5 py-2 bg-slate-900/80 border border-slate-700/70 rounded-xl text-slate-300 text-xs focus:outline-none focus:border-indigo-500 transition-all">
-            <option value="">Semua Gedung</option>
-            {buildings.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-          </select>
+          <div className="input-group min-w-[180px]">
+            <div className="input-icon-box text-emerald-400">
+              <Building2 size={15} />
+            </div>
+            <select
+              value={filterBuilding}
+              onChange={e => setFilterBuilding(e.target.value)}
+              className="select-control text-xs font-semibold"
+            >
+              <option value="">Semua Fasilitas Gedung</option>
+              {buildings.map(b => (
+                <option key={b.id} value={b.id}>{b.name}</option>
+              ))}
+            </select>
+          </div>
 
           {/* Rack Filter (only shows when building is selected) */}
           {filterBuilding && (
-            <select value={filterRack} onChange={e => setFilterRack(e.target.value)}
-              className="px-3.5 py-2 bg-slate-900/80 border border-indigo-500/50 rounded-xl text-slate-300 text-xs focus:outline-none focus:border-indigo-400 transition-all">
-              <option value="">Semua Rack</option>
-              {racks.map(rk => <option key={rk.id} value={rk.id}>{rk.label}</option>)}
-            </select>
+            <div className="input-group min-w-[180px]">
+              <div className="input-icon-box text-amber-400">
+                <HardDrive size={15} />
+              </div>
+              <select
+                value={filterRack}
+                onChange={e => setFilterRack(e.target.value)}
+                className="select-control text-xs font-semibold"
+              >
+                <option value="">Semua Rack</option>
+                {racks.map(rk => (
+                  <option key={rk.id} value={rk.id}>{rk.label}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Reset button when any filter active */}
+          {(search || filterType || filterStatus || filterBuilding || filterRack) && (
+            <button
+              onClick={() => {
+                setSearch("");
+                setFilterType("");
+                setFilterStatus("");
+                setFilterBuilding("");
+                setFilterRack("");
+              }}
+              className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 transition-all cursor-pointer"
+              title="Reset Semua Filter"
+            >
+              <RotateCcw size={13} />
+              <span>Reset</span>
+            </button>
           )}
         </div>
 
         {/* Layout Toggle */}
-        <div className="flex items-center gap-1 bg-slate-900/80 p-1.5 rounded-xl border border-slate-800">
+        <div className="flex items-center gap-1 bg-slate-900/90 p-1.5 rounded-2xl border border-slate-800 flex-shrink-0">
           <button
             onClick={() => changeViewMode("grid")}
-            className={`px-3.5 py-2 rounded-lg text-xs transition-all flex items-center gap-2 font-bold ${
+            className={`px-3.5 py-2 rounded-xl text-xs transition-all flex items-center gap-2 font-bold cursor-pointer ${
               viewMode === "grid" ? "bg-blue-600 text-white shadow-md" : "text-slate-400 hover:text-slate-200"
             }`}
           >
@@ -183,7 +267,7 @@ export default function AssetsPage() {
           </button>
           <button
             onClick={() => changeViewMode("table")}
-            className={`px-3.5 py-2 rounded-lg text-xs transition-all flex items-center gap-2 font-bold ${
+            className={`px-3.5 py-2 rounded-xl text-xs transition-all flex items-center gap-2 font-bold cursor-pointer ${
               viewMode === "table" ? "bg-blue-600 text-white shadow-md" : "text-slate-400 hover:text-slate-200"
             }`}
           >

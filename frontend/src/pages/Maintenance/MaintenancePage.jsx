@@ -360,113 +360,156 @@ export default function MaintenancePage() {
         >
           <form onSubmit={handleSubmit} className="space-y-6 max-h-[75vh] overflow-y-auto pr-1">
             {/* Section 1: Target Perangkat */}
-            <div className="glass p-4 rounded-2xl border border-slate-700/60 space-y-4">
-              <div className="flex items-center gap-2 border-b border-slate-800 pb-2.5">
-                <div className="w-7 h-7 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                  <Wrench size={15} />
+            <div className="glass p-5 rounded-2xl border border-slate-700/60 space-y-4">
+              <div className="flex items-center gap-3 border-b border-slate-800 pb-3">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                  <Wrench size={16} />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider">1. Target Perangkat Infrastruktur</h4>
-                  <p className="text-[11px] text-slate-400">Pilih perangkat IT yang akan dilakukan tindakan perawatan</p>
+                  <h4 className="text-xs font-bold text-slate-100 uppercase tracking-wider">1. Target Perangkat IT</h4>
+                  <p className="text-[11px] text-slate-400">Pilih perangkat jaringan/server yang akan dirawat</p>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-                  Target Perangkat <span className="text-amber-400">*</span>
+                <label className="form-label">
+                  <span>Perangkat IT <span className="text-amber-400">*</span></span>
+                  <span className="text-[11px] font-semibold text-slate-500">Wajib Dipilih</span>
                 </label>
-                <select required value={form.device_id}
-                  onChange={e => setForm({...form, device_id: e.target.value})}
-                  className="w-full px-4 py-3 bg-slate-900/90 border border-slate-700/80 rounded-xl text-slate-100 text-sm font-semibold focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all">
-                  <option value="">-- Pilih Perangkat Target --</option>
-                  {devices.map(d => (
-                    <option key={d.id} value={d.id}>
-                      {d.name} ({d.type?.toUpperCase()}) — IP: {d.ip_address || "No IP"}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Section 2: Tipe & Status */}
-            <div className="glass p-4 rounded-2xl border border-slate-700/60 space-y-4">
-              <div className="flex items-center gap-2 border-b border-slate-800 pb-2.5">
-                <div className="w-7 h-7 rounded-lg bg-orange-500/10 border border-orange-500/30 flex items-center justify-center text-orange-400">
-                  <Activity size={15} />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider">2. Parameter & Status Perawatan</h4>
-                  <p className="text-[11px] text-slate-400">Tentukan jenis tindakan dan tahapan progres kerja</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-                    Tipe Perawatan <span className="text-amber-400">*</span>
-                  </label>
-                  <select value={form.type} onChange={e => setForm({...form, type: e.target.value})}
-                    className="w-full px-4 py-3 bg-slate-900/90 border border-slate-700/80 rounded-xl text-slate-100 text-sm font-medium focus:outline-none focus:border-amber-500 transition-all">
-                    <option value="preventive">Preventif (Rutin & Pencegahan)</option>
-                    <option value="corrective">Korektif (Perbaikan Incident)</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-                    Status Progres Pekerjaan <span className="text-amber-400">*</span>
-                  </label>
-                  <select value={form.status} onChange={e => setForm({...form, status: e.target.value})}
-                    className="w-full px-4 py-3 bg-slate-900/90 border border-slate-700/80 rounded-xl text-slate-100 text-sm font-semibold focus:outline-none focus:border-amber-500 transition-all">
-                    {Object.entries(STATUS_MAP).map(([k,v]) => (
-                      <option key={k} value={k}>{v.label}</option>
+                <div className="input-group">
+                  <div className="input-icon-box text-amber-400">
+                    <Cpu size={18} />
+                  </div>
+                  <select 
+                    required 
+                    value={form.device_id}
+                    onChange={e => setForm({...form, device_id: e.target.value})}
+                    className="select-control"
+                  >
+                    <option value="">-- Pilih Perangkat Target --</option>
+                    {devices.map(d => (
+                      <option key={d.id} value={d.id}>
+                        {d.name} ({d.type?.toUpperCase()}) — IP: {d.ip_address || "No IP"}
+                      </option>
                     ))}
                   </select>
                 </div>
               </div>
             </div>
 
-            {/* Section 3: Waktu & Catatan */}
-            <div className="glass p-4 rounded-2xl border border-slate-700/60 space-y-4">
-              <div className="flex items-center gap-2 border-b border-slate-800 pb-2.5">
-                <div className="w-7 h-7 rounded-lg bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400">
-                  <Calendar size={15} />
+            {/* Section 2: Tipe & Status */}
+            <div className="glass p-5 rounded-2xl border border-slate-700/60 space-y-4">
+              <div className="flex items-center gap-3 border-b border-slate-800 pb-3">
+                <div className="w-8 h-8 rounded-xl bg-orange-500/10 border border-orange-500/30 flex items-center justify-center text-orange-400">
+                  <Activity size={16} />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider">3. Waktu Execusi & Catatan Prosedur</h4>
+                  <h4 className="text-xs font-bold text-slate-100 uppercase tracking-wider">2. Parameter & Status Perawatan</h4>
+                  <p className="text-[11px] text-slate-400">Tentukan jenis tindakan dan tahapan progres kerja</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="form-label">
+                    <span>Tipe Perawatan <span className="text-amber-400">*</span></span>
+                  </label>
+                  <div className="input-group">
+                    <select 
+                      value={form.type} 
+                      onChange={e => setForm({...form, type: e.target.value})}
+                      className="select-control"
+                    >
+                      <option value="preventive">Preventif (Rutin & Pencegahan)</option>
+                      <option value="corrective">Korektif (Perbaikan Insiden)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="form-label">
+                    <span>Status Progres <span className="text-amber-400">*</span></span>
+                  </label>
+                  <div className="input-group">
+                    <select 
+                      value={form.status} 
+                      onChange={e => setForm({...form, status: e.target.value})}
+                      className="select-control"
+                    >
+                      {Object.entries(STATUS_MAP).map(([k,v]) => (
+                        <option key={k} value={k}>{v.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Section 3: Waktu & Catatan */}
+            <div className="glass p-5 rounded-2xl border border-slate-700/60 space-y-4">
+              <div className="flex items-center gap-3 border-b border-slate-800 pb-3">
+                <div className="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400">
+                  <Calendar size={16} />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-100 uppercase tracking-wider">3. Waktu Eksekusi & Instruksi SOP</h4>
                   <p className="text-[11px] text-slate-400">Tanggal pelaksanaan dan rincian tugas teknisi</p>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-                  Tanggal Pelaksanaan maintenance <span className="text-amber-400">*</span>
+                <label className="form-label">
+                  <span>Tanggal Pelaksanaan Maintenance <span className="text-amber-400">*</span></span>
                 </label>
-                <input type="date" required value={form.scheduled_date}
-                  onChange={e => setForm({...form, scheduled_date: e.target.value})}
-                  className="w-full px-4 py-3 bg-slate-900/90 border border-slate-700/80 rounded-xl text-slate-100 text-sm font-semibold focus:outline-none focus:border-amber-500 transition-all" />
+                <div className="input-group">
+                  <div className="input-icon-box text-amber-400">
+                    <Calendar size={18} />
+                  </div>
+                  <input 
+                    type="date" 
+                    required 
+                    value={form.scheduled_date}
+                    onChange={e => setForm({...form, scheduled_date: e.target.value})}
+                    className="input-control" 
+                  />
+                </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-                  Catatan & Instruksi Kerja Prosedur
+                <label className="form-label">
+                  <span>Catatan & Instruksi Kerja Prosedur</span>
                 </label>
-                <textarea rows={4} value={form.notes}
-                  onChange={e => setForm({...form, notes: e.target.value})}
-                  placeholder="Misal: Cek kapasitas baterai UPS NOC 10KVA, pembersihan debu fan server, update firmware router BGP, dan verifikasi redundansi power supply."
-                  className="w-full px-4 py-3 bg-slate-900/90 border border-slate-700/80 rounded-xl text-slate-100 text-sm focus:outline-none focus:border-amber-500 resize-none transition-all leading-relaxed" />
+                <div className="flex rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900/90 focus-within:border-amber-500 focus-within:ring-4 focus-within:ring-amber-500/15 transition-all shadow-inner">
+                  <div className="px-4 py-3 bg-slate-800/60 border-r border-slate-700/60 text-amber-400 flex items-start flex-shrink-0">
+                    <FileText size={18} />
+                  </div>
+                  <textarea 
+                    rows={4} 
+                    value={form.notes}
+                    onChange={e => setForm({...form, notes: e.target.value})}
+                    placeholder="Misal: Cek kapasitas baterai UPS NOC, pembersihan debu fan server, update firmware, verifikasi redundansi power supply."
+                    className="w-full p-3.5 text-sm font-medium bg-transparent text-slate-100 outline-none placeholder:text-slate-500 resize-none leading-relaxed" 
+                  />
+                </div>
               </div>
             </div>
 
             {/* Actions */}
             <div className="flex gap-4 pt-2">
-              <button type="button" onClick={() => setShowForm(false)}
-                className="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold transition-all">
+              <button 
+                type="button" 
+                onClick={() => setShowForm(false)}
+                className="flex-1 py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-bold transition-all cursor-pointer"
+              >
                 Batal
               </button>
-              <button type="submit" disabled={saving}
-                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-400 text-white text-sm font-bold shadow-[0_0_20px_rgba(245,158,11,0.4)] transition-all disabled:opacity-50 flex items-center justify-center gap-2">
-                {saving ? "Menyimpan Jadwal..." : "Simpan Jadwal Maintenance"}
+              <button 
+                type="submit" 
+                disabled={saving || !form.device_id || !form.scheduled_date}
+                className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-400 text-white text-sm font-black shadow-[0_0_20px_rgba(245,158,11,0.4)] transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Save size={18} />
+                <span>{saving ? "Menyimpan Jadwal..." : (editing ? "Simpan Perubahan Jadwal" : "Simpan Jadwal Maintenance")}</span>
               </button>
             </div>
           </form>

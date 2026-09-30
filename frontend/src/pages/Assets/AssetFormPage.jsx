@@ -7,25 +7,33 @@ import {
   Server, ArrowLeft, Save, MapPin, HardDrive, Network,
   ShieldCheck, Calendar, CheckCircle2, Shield, Router, 
   Wifi, Battery, Package, Sparkles, AlertCircle, Cpu,
-  ChevronDown, Globe, Hash, BarChart2
+  Globe, Hash, Compass, Layers, Zap
 } from "lucide-react";
 import toast from "react-hot-toast";
 
 const DEVICE_TYPES = [
-  { value: "server", label: "Server Compute Node", icon: <Server size={18} /> },
-  { value: "switch", label: "Network Switch Core/Access", icon: <Network size={18} /> },
-  { value: "router", label: "Edge/Gateway Router", icon: <Router size={18} /> },
-  { value: "firewall", label: "Hardware Firewall / UTM", icon: <Shield size={18} /> },
-  { value: "access_point", label: "Access Point WiFi 6", icon: <Wifi size={18} /> },
-  { value: "ups", label: "Power UPS Battery Bank", icon: <Battery size={18} /> },
-  { value: "other", label: "Perangkat Lainnya", icon: <Package size={18} /> },
+  { value: "server", label: "Server Compute Node", icon: Server, color: "blue" },
+  { value: "switch", label: "Network Switch Core/Access", icon: Network, color: "indigo" },
+  { value: "router", label: "Edge/Gateway Router", icon: Router, color: "emerald" },
+  { value: "firewall", label: "Hardware Firewall / UTM", icon: Shield, color: "rose" },
+  { value: "access_point", label: "Access Point WiFi 6", icon: Wifi, color: "amber" },
+  { value: "ups", label: "Power UPS Battery Bank", icon: Battery, color: "violet" },
+  { value: "other", label: "Perangkat Lainnya", icon: Package, color: "slate" },
 ];
 
 const DEVICE_STATUSES = [
-  { value: "active", label: "Aktif Normal (Online)", color: "emerald" },
-  { value: "inactive", label: "Non-Aktif (Offline)", color: "slate" },
-  { value: "maintenance", label: "Dalam Pemeliharaan", color: "amber" },
-  { value: "down", label: "Kritis / Down Alert", color: "rose" },
+  { value: "active", label: "Aktif Normal (Online)", color: "emerald", dot: "bg-emerald-400 animate-pulse" },
+  { value: "inactive", label: "Non-Aktif (Offline)", color: "slate", dot: "bg-slate-400" },
+  { value: "maintenance", label: "Dalam Pemeliharaan", color: "amber", dot: "bg-amber-400" },
+  { value: "down", label: "Kritis / Down Alert", color: "rose", dot: "bg-rose-500 animate-ping" },
+];
+
+const DEVICE_TEMPLATES = [
+  { name: "Core Switch NOC Cisco Catalyst 9500", type: "switch", vendor: "Cisco", model: "Catalyst 9500 48P", units: 1 },
+  { name: "Virtualization Node Dell PowerEdge R750", type: "server", vendor: "Dell", model: "PowerEdge R750", units: 2 },
+  { name: "Border Gateway MikroTik CCR2004", type: "router", vendor: "MikroTik", model: "CCR2004-16G-2S+", units: 1 },
+  { name: "Perimeter Firewall FortiGate 100F", type: "firewall", vendor: "Fortinet", model: "FortiGate 100F", units: 1 },
+  { name: "Backup Power Bank APC Smart-UPS RT 5kVA", type: "ups", vendor: "APC Schneider", model: "SRT5KXLI", units: 3 },
 ];
 
 export default function AssetFormPage() {
@@ -99,6 +107,11 @@ export default function AssetFormPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!form.name.trim()) {
+      toast.error("Nama perangkat wajib diisi.");
+      return;
+    }
+
     setSaving(true);
     setError("");
 
@@ -108,7 +121,6 @@ export default function AssetFormPage() {
         if (v !== "" && v !== null && v !== undefined) {
           fd.append(k, v);
         } else {
-          // Pass empty string so nullable fields get converted to null on backend
           fd.append(k, "");
         }
       });
@@ -131,7 +143,18 @@ export default function AssetFormPage() {
     }
   };
 
-  // Find selected rack details for preview from direct query or nested buildings
+  const applyTemplate = (tpl) => {
+    setForm(f => ({
+      ...f,
+      name: tpl.name,
+      type: tpl.type,
+      vendor: tpl.vendor,
+      model: tpl.model,
+      rack_units: tpl.units,
+    }));
+    toast.success(`Template ${tpl.name} diterapkan.`);
+  };
+
   const allRacks = racksList.length > 0
     ? racksList.map(rk => {
         const bName = rk.room?.floor?.building?.name ?? "Gedung";
@@ -154,6 +177,8 @@ export default function AssetFormPage() {
       );
 
   const selectedRackObj = allRacks.find(r => String(r.id) === String(form.rack_id));
+  const selectedTypeObj = DEVICE_TYPES.find(t => t.value === form.type) || DEVICE_TYPES[0];
+  const TypeIcon = selectedTypeObj.icon;
 
   if (loading) {
     return (
@@ -183,7 +208,7 @@ export default function AssetFormPage() {
             <button 
               type="button"
               onClick={() => navigate("/assets")}
-              className="w-12 h-12 rounded-2xl bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/80 flex items-center justify-center transition-all shadow-lg"
+              className="w-12 h-12 rounded-2xl bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/80 flex items-center justify-center transition-all shadow-lg hover:shadow-slate-800/50 cursor-pointer"
             >
               <ArrowLeft size={22} />
             </button>
@@ -193,13 +218,13 @@ export default function AssetFormPage() {
                   {isEditing ? "Mode Edit Perangkat" : "Registrasi Perangkat Baru"}
                 </span>
                 <span className="text-slate-500 text-xs">•</span>
-                <span className="text-slate-400 text-xs font-semibold">Integrasi Digital Twin & Topology NOC</span>
+                <span className="text-slate-400 text-xs font-semibold">Integrasi Digital Twin & Topologi NOC</span>
               </div>
               <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-200 to-white mt-2">
                 {isEditing ? `Edit Konfigurasi: ${form.name}` : "Pendaftaran Perangkat IT / Server Baru"}
               </h1>
               <p className="text-slate-300 text-sm mt-1 max-w-2xl leading-relaxed">
-                Petakan perangkat fisik ke dalam rack server cabinet, atur alamat IP jaringan, tipe hardware, dan pelacakan masa garansi.
+                Petakan perangkat fisik ke dalam rack server cabinet, atur alamat IP jaringan, tipe hardware, dan pelacakan siklus hidup garansi.
               </p>
             </div>
           </div>
@@ -208,7 +233,7 @@ export default function AssetFormPage() {
             <button
               type="button"
               onClick={() => navigate("/assets")}
-              className="px-6 py-3 rounded-2xl bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 font-semibold text-sm transition-all"
+              className="px-6 py-3 rounded-2xl bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 font-semibold text-sm transition-all cursor-pointer"
             >
               Kembali ke Katalog
             </button>
@@ -223,42 +248,39 @@ export default function AssetFormPage() {
         </div>
       )}
 
-      {/* Main Grid: Form Inputs & Live Preview */}
+      {/* Main Grid: Form Inputs (7 Cols) & Live Blade Mockup Preview (5 Cols) */}
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
-        {/* Left Input Form (8 cols) */}
-        <div className="lg:col-span-8 space-y-6">
+        {/* Left Form Column (7 Cols) */}
+        <div className="lg:col-span-7 space-y-6">
 
-          {/* Section 1: Lokasi & Rack Cabinet */}
+          {/* Section 1: Lokasi Spasial & Rack Cabinet */}
           <div className="glass p-8 rounded-3xl border border-slate-700/60 space-y-6 shadow-2xl">
-            <div className="flex items-center gap-4 border-b border-slate-800 pb-5">
+            <div className="flex items-center gap-3.5 border-b border-slate-800 pb-5">
               <div className="w-11 h-11 rounded-2xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 shadow-inner">
                 <MapPin size={22} />
               </div>
               <div>
-                <h2 className="text-base font-bold text-slate-100 uppercase tracking-wider">1. Lokasi Spasial & Posisi Rack Cabinet</h2>
-                <p className="text-xs text-slate-400 mt-0.5">Tentukan cabinet pusat data dan slot U unit tempat perangkat dipasang</p>
+                <h2 className="text-base font-bold text-slate-100 uppercase tracking-wider">1. Lokasi Spasial & Rack Cabinet</h2>
+                <p className="text-xs text-slate-400 mt-0.5">Tentukan cabinet pusat data dan posisi slot U unit tempat perangkat dipasang</p>
               </div>
             </div>
 
-            <div className="space-y-5">
+            <div className="space-y-6">
+              {/* Rack Select */}
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-200">
-                    Rack Server Penempatan
-                  </label>
-                  <span className="text-[11px] text-slate-400">
-                    (Pilih rack atau biarkan kosong untuk perangkat standalone)
-                  </span>
-                </div>
-                <div className="relative group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-400 pointer-events-none">
-                    <Server size={18} />
+                <label className="form-label">
+                  <span>Rack Server Penempatan</span>
+                  <span className="text-[11px] font-semibold text-slate-500">(Opsional / Standalone)</span>
+                </label>
+                <div className="input-group">
+                  <div className="input-icon-box">
+                    <Server size={20} />
                   </div>
                   <select 
                     value={form.rack_id} 
                     onChange={e => setForm({ ...form, rack_id: e.target.value })}
-                    className="w-full pl-11 pr-10 py-4 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 text-sm font-semibold focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-inner appearance-none cursor-pointer"
+                    className="select-control"
                   >
                     <option value="">-- Perangkat Standalone / Tanpa Rack Cabinet --</option>
                     {allRacks.map(rk => (
@@ -267,60 +289,68 @@ export default function AssetFormPage() {
                       </option>
                     ))}
                   </select>
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                    <ChevronDown size={16} />
-                  </div>
                 </div>
-                {allRacks.length === 0 && (
-                  <div className="flex items-center gap-2 mt-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
-                    <AlertCircle size={14} className="text-amber-400 flex-shrink-0" />
-                    <p className="text-xs text-amber-400 font-medium">
-                      Belum ada rack terdaftar. Anda tetap dapat menyimpan perangkat sebagai Standalone.
-                    </p>
+                {selectedRackObj && (
+                  <div className="flex items-center gap-2 mt-2.5">
+                    <CheckCircle2 size={14} className="text-blue-400" />
+                    <span className="text-xs text-blue-400 font-semibold">
+                      Terpilih: {selectedRackObj.fullLabel}
+                    </span>
                   </div>
                 )}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {/* Slot Position & Rack Units */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-2">
-                    Posisi Slot Rack (Nomor U dari Bawah)
+                  <label className="form-label">
+                    <span>Posisi Slot Rack (Nomor U Bawah)</span>
                   </label>
-                  <input 
-                    type="number" 
-                    min={1} 
-                    max={60}
-                    value={form.rack_position} 
-                    placeholder="Contoh: 14 (Slot U14)"
-                    onChange={e => setForm({ ...form, rack_position: e.target.value })}
-                    className="w-full px-5 py-4 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 text-sm font-semibold focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-inner" 
-                  />
-                  <p className="text-[11px] text-slate-400 mt-1.5 font-medium">Standar cabinet 42U menghitung posisi dari U1 (bawah) sampai U42 (atas).</p>
+                  <div className="input-group">
+                    <div className="input-icon-box">
+                      <Layers size={20} />
+                    </div>
+                    <input 
+                      type="number" 
+                      min={1} 
+                      max={60}
+                      value={form.rack_position} 
+                      placeholder="Contoh: 14 (Slot U14)"
+                      onChange={e => setForm({ ...form, rack_position: e.target.value })}
+                      className="input-control font-mono" 
+                    />
+                  </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-2">
-                    Tinggi Unit Perangkat (Slot U) <span className="text-blue-400">*</span>
+                  <label className="form-label">
+                    <span>Tinggi Unit (Slot U) <span className="text-blue-400">*</span></span>
+                    <span className="text-[11px] font-bold text-blue-400">{form.rack_units}U Tinggi</span>
                   </label>
-                  <input 
-                    type="number" 
-                    min={1} 
-                    max={10} 
-                    required 
-                    value={form.rack_units}
-                    onChange={e => setForm({ ...form, rack_units: e.target.value })}
-                    className="w-full px-5 py-4 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 text-sm font-bold focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-inner" 
-                  />
-                  {/* Presets */}
+                  <div className="input-group">
+                    <div className="input-icon-box">
+                      <Hash size={20} />
+                    </div>
+                    <input 
+                      type="number" 
+                      min={1} 
+                      max={12} 
+                      required 
+                      value={form.rack_units}
+                      onChange={e => setForm({ ...form, rack_units: Math.max(1, parseInt(e.target.value) || 1) })}
+                      className="input-control font-mono font-bold" 
+                    />
+                  </div>
+                  {/* Quick Unit Presets */}
                   <div className="flex gap-2 mt-2">
                     {[1, 2, 4].map(u => (
                       <button
                         key={u}
                         type="button"
                         onClick={() => setForm({ ...form, rack_units: u })}
-                        className={`px-3 py-1 rounded-lg text-xs font-bold border transition-all ${
+                        className={`px-3 py-1 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
                           Number(form.rack_units) === u
-                            ? "bg-blue-600 text-white border-blue-400"
+                            ? "bg-blue-600 text-white border-blue-400 shadow-md"
                             : "bg-slate-900 text-slate-400 border-slate-700 hover:text-white"
                         }`}
                       >
@@ -335,143 +365,186 @@ export default function AssetFormPage() {
 
           {/* Section 2: Identitas & Spesifikasi Hardware */}
           <div className="glass p-8 rounded-3xl border border-slate-700/60 space-y-6 shadow-2xl">
-            <div className="flex items-center gap-4 border-b border-slate-800 pb-5">
+            <div className="flex items-center gap-3.5 border-b border-slate-800 pb-5">
               <div className="w-11 h-11 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shadow-inner">
                 <HardDrive size={22} />
               </div>
               <div>
                 <h2 className="text-base font-bold text-slate-100 uppercase tracking-wider">2. Spesifikasi & Identitas Hardware</h2>
-                <p className="text-xs text-slate-400 mt-0.5">Nama perangkat, tipe hardware, vendor fabricator, dan tipe seri</p>
+                <p className="text-xs text-slate-400 mt-0.5">Nama perangkat, tipe hardware, vendor fabricator, dan tipe seri model</p>
               </div>
             </div>
 
-            <div className="space-y-5">
+            <div className="space-y-6">
+              {/* Quick Template Picker */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-2">
-                  Nama Perangkat Hardware <span className="text-blue-400">*</span>
-                </label>
-                <input 
-                  type="text" 
-                  required 
-                  value={form.name}
-                  placeholder="Contoh: Core Switch NOC Main Nexus-01"
-                  onChange={e => setForm({ ...form, name: e.target.value })}
-                  className="w-full px-5 py-4 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 text-sm font-bold focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-inner" 
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-3">
-                  Tipe Hardware <span className="text-blue-400">*</span>
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {DEVICE_TYPES.map(t => (
+                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  <Zap size={13} className="text-amber-400" />
+                  Template Spesifikasi Cepat:
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {DEVICE_TEMPLATES.map(tpl => (
                     <button
-                      key={t.value}
+                      key={tpl.name}
                       type="button"
-                      onClick={() => setForm({ ...form, type: t.value })}
-                      className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col gap-2 ${
-                        form.type === t.value
-                          ? "bg-indigo-600/20 border-indigo-500/60 shadow-[0_0_15px_rgba(99,102,241,0.25)] text-white"
-                          : "bg-slate-900/70 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200"
-                      }`}
+                      onClick={() => applyTemplate(tpl)}
+                      className="text-[11px] font-bold px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-300 hover:text-blue-300 hover:border-blue-500/50 transition-all cursor-pointer"
                     >
-                      <div className={form.type === t.value ? "text-indigo-400" : "text-slate-500"}>
-                        {t.icon}
-                      </div>
-                      <span className="text-xs font-bold capitalize">{t.label}</span>
+                      ⚡ {tpl.model} ({tpl.type.toUpperCase()})
                     </button>
                   ))}
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-2">
-                    Vendor / Pabrikan
-                  </label>
+              {/* Device Name */}
+              <div>
+                <label className="form-label">
+                  <span>Nama Perangkat Hardware <span className="text-blue-400">*</span></span>
+                  <span className="text-[11px] font-semibold text-slate-500">Wajib Diisi</span>
+                </label>
+                <div className="input-group">
+                  <div className="input-icon-box">
+                    <TypeIcon size={20} />
+                  </div>
                   <input 
                     type="text" 
-                    value={form.vendor} 
-                    placeholder="Contoh: Cisco / Dell / Mikrotik / Fortinet"
-                    onChange={e => setForm({ ...form, vendor: e.target.value })}
-                    className="w-full px-5 py-4 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-inner" 
+                    required 
+                    value={form.name}
+                    placeholder="Contoh: Core Switch NOC Main Nexus-01"
+                    onChange={e => setForm({ ...form, name: e.target.value })}
+                    className="input-control" 
                   />
+                </div>
+              </div>
+
+              {/* Device Type Cards */}
+              <div>
+                <label className="form-label">
+                  <span>Tipe Hardware Perangkat <span className="text-blue-400">*</span></span>
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {DEVICE_TYPES.map(t => {
+                    const IconComp = t.icon;
+                    const isSelected = form.type === t.value;
+                    return (
+                      <button
+                        key={t.value}
+                        type="button"
+                        onClick={() => setForm({ ...form, type: t.value })}
+                        className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col gap-2 cursor-pointer ${
+                          isSelected
+                            ? "bg-indigo-600/25 border-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.3)] text-white"
+                            : "bg-slate-900/70 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200"
+                        }`}
+                      >
+                        <div className={isSelected ? "text-indigo-300" : "text-slate-500"}>
+                          <IconComp size={18} />
+                        </div>
+                        <span className="text-xs font-bold capitalize leading-snug">{t.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Vendor & Model */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                  <label className="form-label">
+                    <span>Vendor / Pabrikan</span>
+                  </label>
+                  <div className="input-group">
+                    <div className="input-icon-box">
+                      <Package size={20} />
+                    </div>
+                    <input 
+                      type="text" 
+                      value={form.vendor} 
+                      placeholder="Contoh: Cisco / Dell / Mikrotik / Fortinet"
+                      onChange={e => setForm({ ...form, vendor: e.target.value })}
+                      className="input-control" 
+                    />
+                  </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-2">
-                    Model / Seri Perangkat
+                  <label className="form-label">
+                    <span>Model / Seri Perangkat</span>
                   </label>
-                  <input 
-                    type="text" 
-                    value={form.model} 
-                    placeholder="Contoh: Catalyst 9500 / PowerEdge R750"
-                    onChange={e => setForm({ ...form, model: e.target.value })}
-                    className="w-full px-5 py-4 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-inner" 
-                  />
+                  <div className="input-group">
+                    <div className="input-icon-box">
+                      <Cpu size={20} />
+                    </div>
+                    <input 
+                      type="text" 
+                      value={form.model} 
+                      placeholder="Contoh: Catalyst 9500 / PowerEdge R750"
+                      onChange={e => setForm({ ...form, model: e.target.value })}
+                      className="input-control" 
+                    />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Section 3: Jaringan & Serial Number */}
+          {/* Section 3: Jaringan & Serial Pabrik */}
           <div className="glass p-8 rounded-3xl border border-slate-700/60 space-y-6 shadow-2xl">
-            <div className="flex items-center gap-4 border-b border-slate-800 pb-5">
+            <div className="flex items-center gap-3.5 border-b border-slate-800 pb-5">
               <div className="w-11 h-11 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shadow-inner">
                 <Network size={22} />
               </div>
               <div>
                 <h2 className="text-base font-bold text-slate-100 uppercase tracking-wider">3. Konfigurasi Jaringan & Serial Pabrik</h2>
-                <p className="text-xs text-slate-400 mt-0.5">Pengalamatan IP IPv4, MAC Address, dan Nomor Seri Pabrik</p>
+                <p className="text-xs text-slate-400 mt-0.5">Alamat IP IPv4 untuk monitoring, MAC Address fisik, dan Serial Number</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-2">Alamat IP (IPv4)</label>
-                <div className="relative group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-400 transition-colors pointer-events-none">
-                    <Globe size={16} />
+                <label className="form-label"><span>Alamat IP (IPv4)</span></label>
+                <div className="input-group">
+                  <div className="input-icon-box text-emerald-400">
+                    <Globe size={18} />
                   </div>
                   <input 
                     type="text" 
                     value={form.ip_address} 
                     placeholder="192.168.10.1"
                     onChange={e => setForm({ ...form, ip_address: e.target.value })}
-                    className="w-full pl-10 pr-4 py-4 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 font-mono text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all shadow-inner" 
+                    className="input-control font-mono" 
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-2">MAC Address</label>
-                <div className="relative group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-400 transition-colors pointer-events-none">
-                    <Network size={16} />
+                <label className="form-label"><span>MAC Address</span></label>
+                <div className="input-group">
+                  <div className="input-icon-box text-indigo-400">
+                    <Network size={18} />
                   </div>
                   <input 
                     type="text" 
                     value={form.mac_address} 
                     placeholder="00:1A:2B:3C:4D:5E"
                     onChange={e => setForm({ ...form, mac_address: e.target.value })}
-                    className="w-full pl-10 pr-4 py-4 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 font-mono text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all shadow-inner" 
+                    className="input-control font-mono" 
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-2">Nomor Seri (S/N)</label>
-                <div className="relative group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-400 transition-colors pointer-events-none">
-                    <Hash size={16} />
+                <label className="form-label"><span>Nomor Seri (S/N)</span></label>
+                <div className="input-group">
+                  <div className="input-icon-box text-blue-400">
+                    <Hash size={18} />
                   </div>
                   <input 
                     type="text" 
                     value={form.serial_number} 
                     placeholder="SN-9821-XCA-001"
                     onChange={e => setForm({ ...form, serial_number: e.target.value })}
-                    className="w-full pl-10 pr-4 py-4 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 font-mono text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-inner" 
+                    className="input-control font-mono" 
                   />
                 </div>
               </div>
@@ -480,70 +553,72 @@ export default function AssetFormPage() {
 
           {/* Section 4: Status Operasional & Garansi */}
           <div className="glass p-8 rounded-3xl border border-slate-700/60 space-y-6 shadow-2xl">
-            <div className="flex items-center gap-4 border-b border-slate-800 pb-5">
+            <div className="flex items-center gap-3.5 border-b border-slate-800 pb-5">
               <div className="w-11 h-11 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-inner">
                 <ShieldCheck size={22} />
               </div>
               <div>
                 <h2 className="text-base font-bold text-slate-100 uppercase tracking-wider">4. Status Operasional & Siklus Hidup Garansi</h2>
-                <p className="text-xs text-slate-400 mt-0.5">Status operasional perangkat dan informasi kontrak garansi pabrik</p>
+                <p className="text-xs text-slate-400 mt-0.5">Status operasional perangkat telemetri dan masa garansi resmi pabrik</p>
               </div>
             </div>
 
-            <div className="space-y-5">
+            <div className="space-y-6">
+              {/* Operational Status */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-3">
-                  Status Operasional Perangkat
+                <label className="form-label">
+                  <span>Status Operasional Perangkat</span>
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {DEVICE_STATUSES.map(s => (
-                    <button
-                      key={s.value}
-                      type="button"
-                      onClick={() => setForm({ ...form, status: s.value })}
-                      className={`p-3.5 rounded-2xl border text-center font-bold text-xs capitalize transition-all ${
-                        form.status === s.value
-                          ? "bg-blue-600 text-white border-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.35)]"
-                          : "bg-slate-900/70 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-white"
-                      }`}
-                    >
-                      {s.label}
-                    </button>
-                  ))}
+                  {DEVICE_STATUSES.map(s => {
+                    const isSelected = form.status === s.value;
+                    return (
+                      <button
+                        key={s.value}
+                        type="button"
+                        onClick={() => setForm({ ...form, status: s.value })}
+                        className={`p-3.5 rounded-2xl border text-center font-bold text-xs capitalize transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                          isSelected
+                            ? "bg-blue-600 text-white border-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.35)]"
+                            : "bg-slate-900/70 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-white"
+                        }`}
+                      >
+                        <span className={`w-2 h-2 rounded-full ${s.dot}`} />
+                        <span>{s.label}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {/* Purchase & Warranty Dates */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-2">
-                    Tanggal Pengadaan / Pembelian
-                  </label>
-                  <div className="relative group">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-400 transition-colors pointer-events-none">
-                      <Calendar size={16} />
+                  <label className="form-label"><span>Tanggal Pengadaan / Pembelian</span></label>
+                  <div className="input-group">
+                    <div className="input-icon-box text-blue-400">
+                      <Calendar size={18} />
                     </div>
                     <input 
                       type="date" 
                       value={form.purchase_date}
                       onChange={e => setForm({ ...form, purchase_date: e.target.value })}
-                      className="w-full pl-10 pr-4 py-4 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-inner" 
+                      className="input-control" 
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-200 mb-2">
-                    Batas Akhir Masa Garansi
-                  </label>
-                  <div className="relative group">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-amber-400 transition-colors pointer-events-none">
-                      <ShieldCheck size={16} />
+                  <label className="form-label"><span>Batas Akhir Masa Garansi</span></label>
+                  <div className="input-group">
+                    <div className="input-icon-box text-amber-400">
+                      <ShieldCheck size={18} />
                     </div>
                     <input 
                       type="date" 
                       value={form.warranty_expiry}
                       onChange={e => setForm({ ...form, warranty_expiry: e.target.value })}
-                      className="w-full pl-10 pr-4 py-4 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 text-sm focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all shadow-inner" 
+                      className="input-control" 
                     />
                   </div>
                 </div>
@@ -551,20 +626,20 @@ export default function AssetFormPage() {
             </div>
 
             {/* Submit Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-slate-800">
+            <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-slate-800">
               <button 
                 type="button" 
                 onClick={() => navigate("/assets")}
-                className="w-full sm:w-1/3 py-4 rounded-2xl bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white text-sm font-semibold transition-all shadow-md"
+                className="w-full sm:w-1/3 py-4 rounded-2xl bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white text-sm font-bold transition-all shadow-md cursor-pointer"
               >
                 Batal
               </button>
               <button 
                 type="submit" 
                 disabled={saving}
-                className="w-full sm:w-2/3 py-4 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white text-sm font-bold shadow-[0_0_30px_rgba(59,130,246,0.4)] hover:shadow-[0_0_40px_rgba(59,130,246,0.6)] transition-all disabled:opacity-50 flex items-center justify-center gap-2.5"
+                className="w-full sm:w-2/3 py-4 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white text-sm font-black shadow-[0_0_30px_rgba(59,130,246,0.4)] hover:shadow-[0_0_40px_rgba(59,130,246,0.6)] transition-all disabled:opacity-50 flex items-center justify-center gap-2.5 cursor-pointer"
               >
-                <Save size={20} />
+                <Save size={18} />
                 <span>{saving ? "Menyimpan Perangkat..." : (isEditing ? "Simpan Perubahan Aset" : "Daftarkan Perangkat Baru")}</span>
               </button>
             </div>
@@ -572,36 +647,38 @@ export default function AssetFormPage() {
 
         </div>
 
-        {/* Right Live Preview Column (4 cols) */}
-        <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-8">
-          <div className="glass p-7 rounded-3xl border border-slate-700/60 space-y-6 shadow-2xl relative overflow-hidden">
+        {/* Right Live Hardware Blade Mockup Column (5 Cols) */}
+        <div className="lg:col-span-5 space-y-6 lg:sticky lg:top-8">
+          <div className="glass p-8 rounded-3xl border border-slate-700/60 space-y-6 shadow-2xl relative overflow-hidden">
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
               <div className="flex items-center gap-2.5">
                 <Sparkles size={18} className="text-amber-400" />
-                <h3 className="text-xs font-bold text-slate-100 uppercase tracking-wider">Live Preview Perangkat</h3>
+                <h3 className="text-xs font-bold text-slate-100 uppercase tracking-wider">Live Preview Perangkat Hardware</h3>
               </div>
-              <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/30">
+              <span className="px-3 py-1 rounded-full text-[11px] font-extrabold bg-blue-500/10 text-blue-400 border border-blue-500/30">
                 Unit {form.rack_units || 1}U
               </span>
             </div>
 
             {/* Hardware Mockup Card */}
-            <div className="glass rounded-3xl p-6 border border-blue-500/40 bg-gradient-to-b from-slate-900/90 to-slate-950/95 space-y-4 shadow-2xl relative overflow-hidden">
-              <div className="flex items-start justify-between">
-                <div className="w-12 h-12 rounded-2xl bg-blue-500/20 border border-blue-500/40 flex items-center justify-center text-blue-400 shadow-md">
-                  {DEVICE_TYPES.find(t => t.value === form.type)?.icon ?? <Server size={22} />}
+            <div className="glass rounded-3xl p-7 border border-blue-500/40 bg-gradient-to-b from-slate-900/90 to-slate-950/95 space-y-5 shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
+
+              <div className="flex items-start justify-between relative z-10">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500/20 to-indigo-500/20 border border-blue-500/40 flex items-center justify-center text-blue-400 shadow-md">
+                  <TypeIcon size={28} />
                 </div>
-                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold capitalize bg-slate-900 border border-slate-700">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold capitalize bg-slate-900 border border-slate-700">
                   <span className={`w-2 h-2 rounded-full ${
                     form.status === "active" ? "bg-emerald-400 animate-pulse" :
-                    form.status === "down" ? "bg-rose-500" :
+                    form.status === "down" ? "bg-rose-500 animate-ping" :
                     form.status === "maintenance" ? "bg-amber-400" : "bg-slate-500"
                   }`} />
                   <span className="text-slate-200">{form.status}</span>
                 </div>
               </div>
 
-              <div>
+              <div className="relative z-10">
                 <h4 className="font-extrabold text-slate-100 text-lg leading-snug">
                   {form.name || "Nama Perangkat IT"}
                 </h4>
@@ -611,35 +688,42 @@ export default function AssetFormPage() {
               </div>
 
               {/* Specs Pills */}
-              <div className="space-y-2 pt-2 border-t border-slate-800 text-xs">
-                <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/80 border border-slate-800">
-                  <span className="text-slate-400 font-medium">IP Address</span>
+              <div className="space-y-2 pt-2 border-t border-slate-800 text-xs relative z-10">
+                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-slate-800">
+                  <span className="text-slate-400 font-medium">Alamat IP</span>
                   <span className="font-mono text-blue-400 font-bold">{form.ip_address || "Belum Ditetapkan"}</span>
                 </div>
 
-                <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/80 border border-slate-800">
-                  <span className="text-slate-400 font-medium">Lokasi Rack</span>
-                  <span className="text-slate-200 font-semibold truncate max-w-[170px]">
-                    {selectedRackObj?.name ?? (form.rack_id ? `Rack #${form.rack_id}` : "Belum Dipilih")}
+                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-slate-800">
+                  <span className="text-slate-400 font-medium">Rack Cabinet</span>
+                  <span className="text-slate-200 font-semibold truncate max-w-[200px]">
+                    {selectedRackObj?.name ?? (form.rack_id ? `Rack #${form.rack_id}` : "Standalone (Tanpa Rack)")}
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/80 border border-slate-800">
-                  <span className="text-slate-400 font-medium">Slot Posisi U</span>
+                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-slate-800">
+                  <span className="text-slate-400 font-medium">Posisi Slot U</span>
                   <span className="font-mono text-emerald-400 font-bold">
                     {form.rack_position ? `Slot U${form.rack_position}` : "Posisi Otomatis"}
                   </span>
                 </div>
               </div>
+
+              <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-xs relative z-10">
+                <span className="text-emerald-400 font-bold flex items-center gap-1.5">
+                  <CheckCircle2 size={14} /> Sinkronisasi Telemetri
+                </span>
+                <span className="text-blue-400 font-bold">Topologi 3D Ready</span>
+              </div>
             </div>
 
             {/* Guidance Callout */}
-            <div className="p-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-xs text-indigo-300 space-y-1.5 leading-relaxed shadow-sm">
+            <div className="p-5 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 text-xs text-indigo-300 space-y-2 leading-relaxed shadow-lg">
               <p className="font-bold flex items-center gap-1.5 text-indigo-200">
-                <CheckCircle2 size={15} /> Integrasi Otomatis:
+                <Compass size={16} /> Integrasi Otomatis:
               </p>
-              <p className="text-slate-400">
-                Perangkat ini akan langsung muncul pada peta topologi 3D dan visualizer 42U gedung setelah disimpan.
+              <p className="text-slate-300">
+                Perangkat ini akan otomatis dipetakan ke dalam kanvas <strong>Peta Jaringan Topologi 3D</strong> dan slot visualizer kabinet 42U pada <strong>Digital Twin</strong>.
               </p>
             </div>
           </div>

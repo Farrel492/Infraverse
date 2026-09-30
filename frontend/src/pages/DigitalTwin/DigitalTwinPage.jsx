@@ -282,15 +282,19 @@ export default function DigitalTwinPage() {
 
         {/* Building Selector */}
         <div className="flex items-center gap-4 flex-wrap">
-          <div className="flex items-center gap-2.5 bg-slate-900/90 p-1.5 px-3 rounded-2xl border border-blue-500/50 shadow-md">
-            <Building2 size={18} className="text-blue-400" />
+          <div className="input-group min-w-[240px]">
+            <div className="input-icon-box text-blue-400">
+              <Building2 size={18} />
+            </div>
             <select
               value={selectedBuilding}
               onChange={e => { setSelectedBuilding(e.target.value); setSelected(null); }}
-              className="px-3 py-2 bg-transparent text-slate-100 text-sm font-black focus:outline-none transition-all cursor-pointer"
+              className="select-control text-xs font-bold"
             >
-              <option value="" className="bg-slate-900 text-slate-400">-- Pilih Gedung Spesifik --</option>
-              {buildings.map(b => <option key={b.id} value={b.id} className="bg-slate-900 text-white font-bold">{b.name}</option>)}
+              <option value="" className="bg-slate-900 text-slate-400">-- Pilih Fasilitas Gedung --</option>
+              {buildings.map(b => (
+                <option key={b.id} value={b.id} className="bg-slate-900 text-white font-bold">{b.name}</option>
+              ))}
             </select>
           </div>
 
