@@ -44,13 +44,20 @@ Route::middleware('auth:sanctum')->group(function () {
     // Analytics
     Route::get('/analytics/summary',    [AnalyticsController::class, 'summary']);
     Route::get('/analytics/predictive', [AnalyticsController::class, 'predictiveMaintenance']);
+    Route::get('/analytics/power',      [AnalyticsController::class, 'powerByBuilding']);
 
-    // Simulation
+    // Simulation (read + run for all authenticated)
     Route::get('/simulations',                     [SimulationController::class, 'index']);
     Route::get('/simulations/logs',                [SimulationController::class, 'logs']);
     Route::get('/simulations/{simulation}',        [SimulationController::class, 'show']);
     Route::post('/simulations/{simulation}/run',   [SimulationController::class, 'run']);
     Route::post('/simulation-logs/{log}/resolve',  [SimulationController::class, 'resolve']);
+    // Simulation CRUD (admin only)
+    Route::middleware('role:admin')->group(function () {
+        Route::post('/simulations',                    [SimulationController::class, 'store']);
+        Route::patch('/simulations/{simulation}',      [SimulationController::class, 'updateScenario']);
+        Route::delete('/simulations/{simulation}',     [SimulationController::class, 'destroy']);
+    });
 
     // Digital Twin
     Route::get('/digital-twin/scene',                      [DigitalTwinController::class, 'scene']);
@@ -96,7 +103,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/users',                      [\App\Http\Controllers\Api\UserController::class, 'index']);
         Route::post('/users',                     [\App\Http\Controllers\Api\UserController::class, 'store']);
         Route::get('/users/{user}',               [\App\Http\Controllers\Api\UserController::class, 'show']);
-        Route::patch('/users/{user}',             [\App\Http\Controllers\Api\UserController::class, 'update']);
+        Route::match(['patch', 'post'], '/users/{user}', [\App\Http\Controllers\Api\UserController::class, 'update']);
         Route::delete('/users/{user}',            [\App\Http\Controllers\Api\UserController::class, 'destroy']);
         Route::post('/users/{user}/reset-password',[\App\Http\Controllers\Api\UserController::class, 'resetPassword']);
     });

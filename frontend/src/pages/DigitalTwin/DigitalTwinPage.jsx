@@ -2,12 +2,13 @@ import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { digitalTwinService } from "../../services/digitalTwinService";
 import { buildingService } from "../../services/buildingService";
+import { simulationService } from "../../services/simulationService";
 import toast from "react-hot-toast";
 import Breadcrumb from "../../components/shared/Breadcrumb.jsx";
 import {
   Server, Router, Shield, Network, Wifi, Battery,
   Package, RefreshCw, Zap, ZapOff, RotateCcw, Layers, DoorOpen, Building2,
-  Wrench, ExternalLink, ChevronRight
+  Wrench, ExternalLink, ChevronRight, Flame, AlertTriangle, BookOpen, Check
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -47,8 +48,9 @@ function DeviceIcon({ type, size = 14 }) {
 
 function RackUnit({ device, isSelected, onClick, simMode, affectedIds }) {
   const uH     = RACK_U_HEIGHT * (device.u_size ?? 1);
-  const status = simMode && affectedIds.includes(device.id) ? "down" : device.status;
-  const color  = STATUS_COLOR[status];
+  const isSimDown = simMode && affectedIds.includes(device.id);
+  const status = isSimDown ? "down" : device.status;
+  const color  = isSimDown ? "#ef4444" : STATUS_COLOR[status];
   const typeC  = TYPE_COLOR_HEX[device.type] ?? "#6b7280";
   const pulse  = status === "active" && !simMode;
 
@@ -58,26 +60,26 @@ function RackUnit({ device, isSelected, onClick, simMode, affectedIds }) {
       whileHover={{ scale: 1.01 }}
       className={`relative flex items-center gap-3 px-3 cursor-pointer rounded-xl select-none transition-all duration-200 group border
         ${isSelected ? "border-blue-400 bg-blue-600/20 shadow-[0_0_15px_rgba(59,130,246,0.3)] z-10" : "glass hover:bg-slate-800/80 border-slate-800"}
-        ${simMode && affectedIds.includes(device.id) ? "animate-pulse border-red-500/60 bg-red-500/10" : ""}
+        ${isSimDown ? "animate-pulse border-red-500/80 bg-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.35)]" : ""}
       `}
       style={{
         height: `${uH}px`,
-        borderLeft: `4px solid ${typeC}`,
+        borderLeft: isSimDown ? "4px solid #ef4444" : `4px solid ${typeC}`,
       }}>
       <div className="flex flex-col gap-0.5 flex-shrink-0">
         <div className="w-2.5 h-2.5 rounded-full flex-shrink-0 transition-all"
           style={{
             background: color,
-            boxShadow: pulse ? `0 0 8px 2px ${color}` : `0 0 4px ${color}`,
+            boxShadow: isSimDown ? "0 0 10px 3px #ef4444" : pulse ? `0 0 8px 2px ${color}` : `0 0 4px ${color}`,
           }} />
       </div>
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="text-slate-400 flex-shrink-0">
+          <span className={isSimDown ? "text-red-400 flex-shrink-0" : "text-slate-400 flex-shrink-0"}>
             <DeviceIcon type={device.type} size={14} />
           </span>
-          <p className="text-xs font-bold text-slate-100 truncate leading-none group-hover:text-blue-300 transition-colors">
+          <p className={`text-xs font-bold truncate leading-none transition-colors ${isSimDown ? "text-red-200 group-hover:text-red-100" : "text-slate-100 group-hover:text-blue-300"}`}>
             {device.name}
           </p>
         </div>
@@ -96,8 +98,8 @@ function RackUnit({ device, isSelected, onClick, simMode, affectedIds }) {
           U{device.u_pos}
         </span>
         {uH > 36 && (
-          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md border uppercase tracking-wider ${STATUS_BG[status]}`}>
-            {STATUS_LABEL[status]}
+          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md border uppercase tracking-wider ${isSimDown ? "bg-red-500/25 text-red-300 border-red-500/50" : STATUS_BG[status]}`}>
+            {isSimDown ? "SIMULASI DOWN" : STATUS_LABEL[status]}
           </span>
         )}
       </div>
@@ -190,12 +192,18 @@ export default function DigitalTwinPage() {
   const [updating, setUpdating]       = useState(false);
   const [simMode, setSimMode]         = useState(false);
   const [affectedIds, setAffectedIds] = useState([]);
+  const [simulationScenarios, setSimulationScenarios] = useState([]);
+  const [activeScenario, setActiveScenario]           = useState(null);
 
-  // Load buildings list on mount
+  // Load buildings and simulation scenarios on mount
   useEffect(() => {
     buildingService.getAll().then(res => {
       setBuildings(res.data);
       if (res.data.length > 0) setSelectedBuilding(res.data[0].id);
+    }).catch(() => {});
+
+    simulationService.getAll().then(res => {
+      setSimulationScenarios(res.data);
     }).catch(() => {});
   }, []);
 
@@ -246,23 +254,42 @@ export default function DigitalTwinPage() {
     }
     toast.success("Semua perangkat direset ke Aktif.");
     setSimMode(false);
+    setActiveScenario(null);
     setAffectedIds([]);
     setSelected(null);
     load();
   };
 
+  const handleSelectScenario = (scenario) => {
+    setActiveScenario(scenario);
+    setSimMode(true);
+    const targetIds = [scenario.device_id, ...(scenario.affected_device_ids || [])].filter(Boolean);
+    setAffectedIds(targetIds.length > 0 ? targetIds : (allDevices.length > 0 ? [allDevices[0].id] : []));
+    toast.error(`Simulasi Aktif: ${scenario.name}`);
+  };
+
+  const handleStopSimMode = () => {
+    setSimMode(false);
+    setActiveScenario(null);
+    setAffectedIds([]);
+    toast.success("Mode simulasi dinonaktifkan.");
+  };
+
   const toggleSimMode = () => {
     if (!simMode) {
-      const downIds = allDevices
-        .filter(d => d.status === "down" || d.status === "maintenance")
-        .map(d => d.id);
-      setAffectedIds(downIds.length > 0 ? downIds : [allDevices[0]?.id].filter(Boolean));
-      toast("Mode Simulasi Aktif");
+      if (simulationScenarios.length > 0) {
+        handleSelectScenario(simulationScenarios[0]);
+      } else {
+        setSimMode(true);
+        const downIds = allDevices
+          .filter(d => d.status === "down" || d.status === "maintenance")
+          .map(d => d.id);
+        setAffectedIds(downIds.length > 0 ? downIds : [allDevices[0]?.id].filter(Boolean));
+        toast("Mode Simulasi Aktif");
+      }
     } else {
-      setAffectedIds([]);
-      toast("Mode Simulasi Dimatikan");
+      handleStopSimMode();
     }
-    setSimMode(s => !s);
   };
 
   return (
@@ -280,7 +307,7 @@ export default function DigitalTwinPage() {
           </p>
         </div>
 
-        {/* Building Selector */}
+        {/* Building Selector & Sim Controls */}
         <div className="flex items-center gap-4 flex-wrap">
           <div className="input-group min-w-[240px]">
             <div className="input-icon-box text-blue-400">
@@ -299,21 +326,91 @@ export default function DigitalTwinPage() {
           </div>
 
           <button onClick={toggleSimMode}
-            className={`flex items-center gap-2.5 px-5 py-3 rounded-2xl text-xs font-black border transition-all shadow-md ${
+            className={`flex items-center gap-2.5 px-5 py-3 rounded-2xl text-xs font-black border transition-all shadow-md cursor-pointer ${
               simMode
                 ? "bg-red-500/20 border-red-500/50 text-red-400 shadow-[0_0_20px_rgba(239,68,68,0.4)] animate-pulse"
                 : "glass border-slate-700 text-slate-300 hover:bg-slate-800"
             }`}>
             {simMode ? <ZapOff size={16} /> : <Zap size={16} />}
-            {simMode ? "Sim Mode ON" : "Mode Simulasi Live"}
+            {simMode ? "Sim Mode Aktif" : "Mode Simulasi Live"}
           </button>
 
           <button onClick={handleResetAll}
-            className="flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-black glass border border-slate-700 text-slate-300 hover:bg-slate-800 transition-colors shadow-md">
+            className="flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-black glass border border-slate-700 text-slate-300 hover:bg-slate-800 transition-colors shadow-md cursor-pointer">
             <RotateCcw size={16} /> Reset Semua Status
           </button>
         </div>
       </div>
+
+      {/* Integrated Live Simulation Incident Banner */}
+      {simMode && (
+        <div className="glass-strong border border-red-500/50 rounded-3xl p-5 shadow-[0_0_30px_rgba(239,68,68,0.25)] bg-gradient-to-r from-red-950/40 via-purple-950/30 to-slate-900/60 relative overflow-hidden">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-red-500/20 border border-red-500/40 flex items-center justify-center text-red-400 flex-shrink-0 animate-pulse">
+                <Flame size={24} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider bg-red-500/20 text-red-300 border border-red-500/40 animate-pulse">
+                    Live Incident Simulation
+                  </span>
+                  <span className="text-xs font-mono text-purple-300 font-bold capitalize">
+                    {activeScenario?.scenario_type?.replace(/_/g, " ") ?? "Skenario Insiden"}
+                  </span>
+                </div>
+                <h3 className="text-base font-black text-white mt-1">
+                  {activeScenario?.name ?? "Simulasi Kegagalan Perangkat"}
+                </h3>
+                <p className="text-xs text-slate-300 mt-0.5 max-w-2xl leading-relaxed">
+                  {activeScenario?.impact_description || activeScenario?.description || "Perangkat pada rack disimulasikan mengalami pemadaman/gangguan kritis."}
+                </p>
+                <div className="flex items-center gap-3 mt-2 text-[11px] font-semibold text-slate-400">
+                  <span className="text-red-400 font-bold flex items-center gap-1">
+                    <AlertTriangle size={13} /> {affectedIds.length} Perangkat Terdampak pada Visual Rack
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 flex-wrap">
+              {/* Scenario Quick Selector */}
+              <div className="input-group min-w-[220px]">
+                <select
+                  value={activeScenario?.id ?? ""}
+                  onChange={e => {
+                    const found = simulationScenarios.find(s => s.id === Number(e.target.value));
+                    if (found) handleSelectScenario(found);
+                  }}
+                  className="select-control text-xs font-bold"
+                >
+                  {simulationScenarios.map(s => (
+                    <option key={s.id} value={s.id} className="bg-slate-900 text-white font-bold">
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Navigate to full simulation SOP */}
+              <button
+                onClick={() => navigate("/simulation")}
+                className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl shadow-[0_0_15px_rgba(168,85,247,0.4)] transition-all cursor-pointer"
+              >
+                <BookOpen size={14} /> Buka SOP & Mitigasi
+              </button>
+
+              {/* Resolve/Stop button */}
+              <button
+                onClick={handleStopSimMode}
+                className="flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl border border-slate-700 transition-all cursor-pointer"
+              >
+                <Check size={14} className="text-emerald-400" /> Akhiri Simulasi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-1 overflow-hidden gap-6">
         {/* Racks View */}

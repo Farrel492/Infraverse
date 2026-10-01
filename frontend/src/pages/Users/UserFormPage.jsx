@@ -5,7 +5,7 @@ import Breadcrumb from "../../components/shared/Breadcrumb.jsx";
 import {
   Users, ArrowLeft, Save, ShieldCheck, Mail, Lock, Phone,
   Eye, EyeOff, UserCheck, Shield, AlertCircle, Sparkles, CheckCircle2,
-  Wrench, Eye as EyeIcon, Compass, KeyRound
+  Wrench, Eye as EyeIcon, Compass, KeyRound, Camera
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -54,6 +54,8 @@ export default function UserFormPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [showPass, setShowPass] = useState(false);
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -75,6 +77,9 @@ export default function UserFormPage() {
             role: u.role ?? "teknisi",
             phone: u.phone ?? "",
           });
+          if (u.avatar) {
+            setAvatarPreview(u.avatar.startsWith('http') || u.avatar.startsWith('/storage/') ? u.avatar : `/storage/${u.avatar}`);
+          }
         })
         .catch(() => {
           toast.error("Gagal memuat data pengguna.");
@@ -103,26 +108,22 @@ export default function UserFormPage() {
     setError("");
 
     try {
+      const formData = new FormData();
+      formData.append("name", form.name.trim());
+      formData.append("email", form.email.trim());
+      formData.append("role", form.role);
+      if (form.phone) formData.append("phone", form.phone.trim());
+      if (avatarFile) formData.append("avatar", avatarFile);
+
       if (isEditing) {
-        const payload = {
-          name: form.name.trim(),
-          email: form.email.trim(),
-          role: form.role,
-          phone: form.phone ? form.phone.trim() : null,
-        };
         if (form.password && form.password.trim().length >= 8) {
-          payload.password = form.password.trim();
+          formData.append("password", form.password.trim());
         }
-        await userService.update(id, payload);
+        await userService.update(id, formData);
         toast.success("Data akun pengguna berhasil diperbarui!");
       } else {
-        await userService.create({
-          name: form.name.trim(),
-          email: form.email.trim(),
-          password: form.password,
-          role: form.role,
-          phone: form.phone ? form.phone.trim() : null,
-        });
+        formData.append("password", form.password);
+        await userService.create(formData);
         toast.success("Akun pengguna baru berhasil didaftarkan ke sistem!");
       }
       navigate("/users");
@@ -226,6 +227,45 @@ export default function UserFormPage() {
             </div>
 
             <div className="space-y-6">
+              {/* Profile Photo / Avatar */}
+              <div>
+                <label className="form-label">
+                  <span>Foto Profil Pengguna (Avatar)</span>
+                  <span className="text-[11px] font-semibold text-slate-500">Opsional</span>
+                </label>
+                <div className="flex items-center gap-4 mt-2">
+                  <div className="w-16 h-16 rounded-2xl bg-slate-900 border border-slate-700/80 overflow-hidden flex items-center justify-center text-slate-400 shadow-md flex-shrink-0">
+                    {avatarPreview ? (
+                      <img src={avatarPreview} alt="Preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <Users size={26} className="text-slate-500" />
+                    )}
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-600 rounded-xl text-xs font-bold text-slate-200 hover:text-white cursor-pointer transition-all shadow-sm">
+                      <Camera size={14} className="text-blue-400" />
+                      <span>{avatarPreview ? "Ganti Foto Profil" : "Upload Foto Profil"}</span>
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/jpg,image/webp"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          if (file.size > 3 * 1024 * 1024) {
+                            toast.error("Ukuran foto maksimal 3MB.");
+                            return;
+                          }
+                          setAvatarFile(file);
+                          setAvatarPreview(URL.createObjectURL(file));
+                        }}
+                      />
+                    </label>
+                    <p className="text-[11px] text-slate-500">Mendukung format PNG, JPG, atau WebP (maks. 3MB)</p>
+                  </div>
+                </div>
+              </div>
+
               {/* Full Name */}
               <div>
                 <label className="form-label">
@@ -434,8 +474,12 @@ export default function UserFormPage() {
               <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
 
               <div className="flex items-start justify-between relative z-10">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 border border-blue-400/40 flex items-center justify-center text-white text-xl font-black shadow-lg">
-                  {form.name ? form.name.charAt(0).toUpperCase() : "U"}
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 border border-blue-400/40 flex items-center justify-center text-white text-xl font-black shadow-lg overflow-hidden flex-shrink-0">
+                  {avatarPreview ? (
+                    <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    form.name ? form.name.charAt(0).toUpperCase() : "U"
+                  )}
                 </div>
                 <div className="text-right">
                   <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase border ${selectedRoleObj.textActive} bg-slate-900 border-slate-700`}>

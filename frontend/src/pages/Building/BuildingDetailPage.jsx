@@ -224,12 +224,44 @@ export default function BuildingDetailPage() {
   const usedU = rackDevices.reduce((sum, d) => sum + (d.rack_units ?? 1), 0);
   const usedPercent = Math.min(100, Math.round((usedU / totalU) * 100));
 
-  // Generate slot map U1..U42
-  const rackSlotMap = {};
-  rackDevices.forEach(dev => {
-    const pos = dev.rack_position ?? 1;
-    rackSlotMap[pos] = dev;
+  // Generate layout items with multi-U grouping (e.g. 3U server occupies U24 down to U22)
+  const coveredSlots = new Set();
+  const sortedDevices = [...rackDevices].sort((a, b) => (b.rack_position ?? 0) - (a.rack_position ?? 0));
+  const deviceByStartSlot = {};
+
+  sortedDevices.forEach(d => {
+    if (d.rack_position) {
+      deviceByStartSlot[d.rack_position] = d;
+      const units = Math.max(1, d.rack_units ?? 1);
+      for (let offset = 0; offset < units; offset++) {
+        const slot = d.rack_position - offset;
+        if (slot >= 1) coveredSlots.add(slot);
+      }
+    }
   });
+
+  const layoutItems = [];
+  for (let u = totalU; u >= 1; u--) {
+    if (deviceByStartSlot[u]) {
+      const dev = deviceByStartSlot[u];
+      const units = Math.max(1, dev.rack_units ?? 1);
+      const endU = Math.max(1, u - units + 1);
+      layoutItems.push({
+        type: "device",
+        device: dev,
+        startU: u,
+        endU: endU,
+        units: units,
+        slots: Array.from({ length: units }, (_, k) => u - k).filter(s => s >= 1),
+      });
+      u = endU; // fast-forward past the spanned slots
+    } else if (!coveredSlots.has(u)) {
+      layoutItems.push({
+        type: "empty",
+        uNum: u,
+      });
+    }
+  }
 
   return (
     <div className="p-8 lg:p-10 space-y-8 max-w-7xl mx-auto">
@@ -538,7 +570,7 @@ export default function BuildingDetailPage() {
                       : "bg-slate-900/80 border-slate-700/80 text-slate-400 hover:bg-slate-800 hover:text-slate-200"
                   }`}
                 >
-                  🖥️ {rk.name} {rk.position ? `(${rk.position})` : ""}
+                  {rk.name}
                 </button>
               ))}
             </div>
@@ -583,41 +615,67 @@ export default function BuildingDetailPage() {
                     </span>
                   </div>
 
-                  {/* Physical U Slots (From U42 Down to U1) */}
+                  {/* Physical U Slots (Multi-U Device Spans & Empty Slots) */}
                   <div className="space-y-1.5 font-mono">
-                    {Array.from({ length: totalU }).map((_, idx) => {
-                      const uNum = totalU - idx; // e.g. 42 down to 1
-                      const device = rackSlotMap[uNum];
-
-                      if (device) {
-                        const units = device.rack_units ?? 1;
-                        const statusColor = device.status === "active" ? "#22c55e" : device.status === "down" ? "#ef4444" : "#eab308";
+                    {layoutItems.map(item => {
+                      if (item.type === "device") {
+                        const dev = item.device;
+                        const units = item.units;
+                        const statusColor = dev.status === "active" ? "#22c55e" : dev.status === "down" ? "#ef4444" : "#eab308";
                         
                         return (
                           <div
-                            key={uNum}
-                            onClick={() => navigate(`/assets/${device.id}/edit`)}
-                            className="group relative cursor-pointer p-3 rounded-xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-slate-700/80 hover:border-blue-400 transition-all shadow-md flex items-center justify-between"
-                            style={{ minHeight: `${units * 42}px` }}
+                            key={`dev-${dev.id}-${item.startU}`}
+                            onClick={() => navigate(`/assets/${dev.id}/edit`)}
+                            className="group relative cursor-pointer p-3.5 rounded-xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-slate-700/90 hover:border-blue-400 transition-all shadow-md flex items-center justify-between"
+                            style={{ minHeight: `${Math.max(52, units * 48)}px` }}
                           >
                             <div className="flex items-center gap-3.5">
-                              <span className="text-xs font-bold text-slate-400 bg-slate-950 px-2 py-1 rounded-lg border border-slate-800">
-                                U{uNum}
-                              </span>
-                              <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: statusColor, boxShadow: `0 0 10px ${statusColor}` }} />
+                              {/* Stacked U Slots Indicator */}
+                              {units > 1 ? (
+                                <div className="flex flex-col items-center justify-center font-mono text-[10px] font-bold text-slate-300 bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800 leading-tight">
+                                  {item.slots.map(s => (
+                                    <span key={s} className="text-blue-300">U{s}</span>
+                                  ))}
+                                </div>
+                              ) : (
+                                <span className="text-xs font-bold text-slate-300 bg-slate-950 px-2 py-1 rounded-lg border border-slate-800">
+                                  U{item.startU}
+                                </span>
+                              )}
+
                               <div>
                                 <p className="text-xs font-bold text-slate-100 group-hover:text-blue-300 transition-colors flex items-center gap-2">
-                                  {device.name}
-                                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-800 text-blue-300 border border-slate-700 capitalize">
-                                    {device.type}
+                                  {dev.name}
+                                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                                    {units}U
+                                  </span>
+                                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 capitalize">
+                                    {dev.type}
                                   </span>
                                 </p>
                                 <p className="text-[11px] text-slate-400 font-mono mt-0.5">
-                                  IP: {device.ip_address ?? "-"} | {device.vendor ?? ""} {device.model ?? ""} ({device.power_consumption_w ?? 0}W)
+                                  Slot: U{item.startU}{units > 1 ? ` – U${item.endU}` : ""} | IP: {dev.ip_address ?? "-"} | {dev.vendor ?? ""} {dev.model ?? ""} ({dev.power_consumption_w ?? 0}W)
                                 </p>
+                                {/* Server Drive Bays / Vents decoration */}
+                                {units >= 2 && (
+                                  <div className="flex items-center gap-1.5 mt-2">
+                                    {Array.from({ length: Math.min(8, units * 2) }).map((_, bi) => (
+                                      <div key={bi} className="w-5 h-2.5 rounded-xs bg-slate-950/80 border border-slate-700/80 flex items-center justify-center">
+                                        <div className="w-1.5 h-0.5 bg-slate-600 rounded-2xs" />
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
                             </div>
-                            <div className="flex items-center gap-2">
+                            
+                            <div className="flex items-center gap-3">
+                              {/* Dual Status LEDs */}
+                              <div className="flex items-center gap-1.5">
+                                <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: statusColor, boxShadow: `0 0 8px ${statusColor}` }} />
+                                <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: statusColor, boxShadow: `0 0 8px ${statusColor}` }} />
+                              </div>
                               <span className="text-[11px] font-bold text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity bg-blue-500/10 px-2.5 py-1.5 rounded-lg border border-blue-500/30 flex items-center gap-1">
                                 Kelola &rarr;
                               </span>
@@ -627,9 +685,10 @@ export default function BuildingDetailPage() {
                       }
 
                       // Empty Slot Render
+                      const uNum = item.uNum;
                       return (
                         <div
-                          key={uNum}
+                          key={`empty-${uNum}`}
                           onClick={() => {
                             if (canWrite) {
                               navigate(`/assets/create?rack_id=${activeRack.id}&rack_position=${uNum}`);

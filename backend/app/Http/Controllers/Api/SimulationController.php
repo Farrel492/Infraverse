@@ -103,6 +103,44 @@ class SimulationController extends Controller
         return response()->json($logs);
     }
 
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'name'                => ['required', 'string', 'max:255'],
+            'scenario_type'       => ['required', 'in:router_down,switch_down,fiber_cut,ups_failure,server_offline'],
+            'description'         => ['nullable', 'string'],
+            'impact_description'  => ['nullable', 'string'],
+            'affected_device_ids' => ['nullable', 'array'],
+            'device_id'           => ['nullable', 'exists:devices,id'],
+        ]);
+
+        $scenario = SimulationScenario::create($data);
+
+        return response()->json($scenario, 201);
+    }
+
+    public function updateScenario(Request $request, SimulationScenario $simulation): JsonResponse
+    {
+        $data = $request->validate([
+            'name'                => ['sometimes', 'required', 'string', 'max:255'],
+            'scenario_type'       => ['sometimes', 'in:router_down,switch_down,fiber_cut,ups_failure,server_offline'],
+            'description'         => ['nullable', 'string'],
+            'impact_description'  => ['nullable', 'string'],
+            'affected_device_ids' => ['nullable', 'array'],
+            'device_id'           => ['nullable', 'exists:devices,id'],
+        ]);
+
+        $simulation->update($data);
+
+        return response()->json($simulation->fresh());
+    }
+
+    public function destroy(SimulationScenario $simulation): JsonResponse
+    {
+        $simulation->delete();
+        return response()->json(['message' => 'Skenario berhasil dihapus.']);
+    }
+
     private function generateSteps(string $type, $device): array
     {
         $name = $device?->name ?? 'perangkat';

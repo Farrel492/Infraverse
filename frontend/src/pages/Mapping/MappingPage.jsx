@@ -12,13 +12,14 @@ import { OrbitControls, Html, Box, Sphere, Cylinder } from "@react-three/drei";
 import * as THREE from "three";
 import { 
   Network, Plus, Router, Shield, Server, Wifi, Battery, 
-  Package, Trash2, Layers, RefreshCw, Eye, Sparkles, Activity
+  Package, Trash2, Layers, RefreshCw, Eye, Sparkles, Activity,
+  Plug, CheckCircle2, AlertCircle, X, Cable
 } from "lucide-react";
 
 const TYPE_COLOR  = { router:"#00f0ff", switch:"#818cf8", firewall:"#f87171", server:"#34d399", access_point:"#fbbf24", ups:"#f472b6", other:"#94a3b8" };
 const TYPE_LABEL  = { router:"Router", switch:"Switch", firewall:"Firewall", server:"Server", access_point:"Access Point", ups:"UPS", other:"Other" };
 const STATUS_C    = { active:"#22c55e", inactive:"#64748b", maintenance:"#f59e0b", down:"#ef4444" };
-const CONN_COLOR  = { fiber:"#38bdf8", utp:"#94a3b8", wireless:"#fbbf24", other:"#a855f7" };
+const CONN_COLOR  = { fiber:"#38bdf8", utp:"#10b981", wireless:"#fbbf24", other:"#a855f7" };
 
 // 3D Layout Calculators
 function calculateLayout(nodes, mode = "tier") {
@@ -302,6 +303,61 @@ export default function MappingPage() {
   const [layoutMode, setLayoutMode]     = useState("tier");
   const [deletingConn, setDeletingConn] = useState(null);
 
+  // Cable Connection Modal State
+  const [connectModalOpen, setConnectModalOpen]     = useState(false);
+  const [connectSource, setConnectSource]           = useState("");
+  const [connectTarget, setConnectTarget]           = useState("");
+  const [connectType, setConnectType]               = useState("utp"); // utp | fiber | wireless
+  const [connectPortSource, setConnectPortSource]   = useState("");
+  const [connectPortTarget, setConnectPortTarget]   = useState("");
+  const [connecting, setConnecting]                 = useState(false);
+
+  const openConnectModal = (sourceId = null) => {
+    const sId = sourceId ? String(sourceId) : (rawNodes[0] ? String(rawNodes[0].id) : "");
+    setConnectSource(sId);
+    const otherNode = rawNodes.find(n => String(n.id) !== String(sId));
+    setConnectTarget(otherNode ? String(otherNode.id) : "");
+    setConnectType("utp");
+    setConnectPortSource("");
+    setConnectPortTarget("");
+    setConnectModalOpen(true);
+  };
+
+  const handleCreateConnection = async (e) => {
+    e.preventDefault();
+    if (!connectSource || !connectTarget) {
+      toast.error("Silakan pilih perangkat sumber dan tujuan.");
+      return;
+    }
+    if (String(connectSource) === String(connectTarget)) {
+      toast.error("Perangkat sumber dan tujuan tidak boleh sama.");
+      return;
+    }
+
+    setConnecting(true);
+    try {
+      await mappingService.addConnection({
+        source_device_id: Number(connectSource),
+        target_device_id: Number(connectTarget),
+        connection_type: connectType,
+        port_source: connectPortSource.trim() || null,
+        port_target: connectPortTarget.trim() || null,
+      });
+
+      const sDev = rawNodes.find(n => String(n.id) === String(connectSource));
+      const tDev = rawNodes.find(n => String(n.id) === String(connectTarget));
+      toast.success(`Kabel ${connectType.toUpperCase()} berhasil menyambungkan ${sDev?.name ?? "Node A"} dengan ${tDev?.name ?? "Node B"}!`);
+
+      setConnectModalOpen(false);
+      await load();
+    } catch (err) {
+      const msg = err.response?.data?.message ?? "Gagal menyambungkan kabel.";
+      toast.error(msg);
+    } finally {
+      setConnecting(false);
+    }
+  };
+
   const load = async () => {
     setLoading(true);
     try {
@@ -457,14 +513,16 @@ export default function MappingPage() {
           )}
 
           {/* "+ Tambah Koneksi Baru" Button */}
-          <button 
-            id="btn-add-connection"
-            onClick={() => navigate("/mapping/create-connection")}
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 shadow-[0_0_25px_rgba(59,130,246,0.45)] hover:shadow-[0_0_35px_rgba(59,130,246,0.7)] text-white text-xs font-black rounded-2xl transition-all cursor-pointer"
-          >
-            <Plus size={16} />
-            <span>Tambah Koneksi Baru</span>
-          </button>
+          {canWrite && (
+            <button 
+              id="btn-add-connection"
+              onClick={() => openConnectModal()}
+              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 shadow-[0_0_25px_rgba(59,130,246,0.45)] hover:shadow-[0_0_35px_rgba(59,130,246,0.7)] text-white text-xs font-black rounded-2xl transition-all cursor-pointer"
+            >
+              <Plug size={16} />
+              <span>Tambah Koneksi Baru</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -618,9 +676,20 @@ export default function MappingPage() {
 
                 {/* Connected Edges */}
                 <div className="space-y-3">
-                  <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                    Jalur Interkoneksi Terhubung ({selectedEdges.length})
-                  </h4>
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                      Jalur Interkoneksi ({selectedEdges.length})
+                    </h4>
+                    {canWrite && (
+                      <button
+                        onClick={() => openConnectModal(selectedNode.id)}
+                        className="text-[11px] font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1 hover:underline cursor-pointer"
+                      >
+                        <Plus size={12} /> Sambung Kabel
+                      </button>
+                    )}
+                  </div>
+
                   <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
                     {selectedEdges.map(e => {
                       const other = e.source === selectedNode.id ? getNode(e.target) : getNode(e.source);
@@ -635,22 +704,46 @@ export default function MappingPage() {
                             <span className="text-[10px] text-slate-400 uppercase font-mono px-2 py-0.5 rounded bg-slate-900 border border-slate-800">
                               {e.type}
                             </span>
-                            <button 
-                              onClick={() => setDeletingConn(e)} 
-                              title="Hapus Koneksi"
-                              className="p-1.5 text-red-400 hover:bg-red-500/20 rounded-lg transition-all"
-                            >
-                              <Trash2 size={13} />
-                            </button>
+                            {canWrite && (
+                              <button 
+                                onClick={() => setDeletingConn(e)} 
+                                title="Hapus Koneksi"
+                                className="p-1.5 text-red-400 hover:bg-red-500/20 rounded-lg transition-all"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            )}
                           </div>
                         </div>
                       );
                     })}
 
                     {selectedEdges.length === 0 && (
-                      <p className="text-xs text-slate-500 italic text-center py-4">Belum ada koneksi aktif untuk perangkat ini.</p>
+                      <div className="text-center py-4 px-3 bg-slate-800/30 rounded-2xl border border-dashed border-slate-700/60 space-y-2.5">
+                        <p className="text-xs text-slate-400 italic">Belum ada kabel terhubung ke perangkat ini.</p>
+                        {canWrite && (
+                          <button
+                            onClick={() => openConnectModal(selectedNode.id)}
+                            className="w-full py-2 px-3 bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 hover:text-white border border-blue-500/30 font-bold text-xs rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                          >
+                            <Plug size={13} />
+                            <span>Hubungkan Kabel Sekarang</span>
+                          </button>
+                        )}
+                      </div>
                     )}
                   </div>
+
+                  {/* Primary Connect Button in Side Panel */}
+                  {canWrite && (
+                    <button
+                      onClick={() => openConnectModal(selectedNode.id)}
+                      className="w-full py-3 bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white font-black text-xs rounded-xl shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer mt-3"
+                    >
+                      <Plug size={15} />
+                      <span>Sambungkan Kabel ke Node Lain</span>
+                    </button>
+                  )}
                 </div>
 
               </div>
@@ -658,6 +751,170 @@ export default function MappingPage() {
           )}
         </div>
       </div>
+
+      {/* Cable Connection Modal Dialog */}
+      {connectModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-xl glass-strong border border-slate-700/80 rounded-3xl p-7 shadow-2xl space-y-6 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+            
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4 relative z-10">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center text-blue-400 shadow-inner">
+                  <Plug size={20} />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-100">
+                    Sambungkan Kabel Interkoneksi
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Hubungkan dua node perangkat hardware dengan kabel fisik
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setConnectModalOpen(false)}
+                className="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateConnection} className="space-y-5 relative z-10">
+              {/* Node Source & Target Selection */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Node A (Source) */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-blue-400" /> Dari Node (Perangkat A)
+                  </label>
+                  <select
+                    value={connectSource}
+                    onChange={e => setConnectSource(e.target.value)}
+                    required
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-semibold text-slate-200 outline-none focus:border-blue-500"
+                  >
+                    <option value="">-- Pilih Perangkat A --</option>
+                    {rawNodes.map(n => (
+                      <option key={n.id} value={n.id}>
+                        {n.name} ({n.type?.toUpperCase()})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Node B (Target) */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400" /> Ke Node (Perangkat B)
+                  </label>
+                  <select
+                    value={connectTarget}
+                    onChange={e => setConnectTarget(e.target.value)}
+                    required
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-semibold text-slate-200 outline-none focus:border-emerald-500"
+                  >
+                    <option value="">-- Pilih Perangkat B --</option>
+                    {rawNodes.filter(n => String(n.id) !== String(connectSource)).map(n => (
+                      <option key={n.id} value={n.id}>
+                        {n.name} ({n.type?.toUpperCase()})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Cable Media Selection */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-300">
+                  Pilih Media Transmisi Kabel
+                </label>
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { id: "utp", label: "UTP / Cat6A", sub: "Ethernet RJ-45", border: "border-emerald-500/80 bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-500" },
+                    { id: "fiber", label: "Fiber Optic", sub: "FO 10G/40G Backbone", border: "border-cyan-500/80 bg-cyan-500/15 text-cyan-300 ring-1 ring-cyan-500" },
+                    { id: "wireless", label: "Wireless PtP", sub: "Radio Wireless", border: "border-amber-500/80 bg-amber-500/15 text-amber-300 ring-1 ring-amber-500" },
+                  ].map(c => {
+                    const isSelected = connectType === c.id;
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => setConnectType(c.id)}
+                        className={`p-3 rounded-2xl border text-left transition-all ${
+                          isSelected
+                            ? `${c.border} shadow-lg`
+                            : "bg-slate-900/60 border-slate-700/80 text-slate-400 hover:bg-slate-800"
+                        }`}
+                      >
+                        <p className="text-xs font-black text-slate-100 flex items-center justify-between">
+                          <span>{c.label}</span>
+                          {isSelected && <CheckCircle2 size={13} className="text-emerald-400" />}
+                        </p>
+                        <p className="text-[10px] text-slate-400 mt-1 font-medium">{c.sub}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Ports (Optional) */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-slate-400">Port Node A (Opsional)</label>
+                  <input
+                    type="text"
+                    value={connectPortSource}
+                    onChange={e => setConnectPortSource(e.target.value)}
+                    placeholder="Contoh: Port 1 / eth0"
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-slate-200 outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-slate-400">Port Node B (Opsional)</label>
+                  <input
+                    type="text"
+                    value={connectPortTarget}
+                    onChange={e => setConnectPortTarget(e.target.value)}
+                    placeholder="Contoh: Port 24 / eth1"
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-slate-200 outline-none focus:border-emerald-500"
+                  />
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setConnectModalOpen(false)}
+                  className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-colors cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={connecting}
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white text-xs font-black shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                >
+                  {connecting ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Menyambungkan...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Plug size={14} />
+                      <span>Hubungkan Kabel Sekarang</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Confirm Delete Connection Dialog */}
       {deletingConn && (

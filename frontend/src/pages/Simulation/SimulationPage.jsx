@@ -1,5 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { simulationService } from "../../services/simulationService";
+import { deviceService } from "../../services/deviceService";
+import useAuthStore from "../../stores/authStore";
 import Breadcrumb from "../../components/shared/Breadcrumb.jsx";
 import { SkeletonCard } from "../../components/shared/Skeleton.jsx";
 import toast from "react-hot-toast";
@@ -7,7 +9,8 @@ import {
   Router, Network, Scissors, Battery, Server,
   Play, Clock, CheckCircle, Target, Cpu,
   AlertTriangle, ChevronRight, RotateCcw, Activity, ShieldCheck, Zap,
-  Flame, FastForward, Check, ShieldAlert, Award
+  Flame, FastForward, Check, ShieldAlert, Award,
+  Plus, Pencil, Trash2, X, Save
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -24,7 +27,7 @@ const TYPE_COLOR = {
   switch_down:    { border:"border-purple-500/40", bg:"bg-purple-500/5", glow:"shadow-[0_0_20px_rgba(168,85,247,0.15)]", badge: "bg-purple-500/20 text-purple-300 border-purple-500/40" },
   fiber_cut:      { border:"border-amber-500/40",  bg:"bg-amber-500/5", glow:"shadow-[0_0_20px_rgba(245,158,11,0.15)]", badge: "bg-amber-500/20 text-amber-300 border-amber-500/40" },
   ups_failure:    { border:"border-pink-500/40",   bg:"bg-pink-500/5", glow:"shadow-[0_0_20px_rgba(236,72,153,0.15)]", badge: "bg-pink-500/20 text-pink-300 border-pink-500/40" },
-  server_offline: { border:"border-emerald-500/40",bg:"bg-emerald-500/5", glow:"shadow-[0_0_20px_rgba(16,185,129,0.15)]", badge: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40" },
+  server_offline: { border:"border-emerald-500/40",bg:"bg-emerald-500/5", glow:"shadow-[0_0_20px_rgba(160,185,129,0.15)]", badge: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40" },
 };
 
 const SEVERITY_INFO = {
@@ -49,6 +52,9 @@ function getRating(score) {
 }
 
 export default function SimulationPage() {
+  const { user } = useAuthStore();
+  const isAdmin = user?.role === "admin";
+
   const [scenarios, setScenarios] = useState([]);
   const [logs, setLogs]           = useState([]);
   const [loading, setLoading]     = useState(true);
@@ -61,6 +67,20 @@ export default function SimulationPage() {
   const timerRef                  = useRef(null);
   const startTimeRef              = useRef(null);
 
+  // Admin CRUD Modal state
+  const [modalOpen, setModalOpen]               = useState(false);
+  const [editingScenario, setEditingScenario]   = useState(null);
+  const [devicesList, setDevicesList]           = useState([]);
+  const [savingScenario, setSavingScenario]     = useState(false);
+  const [scenarioForm, setScenarioForm]         = useState({
+    name: "",
+    scenario_type: "router_down",
+    description: "",
+    impact_description: "",
+    device_id: "",
+    affected_device_ids: [],
+  });
+
   const load = async () => {
     const [sc, lg] = await Promise.all([
       simulationService.getAll(),
@@ -71,7 +91,12 @@ export default function SimulationPage() {
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    deviceService.getAll()
+      .then(res => setDevicesList(res.data))
+      .catch(() => {});
+  }, []);
 
   const startTimer = () => {
     startTimeRef.current = Date.now();
@@ -126,6 +151,75 @@ export default function SimulationPage() {
     setRunning(null);
     setResult(null);
     setElapsed(0);
+  };
+
+  const openCreateModal = () => {
+    setEditingScenario(null);
+    setScenarioForm({
+      name: "",
+      scenario_type: "router_down",
+      description: "",
+      impact_description: "",
+      device_id: devicesList[0]?.id ? String(devicesList[0].id) : "",
+      affected_device_ids: [],
+    });
+    setModalOpen(true);
+  };
+
+  const openEditModal = (s) => {
+    setEditingScenario(s);
+    setScenarioForm({
+      name: s.name,
+      scenario_type: s.scenario_type,
+      description: s.description || "",
+      impact_description: s.impact_description || "",
+      device_id: s.device_id ? String(s.device_id) : "",
+      affected_device_ids: s.affected_device_ids || [],
+    });
+    setModalOpen(true);
+  };
+
+  const handleDeleteScenario = async (s) => {
+    if (!window.confirm(`Hapus skenario simulasi "${s.name}"?`)) return;
+    try {
+      await simulationService.destroy(s.id);
+      toast.success("Skenario simulasi berhasil dihapus.");
+      load();
+    } catch {
+      toast.error("Gagal menghapus skenario.");
+    }
+  };
+
+  const handleSaveScenario = async (e) => {
+    e.preventDefault();
+    if (!scenarioForm.name.trim()) {
+      toast.error("Nama skenario wajib diisi.");
+      return;
+    }
+    setSavingScenario(true);
+    try {
+      const payload = {
+        name: scenarioForm.name.trim(),
+        scenario_type: scenarioForm.scenario_type,
+        description: scenarioForm.description,
+        impact_description: scenarioForm.impact_description,
+        device_id: scenarioForm.device_id ? Number(scenarioForm.device_id) : null,
+        affected_device_ids: scenarioForm.affected_device_ids,
+      };
+      if (editingScenario) {
+        await simulationService.update(editingScenario.id, payload);
+        toast.success("Skenario berhasil diperbarui.");
+      } else {
+        await simulationService.create(payload);
+        toast.success("Skenario berhasil ditambahkan.");
+      }
+      setModalOpen(false);
+      load();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Gagal menyimpan skenario.");
+    } finally {
+      setSavingScenario(false);
+    }
   };
 
   const formatTime = (s) => {
@@ -194,7 +288,7 @@ export default function SimulationPage() {
             { step: "2", name: "Isolasi Gangguan", desc: "Isolasi area kegagalan dan alihkan ke backup redundant" },
             { step: "3", name: "Prosedur Mitigasi", desc: "Eksekusi langkah SOP perbaikan teknis berurutan" },
             { step: "4", name: "Verifikasi & Evaluasi", desc: "Layanan pulih 100% dan kalkulasi skor kepatuhan SLA" },
-          ].map((s, idx) => (
+          ].map((s) => (
             <div key={s.step} className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-start gap-3">
               <div className="w-8 h-8 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-400 font-black text-sm flex items-center justify-center flex-shrink-0">
                 {s.step}
@@ -208,8 +302,8 @@ export default function SimulationPage() {
         </div>
       </div>
 
-      {/* Tab Switcher */}
-      <div className="flex items-center gap-3">
+      {/* Tab Switcher & Admin Action */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2 bg-slate-900/80 p-1.5 rounded-2xl border border-slate-800 w-fit">
           {[["scenarios","Katalog Skenario Insiden"],["logs","Riwayat Eksekusi Simulasi"]].map(([key, label]) => (
             <button key={key} onClick={() => setTab(key)}
@@ -222,6 +316,15 @@ export default function SimulationPage() {
             </button>
           ))}
         </div>
+
+        {isAdmin && tab === "scenarios" && (
+          <button
+            onClick={openCreateModal}
+            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 hover:opacity-95 text-white font-black text-xs rounded-2xl shadow-[0_0_20px_rgba(147,51,234,0.4)] transition-all cursor-pointer"
+          >
+            <Plus size={16} /> Tambah Skenario Simulasi
+          </button>
+        )}
       </div>
 
       {loading ? (
@@ -296,16 +399,36 @@ export default function SimulationPage() {
                   </div>
                 </div>
 
-                <div className="mt-6 pt-5 border-t border-slate-800/90 flex items-center justify-between">
+                <div className="mt-6 pt-5 border-t border-slate-800/90 flex items-center justify-between gap-3 flex-wrap">
                   <div className="text-xs font-bold text-slate-400 flex items-center gap-2">
                     <Cpu size={15} className="text-indigo-400" />
                     <span>{s.affected_device_ids?.length ?? 0} Perangkat Terdampak</span>
                   </div>
 
-                  <button onClick={() => handleRun(s)}
-                    className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-black rounded-2xl shadow-[0_0_20px_rgba(168,85,247,0.4)] transition-all active:scale-95 cursor-pointer">
-                    <Play size={15} /> Uji Simulasi
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {isAdmin && (
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); openEditModal(s); }}
+                          title="Edit Skenario Simulasi"
+                          className="p-2.5 rounded-xl bg-slate-800/80 hover:bg-purple-600/20 text-slate-400 hover:text-purple-300 border border-slate-700/80 hover:border-purple-500/40 transition-all cursor-pointer"
+                        >
+                          <Pencil size={14} />
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleDeleteScenario(s); }}
+                          title="Hapus Skenario Simulasi"
+                          className="p-2.5 rounded-xl bg-slate-800/80 hover:bg-red-600/20 text-slate-400 hover:text-red-400 border border-slate-700/80 hover:border-red-500/40 transition-all cursor-pointer"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    )}
+                    <button onClick={() => handleRun(s)}
+                      className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-black rounded-xl shadow-[0_0_20px_rgba(168,85,247,0.4)] transition-all active:scale-95 cursor-pointer">
+                      <Play size={14} /> Uji Simulasi
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             );
@@ -521,6 +644,177 @@ export default function SimulationPage() {
               className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-black rounded-2xl shadow-[0_0_25px_rgba(168,85,247,0.4)] transition-all cursor-pointer">
               Tutup & Kembali ke Command Center
             </button>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Admin Scenario Create / Edit Modal */}
+      {modalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="glass-strong border border-slate-700/80 rounded-3xl w-full max-w-xl p-7 shadow-2xl relative my-8"
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-5 border-b border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400">
+                  {editingScenario ? <Pencil size={20} /> : <Plus size={20} />}
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-white">
+                    {editingScenario ? "Edit Skenario Simulasi" : "Tambah Skenario Simulasi Baru"}
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Konfigurasi skenario latihan pemulihan insiden untuk teknisi NOC
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setModalOpen(false)}
+                className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Modal Form */}
+            <form onSubmit={handleSaveScenario} className="space-y-4 mt-5">
+              <div>
+                <label className="block text-xs font-bold uppercase text-slate-400 tracking-wider mb-1.5">
+                  Nama Skenario Insiden <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Contoh: Core Switch NOC Cisco Crash & Packet Storm"
+                  value={scenarioForm.name}
+                  onChange={e => setScenarioForm(prev => ({ ...prev, name: e.target.value }))}
+                  className="w-full bg-slate-900/90 border border-slate-700 focus:border-purple-500 rounded-xl px-4 py-3 text-xs font-semibold text-slate-100 placeholder-slate-500 outline-none transition-all shadow-inner"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase text-slate-400 tracking-wider mb-1.5">
+                    Tipe Gangguan <span className="text-red-400">*</span>
+                  </label>
+                  <select
+                    value={scenarioForm.scenario_type}
+                    onChange={e => setScenarioForm(prev => ({ ...prev, scenario_type: e.target.value }))}
+                    className="w-full bg-slate-900/90 border border-slate-700 focus:border-purple-500 rounded-xl px-4 py-3 text-xs font-semibold text-slate-100 outline-none transition-all"
+                  >
+                    <option value="router_down">Router Down (Core/Border Gateway)</option>
+                    <option value="switch_down">Switch Down (Core/Distribution)</option>
+                    <option value="fiber_cut">Fiber Optic Cut (Kabel Putus)</option>
+                    <option value="ups_failure">UPS Failure (Daya & Baterai)</option>
+                    <option value="server_offline">Server Offline (Database/App)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase text-slate-400 tracking-wider mb-1.5">
+                    Perangkat Target Utama
+                  </label>
+                  <select
+                    value={scenarioForm.device_id}
+                    onChange={e => setScenarioForm(prev => ({ ...prev, device_id: e.target.value }))}
+                    className="w-full bg-slate-900/90 border border-slate-700 focus:border-purple-500 rounded-xl px-4 py-3 text-xs font-semibold text-slate-100 outline-none transition-all"
+                  >
+                    <option value="">-- Pilih Perangkat (Opsional) --</option>
+                    {devicesList.map(d => (
+                      <option key={d.id} value={d.id}>
+                        {d.name} ({d.vendor ?? ""} {d.type})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase text-slate-400 tracking-wider mb-1.5">
+                  Deskripsi Insiden & Kronologi
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="Penjelasan latar belakang kegagalan teknis..."
+                  value={scenarioForm.description}
+                  onChange={e => setScenarioForm(prev => ({ ...prev, description: e.target.value }))}
+                  className="w-full bg-slate-900/90 border border-slate-700 focus:border-purple-500 rounded-xl px-4 py-2.5 text-xs text-slate-100 placeholder-slate-500 outline-none transition-all resize-none shadow-inner"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase text-slate-400 tracking-wider mb-1.5">
+                  Dampak Terhadap Layanan Kampus
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="Dampak pada civitas akademika, aplikasi, atau transmisi gedung..."
+                  value={scenarioForm.impact_description}
+                  onChange={e => setScenarioForm(prev => ({ ...prev, impact_description: e.target.value }))}
+                  className="w-full bg-slate-900/90 border border-slate-700 focus:border-purple-500 rounded-xl px-4 py-2.5 text-xs text-slate-100 placeholder-slate-500 outline-none transition-all resize-none shadow-inner"
+                />
+              </div>
+
+              {/* Affected Devices Multi-Check */}
+              <div>
+                <label className="block text-xs font-bold uppercase text-slate-400 tracking-wider mb-1.5">
+                  Perangkat Terdampak Kaskade ({scenarioForm.affected_device_ids?.length ?? 0} dipilih)
+                </label>
+                <div className="max-h-36 overflow-y-auto space-y-1.5 p-3 rounded-2xl bg-slate-950/60 border border-slate-800">
+                  {devicesList.length === 0 ? (
+                    <p className="text-xs text-slate-500">Tidak ada perangkat yang tersedia.</p>
+                  ) : (
+                    devicesList.map(d => {
+                      const isChecked = scenarioForm.affected_device_ids?.includes(d.id);
+                      return (
+                        <label
+                          key={d.id}
+                          className="flex items-center gap-2.5 text-xs text-slate-300 hover:text-white cursor-pointer select-none"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={e => {
+                              const checked = e.target.checked;
+                              setScenarioForm(prev => ({
+                                ...prev,
+                                affected_device_ids: checked
+                                  ? [...(prev.affected_device_ids || []), d.id]
+                                  : (prev.affected_device_ids || []).filter(id => id !== d.id),
+                              }));
+                            }}
+                            className="rounded border-slate-700 bg-slate-900 text-purple-600 focus:ring-purple-500 w-4 h-4 cursor-pointer"
+                          />
+                          <span className="truncate">{d.name} <span className="text-slate-500 text-[10px]">({d.type})</span></span>
+                        </label>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+
+              {/* Form Buttons */}
+              <div className="pt-3 border-t border-slate-800 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setModalOpen(false)}
+                  className="px-5 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingScenario}
+                  className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-black rounded-xl shadow-[0_0_20px_rgba(168,85,247,0.4)] transition-all disabled:opacity-50 cursor-pointer"
+                >
+                  <Save size={15} />
+                  {savingScenario ? "Menyimpan..." : editingScenario ? "Simpan Perubahan" : "Buat Skenario"}
+                </button>
+              </div>
+            </form>
           </motion.div>
         </div>
       )}

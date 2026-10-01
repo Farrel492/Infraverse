@@ -83,10 +83,20 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("profile");
   const [showCurrentPass, setShowCurrentPass] = useState(false);
   const [showNewPass, setShowNewPass] = useState(false);
-  const [avatarPreview, setAvatarPreview] = useState(user?.avatar ? `/storage/${user.avatar}` : null);
+  const [avatarPreview, setAvatarPreview] = useState(
+    user?.avatar
+      ? (user.avatar.startsWith('http') || user.avatar.startsWith('/storage/') ? user.avatar : `/storage/${user.avatar}`)
+      : null
+  );
   const [avatarFile, setAvatarFile] = useState(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    if (user?.avatar) {
+      setAvatarPreview(user.avatar.startsWith('http') || user.avatar.startsWith('/storage/') ? user.avatar : `/storage/${user.avatar}`);
+    }
+  }, [user?.avatar]);
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();

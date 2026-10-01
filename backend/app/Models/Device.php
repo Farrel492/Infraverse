@@ -22,6 +22,25 @@ class Device extends Model
         'warranty_expiry' => 'date',
     ];
 
+    protected $appends = ['power_consumption_w'];
+
+    public function getPowerConsumptionWAttribute(): int
+    {
+        if (!empty($this->attributes['power_consumption_w'])) {
+            return (int) $this->attributes['power_consumption_w'];
+        }
+
+        return match ($this->type) {
+            'server'       => 450,
+            'switch'       => 120,
+            'router'       => 85,
+            'firewall'     => 150,
+            'access_point' => 25,
+            'ups'          => 200,
+            default        => 60,
+        };
+    }
+
     protected static function booted(): void
     {
         static::deleting(function (Device $device) {

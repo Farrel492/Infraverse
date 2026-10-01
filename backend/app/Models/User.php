@@ -20,6 +20,13 @@ class User extends Authenticatable
         'avatar',
     ];
 
+    protected $appends = ['avatar_url'];
+
+    public function getAvatarUrlAttribute(): ?string
+    {
+        return $this->avatar ? ('/storage/' . $this->avatar) : null;
+    }
+
     protected $hidden = [
         'password',
         'remember_token',

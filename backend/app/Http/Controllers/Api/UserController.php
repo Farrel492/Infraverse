@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -39,9 +40,15 @@ class UserController extends Controller
             'password' => ['required', 'string', 'min:8'],
             'role'     => ['required', 'in:admin,teknisi,viewer'],
             'phone'    => ['nullable', 'string', 'max:20'],
+            'avatar'   => ['nullable', 'image', 'max:3072'],
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
+
+        if ($request->hasFile('avatar')) {
+            $validated['avatar'] = $request->file('avatar')->store('avatars', 'public');
+        }
+
         $user = User::create($validated);
 
         return response()->json($user, 201);
@@ -55,15 +62,23 @@ class UserController extends Controller
     public function update(Request $request, User $user): JsonResponse
     {
         $validated = $request->validate([
-            'name'  => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
-            'role'  => ['required', 'in:admin,teknisi,viewer'],
-            'phone' => ['nullable', 'string', 'max:20'],
+            'name'   => ['required', 'string', 'max:255'],
+            'email'  => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'role'   => ['required', 'in:admin,teknisi,viewer'],
+            'phone'  => ['nullable', 'string', 'max:20'],
+            'avatar' => ['nullable', 'image', 'max:3072'],
         ]);
 
         if ($request->filled('password')) {
             $request->validate(['password' => ['string', 'min:8']]);
             $validated['password'] = Hash::make($request->input('password'));
+        }
+
+        if ($request->hasFile('avatar')) {
+            if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+            $validated['avatar'] = $request->file('avatar')->store('avatars', 'public');
         }
 
         $user->update($validated);
@@ -74,6 +89,10 @@ class UserController extends Controller
     {
         if ($request->user()->id === $user->id) {
             return response()->json(['message' => 'Tidak dapat menghapus akun Anda sendiri yang sedang aktif.'], 422);
+        }
+
+        if ($user->avatar) {
+            Storage::disk('public')->delete($user->avatar);
         }
 
         $user->delete();
