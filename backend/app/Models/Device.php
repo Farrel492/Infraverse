@@ -12,7 +12,7 @@ class Device extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'rack_id', 'name', 'type', 'vendor', 'model', 'serial_number',
+        'rack_id', 'room_id', 'name', 'type', 'vendor', 'model', 'serial_number',
         'ip_address', 'mac_address', 'status', 'purchase_date',
         'warranty_expiry', 'rack_position', 'rack_units', 'photo',
     ];
@@ -55,6 +55,11 @@ class Device extends Model
     public function rack()
     {
         return $this->belongsTo(Rack::class);
+    }
+
+    public function room()
+    {
+        return $this->belongsTo(Room::class);
     }
 
     public function documents()

@@ -40,9 +40,10 @@ export default function AssetFormPage() {
   const { id } = useParams();
   const isEditing = Boolean(id);
   const [searchParams] = useSearchParams();
-  const queryRackId = searchParams.get("rack_id");
-  const querySlot   = searchParams.get("rack_position") || searchParams.get("slot");
-  const navigate    = useNavigate();
+  const queryRackId  = searchParams.get("rack_id");
+  const queryRoomId  = searchParams.get("room_id");
+  const querySlot    = searchParams.get("rack_position") || searchParams.get("slot");
+  const navigate     = useNavigate();
 
   const [buildings, setBuildings] = useState([]);
   const [racksList, setRacksList] = useState([]);
@@ -52,8 +53,9 @@ export default function AssetFormPage() {
 
   const [form, setForm] = useState({
     rack_id: queryRackId ?? "",
+    room_id: queryRoomId ?? "",
     name: "",
-    type: "server",
+    type: queryRoomId ? "access_point" : "server",
     vendor: "",
     model: "",
     serial_number: "",
@@ -81,6 +83,7 @@ export default function AssetFormPage() {
           const d = dRes.data;
           setForm({
             rack_id: d.rack_id ? String(d.rack_id) : "",
+            room_id: d.room_id ? String(d.room_id) : "",
             name: d.name ?? "",
             type: d.type ?? "server",
             vendor: d.vendor ?? "",
@@ -109,6 +112,11 @@ export default function AssetFormPage() {
     e.preventDefault();
     if (!form.name.trim()) {
       toast.error("Nama perangkat wajib diisi.");
+      return;
+    }
+    // If access point and no rack, room_id is required
+    if (form.type === "access_point" && !form.rack_id && !form.room_id) {
+      toast.error("Access Point tanpa rack harus memilih ruangan pemasangan.");
       return;
     }
 
@@ -176,7 +184,18 @@ export default function AssetFormPage() {
         )
       );
 
+  const allRooms = buildings.flatMap(b =>
+    (b.floors ?? []).flatMap(f =>
+      (f.rooms ?? []).map(r => ({
+        ...r,
+        fullLabel: `${b.name} › ${f.name} › ${r.name} (${r.type?.replace('_',' ')})`
+      }))
+    )
+  );
+
+  const isAccessPoint = form.type === "access_point";
   const selectedRackObj = allRacks.find(r => String(r.id) === String(form.rack_id));
+  const selectedRoomObj = allRooms.find(r => String(r.id) === String(form.room_id));
   const selectedTypeObj = DEVICE_TYPES.find(t => t.value === form.type) || DEVICE_TYPES[0];
   const TypeIcon = selectedTypeObj.icon;
 
@@ -254,20 +273,84 @@ export default function AssetFormPage() {
         {/* Left Form Column (7 Cols) */}
         <div className="lg:col-span-7 space-y-6">
 
-          {/* Section 1: Lokasi Spasial & Rack Cabinet */}
+          {/* Section 1: Lokasi Spasial */}
           <div className="glass p-8 rounded-3xl border border-slate-700/60 space-y-6 shadow-2xl">
             <div className="flex items-center gap-3.5 border-b border-slate-800 pb-5">
               <div className="w-11 h-11 rounded-2xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 shadow-inner">
                 <MapPin size={22} />
               </div>
               <div>
-                <h2 className="text-base font-bold text-slate-100 uppercase tracking-wider">1. Lokasi Spasial & Rack Cabinet</h2>
-                <p className="text-xs text-slate-400 mt-0.5">Tentukan cabinet pusat data dan posisi slot U unit tempat perangkat dipasang</p>
+                <h2 className="text-base font-bold text-slate-100 uppercase tracking-wider">1. Lokasi Spasial &amp; Penempatan</h2>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  {isAccessPoint
+                    ? "Pasang Access Point di ruangan (langsung tanpa rack) atau di dalam rack server"
+                    : "Tentukan cabinet rack server dan posisi slot U tempat perangkat dipasang"}
+                </p>
               </div>
             </div>
 
             <div className="space-y-6">
-              {/* Rack Select */}
+              {/* Access Point: toggle between Room or Rack placement */}
+              {isAccessPoint && (
+                <div className="flex gap-3 p-3 rounded-xl bg-amber-500/8 border border-amber-500/25">
+                  <button
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, rack_id: "", room_id: f.room_id }))}
+                    className={`flex-1 py-3 px-4 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                      !form.rack_id
+                        ? "bg-amber-500 text-white shadow-lg shadow-amber-500/30"
+                        : "bg-slate-800/80 text-slate-400 hover:text-slate-200 border border-slate-700"
+                    }`}
+                  >
+                    <Wifi size={16} /> Pasang di Ruangan (Tanpa Rack)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, room_id: "", rack_id: f.rack_id }))}
+                    className={`flex-1 py-3 px-4 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                      form.rack_id
+                        ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30"
+                        : "bg-slate-800/80 text-slate-400 hover:text-slate-200 border border-slate-700"
+                    }`}
+                  >
+                    <Server size={16} /> Pasang di Rack Server
+                  </button>
+                </div>
+              )}
+
+              {/* Room Select — shown for access_point when not using rack */}
+              {isAccessPoint && !form.rack_id && (
+                <div>
+                  <label className="form-label">
+                    <span>Ruangan Pemasangan</span>
+                    <span className="text-[11px] font-semibold text-amber-400">Access Point tanpa Rack</span>
+                  </label>
+                  <div className="input-group">
+                    <div className="input-icon-box" style={{ color: "#fbbf24" }}>
+                      <Wifi size={20} />
+                    </div>
+                    <select
+                      value={form.room_id}
+                      onChange={e => setForm({ ...form, room_id: e.target.value })}
+                      className="select-control"
+                    >
+                      <option value="">-- Pilih Ruangan Pemasangan Access Point --</option>
+                      {allRooms.map(r => (
+                        <option key={r.id} value={r.id}>{r.fullLabel}</option>
+                      ))}
+                    </select>
+                  </div>
+                  {selectedRoomObj && (
+                    <div className="flex items-center gap-2 mt-2.5">
+                      <CheckCircle2 size={14} className="text-amber-400" />
+                      <span className="text-xs text-amber-400 font-semibold">Terpilih: {selectedRoomObj.fullLabel}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Rack Select — shown when: NOT access_point OR access_point with rack mode */}
+              {(!isAccessPoint || form.rack_id) && (
               <div>
                 <label className="form-label">
                   <span>Rack Server Penempatan</span>
@@ -299,8 +382,10 @@ export default function AssetFormPage() {
                   </div>
                 )}
               </div>
+              )} {/* end conditional rack section */}
 
-              {/* Slot Position & Rack Units */}
+              {/* Slot Position & Rack Units — only shown when rack is selected */}
+              {(!isAccessPoint || form.rack_id) && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                   <label className="form-label">
@@ -335,7 +420,7 @@ export default function AssetFormPage() {
                       type="number" 
                       min={1} 
                       max={12} 
-                      required 
+                      required={!isAccessPoint || !!form.rack_id}
                       value={form.rack_units}
                       onChange={e => setForm({ ...form, rack_units: Math.max(1, parseInt(e.target.value) || 1) })}
                       className="input-control font-mono font-bold" 
@@ -360,6 +445,7 @@ export default function AssetFormPage() {
                   </div>
                 </div>
               </div>
+              )} {/* end conditional slot/unit section */}
             </div>
           </div>
 

@@ -202,7 +202,7 @@ export default function FloorFormPage() {
                     <span>Nomor Tingkat Lantai <span className="text-blue-400">*</span></span>
                     <span className="text-[11px] font-bold text-indigo-400">Tingkat {form.floor_number}</span>
                   </label>
-                  <div className="flex items-center h-13 rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900/90 focus-within:border-indigo-500 focus-within:ring-4 focus-within:ring-indigo-500/15 transition-all shadow-inner p-1">
+                  <div className="flex items-center h-14 rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900/90 focus-within:border-indigo-500 focus-within:ring-4 focus-within:ring-indigo-500/15 transition-all shadow-inner p-1">
                     <button
                       type="button"
                       onClick={() => setForm(f => ({ ...f, floor_number: Math.max(1, Number(f.floor_number) - 1) }))}
@@ -233,7 +233,7 @@ export default function FloorFormPage() {
                   </div>
                 </div>
 
-                <div className="p-4.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-col justify-center space-y-1.5 shadow-inner">
+                <div className="p-6 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-col justify-center space-y-1.5 shadow-inner">
                   <span className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
                     <Building2 size={16} className="text-indigo-400" />
                     Fasilitas Gedung Induk:

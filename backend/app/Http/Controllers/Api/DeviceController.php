@@ -13,7 +13,7 @@ class DeviceController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $query = Device::with(['rack.room.floor.building']);
+        $query = Device::with(['rack.room.floor.building', 'room.floor.building']);
 
         if ($request->filled('type')) {
             $query->where('type', $request->type);
@@ -22,12 +22,19 @@ class DeviceController extends Controller
             $query->where('status', $request->status);
         }
         if ($request->filled('building_id')) {
-            $query->whereHas('rack.room.floor', fn($q) =>
-                $q->where('building_id', $request->building_id)
-            );
+            $query->where(function ($q) use ($request) {
+                $q->whereHas('rack.room.floor', fn($sq) =>
+                    $sq->where('building_id', $request->building_id)
+                )->orWhereHas('room.floor', fn($sq) =>
+                    $sq->where('building_id', $request->building_id)
+                );
+            });
         }
         if ($request->filled('rack_id')) {
             $query->where('rack_id', $request->rack_id);
+        }
+        if ($request->filled('room_id')) {
+            $query->where('room_id', $request->room_id);
         }
         if ($request->filled('search')) {
             $term = $request->search;
@@ -46,6 +53,12 @@ class DeviceController extends Controller
                                   $bq->where('name', 'like', "%{$term}%")
                                     ->orWhere('location', 'like', "%{$term}%");
                               });
+                        });
+                  })
+                  ->orWhereHas('room', function ($rmq) use ($term) {
+                      $rmq->where('name', 'like', "%{$term}%")
+                        ->orWhereHas('floor.building', function ($bq) use ($term) {
+                            $bq->where('name', 'like', "%{$term}%");
                         });
                   });
             });
@@ -67,12 +80,12 @@ class DeviceController extends Controller
             $data['photo'] = $request->file('photo')->store('devices', 'public');
         }
         $device = Device::create($data);
-        return response()->json($device->load('rack.room.floor.building'), 201);
+        return response()->json($device->load(['rack.room.floor.building', 'room.floor.building']), 201);
     }
 
     public function show(Device $device): JsonResponse
     {
-        $device->load(['rack.room.floor.building', 'documents', 'maintenances.technician', 'sourceConnections.targetDevice', 'targetConnections.sourceDevice']);
+        $device->load(['rack.room.floor.building', 'room.floor.building', 'documents', 'maintenances.technician', 'sourceConnections.targetDevice', 'targetConnections.sourceDevice']);
         $device->age_in_years      = $device->age_in_years;
         $device->is_under_warranty = $device->is_under_warranty;
         return response()->json($device);
@@ -86,7 +99,7 @@ class DeviceController extends Controller
             $data['photo'] = $request->file('photo')->store('devices', 'public');
         }
         $device->update($data);
-        return response()->json($device->load('rack.room.floor.building'));
+        return response()->json($device->load(['rack.room.floor.building', 'room.floor.building']));
     }
 
     public function destroy(Device $device): JsonResponse

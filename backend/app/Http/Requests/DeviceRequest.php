@@ -11,7 +11,7 @@ class DeviceRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $sanitized = [];
-        $nullableKeys = ['rack_id', 'vendor', 'model', 'serial_number', 'ip_address', 'mac_address', 'purchase_date', 'warranty_expiry', 'rack_position', 'rack_units', 'status'];
+        $nullableKeys = ['rack_id', 'room_id', 'vendor', 'model', 'serial_number', 'ip_address', 'mac_address', 'purchase_date', 'warranty_expiry', 'rack_position', 'rack_units', 'status'];
         foreach ($nullableKeys as $key) {
             if ($this->has($key) && ($this->input($key) === '' || $this->input($key) === 'null')) {
                 $sanitized[$key] = null;
@@ -26,6 +26,7 @@ class DeviceRequest extends FormRequest
     {
         return [
             'rack_id'        => ['nullable', 'exists:racks,id'],
+            'room_id'        => ['nullable', 'exists:rooms,id'],
             'name'           => ['required', 'string', 'max:255'],
             'type'           => ['required', 'in:router,switch,firewall,server,access_point,ups,other'],
             'vendor'         => ['nullable', 'string', 'max:255'],

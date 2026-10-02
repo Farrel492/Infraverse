@@ -316,7 +316,7 @@ export default function RoomFormPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {ROOM_TYPES.map(t => {
                 const IconComp = t.icon;
                 const isSelected = form.type === t.value;

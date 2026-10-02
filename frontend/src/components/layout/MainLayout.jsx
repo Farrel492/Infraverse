@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import {
   LayoutDashboard, Building2, Server, Network,
   Zap, Globe, Wrench, LogOut, ChevronRight, Bell,
-  PanelLeftClose, PanelLeft, Users, Activity, X
+  PanelLeftClose, PanelLeft, Users, Activity, X,
+  Search, Settings, Moon, Wifi
 } from "lucide-react";
 import useAuthStore from "../../stores/authStore";
 import { authService } from "../../services/authService";
@@ -36,7 +37,6 @@ export default function MainLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Polling & refresh alerts
   useEffect(() => {
     fetchAlerts(true);
     const interval = setInterval(() => fetchAlerts(true), 5000);
@@ -56,13 +56,11 @@ export default function MainLayout() {
     };
   }, [fetchAlerts]);
 
-  // Clock
   useEffect(() => {
     const t = setInterval(() => setClock(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
 
-  // Close mobile on route change
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
 
   const handleLogout = async () => {
@@ -78,9 +76,11 @@ export default function MainLayout() {
     ? [...navItems, { to: "/users", label: "Kelola User", Icon: Users, alertKey: null, desc: "Manajemen Akun" }]
     : navItems;
 
-  const sidebarW = collapsed ? "72px" : "272px";
+  const sidebarW = collapsed ? "72px" : "260px";
 
-  // Sidebar content component (shared between desktop and mobile)
+  // Get current page label for topbar
+  const currentPage = activeNavItems.find(n => location.pathname.startsWith(n.to))?.label ?? "Dashboard";
+
   const SidebarContent = ({ isMobile = false }) => (
     <div className="flex flex-col h-full">
 
@@ -93,7 +93,6 @@ export default function MainLayout() {
         style={{ borderBottom: "1px solid rgba(59,130,246,0.08)" }}
       >
         <div className="flex items-center gap-3 min-w-0 flex-1">
-          {/* Logo Icon */}
           <div
             className="relative w-10 h-10 rounded-xl flex items-center justify-center font-black text-white text-sm flex-shrink-0"
             style={{
@@ -115,13 +114,12 @@ export default function MainLayout() {
             <div className="min-w-0 overflow-hidden">
               <h1 className="text-base font-black text-slate-100 tracking-tight leading-none">InfraVerse</h1>
               <p className="text-[10px] font-bold mt-0.5 uppercase tracking-widest" style={{ color: "#3b82f6" }}>
-                Digital Twin
+                Digital Twin NOC
               </p>
             </div>
           )}
         </div>
 
-        {/* Collapse/Close Button */}
         {isMobile ? (
           <button
             onClick={() => setMobileOpen(false)}
@@ -192,9 +190,9 @@ export default function MainLayout() {
       )}
 
       {/* ─── Navigation ─── */}
-      <nav className="flex-1 px-2.5 py-3 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-2.5 py-3 space-y-0.5 overflow-y-auto">
         {(!collapsed || isMobile) && (
-          <p className="text-[9px] font-black uppercase px-3 mb-3 tracking-[0.18em]" style={{ color: "#1e3a5f" }}>
+          <p className="text-[9px] font-black uppercase px-3 mb-2 tracking-[0.18em]" style={{ color: "#1e3a5f" }}>
             Navigasi
           </p>
         )}
@@ -258,14 +256,13 @@ export default function MainLayout() {
         })}
       </nav>
 
-      {/* ─── User Section ─── */}
-      <div className="flex-shrink-0 p-2.5 space-y-1.5" style={{ borderTop: "1px solid rgba(59,130,246,0.08)" }}>
-        {/* Profile Link */}
+      {/* ─── User Profile Section (bottom of sidebar, no logout button) ─── */}
+      <div className="flex-shrink-0 p-2.5" style={{ borderTop: "1px solid rgba(59,130,246,0.08)" }}>
         <NavLink
           to="/profile"
           title={collapsed && !isMobile ? user?.name : undefined}
           className={({ isActive }) =>
-            `flex items-center gap-3 p-2.5 rounded-xl transition-all group ${collapsed && !isMobile ? "justify-center" : ""} ${
+            `flex items-center gap-3 p-3 rounded-xl transition-all group ${collapsed && !isMobile ? "justify-center" : ""} ${
               isActive ? "bg-white/8 border border-white/8" : "hover:bg-white/4 border border-transparent"
             }`
           }
@@ -300,38 +297,29 @@ export default function MainLayout() {
               </p>
             </div>
           )}
-        </NavLink>
 
-        {/* Logout Button */}
-        <button
-          onClick={handleLogout}
-          id="sidebar-logout-btn"
-          title={collapsed && !isMobile ? "Keluar Sistem" : undefined}
-          className={`w-full flex items-center justify-center px-4 py-3 rounded-md text-sm font-black transition-all border cursor-pointer group shadow-sm ${collapsed && !isMobile ? "" : "gap-2.5"}`}
-          style={{
-            background: "rgba(239,68,68,0.12)",
-            borderColor: "rgba(239,68,68,0.30)",
-            color: "#fca5a5",
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.background = "#ef4444";
-            e.currentTarget.style.borderColor = "#ef4444";
-            e.currentTarget.style.color = "#ffffff";
-            e.currentTarget.style.boxShadow = "0 0 20px rgba(239,68,68,0.45)";
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.background = "rgba(239,68,68,0.12)";
-            e.currentTarget.style.borderColor = "rgba(239,68,68,0.30)";
-            e.currentTarget.style.color = "#fca5a5";
-            e.currentTarget.style.boxShadow = "none";
-          }}
-        >
-          <LogOut size={17} className="group-hover:rotate-6 transition-transform" />
-          {(!collapsed || isMobile) && <span className="tracking-wide">Keluar Sistem</span>}
-        </button>
+          {(!collapsed || isMobile) && (
+            <Settings size={14} className="text-slate-600 group-hover:text-slate-400 transition-colors flex-shrink-0" />
+          )}
+        </NavLink>
       </div>
     </div>
   );
+
+  // Route label mapping for breadcrumb in topbar
+  const routeLabel = (() => {
+    const path = location.pathname;
+    if (path === "/dashboard") return "Dashboard";
+    if (path.startsWith("/buildings")) return "Manajemen Gedung";
+    if (path.startsWith("/assets")) return "Katalog Aset";
+    if (path.startsWith("/mapping")) return "Peta Jaringan";
+    if (path.startsWith("/simulation")) return "Simulasi Insiden";
+    if (path.startsWith("/digital-twin")) return "Digital Twin 3D";
+    if (path.startsWith("/maintenance")) return "Maintenance";
+    if (path.startsWith("/users")) return "Kelola User";
+    if (path.startsWith("/profile")) return "Profil Saya";
+    return "InfraVerse";
+  })();
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: "var(--color-bg-base)" }}>
@@ -361,7 +349,7 @@ export default function MainLayout() {
       <aside
         className={`fixed left-0 top-0 bottom-0 z-50 lg:hidden flex flex-col transition-transform duration-300 ease-in-out ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}
         style={{
-          width: "272px",
+          width: "260px",
           background: "var(--grad-sidebar)",
           borderRight: "1px solid rgba(59,130,246,0.10)",
         }}
@@ -383,13 +371,13 @@ export default function MainLayout() {
         >
           <button
             onClick={() => setMobileOpen(true)}
-            className="w-9 h-9 rounded-md flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700/50 border border-slate-700/40 transition-all"
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700/50 border border-slate-700/40 transition-all"
           >
             <PanelLeft size={18} />
           </button>
           <div className="flex items-center gap-2">
             <div
-              className="w-7 h-7 rounded-md flex items-center justify-center font-black text-white text-xs"
+              className="w-7 h-7 rounded-lg flex items-center justify-center font-black text-white text-xs"
               style={{ background: "linear-gradient(135deg, #1d4ed8, #4f46e5)" }}
             >
               IV
@@ -399,7 +387,7 @@ export default function MainLayout() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setModalOpen(true)}
-              className="relative w-9 h-9 rounded-md flex items-center justify-center border transition-all"
+              className="relative w-9 h-9 rounded-xl flex items-center justify-center border transition-all"
               style={
                 totalAlerts > 0
                   ? { background: "rgba(239,68,68,0.12)", borderColor: "rgba(239,68,68,0.30)", color: "#f87171" }
@@ -419,75 +407,88 @@ export default function MainLayout() {
             <button
               onClick={handleLogout}
               title="Keluar Sistem"
-              className="w-9 h-9 rounded-md flex items-center justify-center text-red-400 hover:text-white bg-red-500/10 hover:bg-red-500 border border-red-500/30 transition-all"
+              className="w-9 h-9 rounded-xl flex items-center justify-center text-red-400 hover:text-white bg-red-500/10 hover:bg-red-500 border border-red-500/30 transition-all"
             >
               <LogOut size={16} />
             </button>
           </div>
         </div>
 
-        {/* ===== DESKTOP TOP BAR (All Internal Pages) ===== */}
+        {/* ===== PREMIUM DESKTOP TOP BAR ===== */}
         <div
-          className="hidden lg:flex items-center justify-between px-6 py-3.5 flex-shrink-0"
+          className="hidden lg:flex items-center justify-between flex-shrink-0"
           style={{
-            background: "rgba(5,12,26,0.95)",
+            height: "56px",
+            padding: "0 20px",
+            background: "linear-gradient(90deg, rgba(5,12,26,0.98) 0%, rgba(8,16,35,0.98) 100%)",
             borderBottom: "1px solid rgba(59,130,246,0.12)",
             backdropFilter: "blur(14px)",
           }}
         >
-          {/* Left: System Status & Current Route */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-slate-700/60 bg-slate-900/60 text-xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="font-extrabold text-slate-300">InfraVerse NOC</span>
-              <span className="text-slate-600">•</span>
-              <span className="font-mono text-emerald-400 font-bold">ONLINE</span>
+          {/* LEFT: System status + breadcrumb */}
+          <div className="flex items-center gap-4">
+            {/* Live system status pill */}
+            <div
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-bold"
+              style={{
+                background: "rgba(16,185,129,0.06)",
+                borderColor: "rgba(16,185,129,0.18)",
+                color: "#34d399",
+              }}
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse flex-shrink-0" />
+              <span className="text-slate-400 font-semibold">InfraVerse</span>
+              <span className="text-slate-600">·</span>
+              <span>LIVE</span>
             </div>
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-              {location.pathname.replace("/", "").replace("-", " ") || "dashboard"}
-            </span>
+
+            {/* Breadcrumb divider */}
+            <div className="flex items-center gap-2 text-xs">
+              <ChevronRight size={14} className="text-slate-700" />
+              <span className="font-extrabold text-slate-200 uppercase tracking-wide">{routeLabel}</span>
+            </div>
           </div>
 
-          {/* Right: Notification + User Profile + Clear Logout */}
-          <div className="flex items-center gap-3">
+          {/* RIGHT: Notification + Logout */}
+          <div className="flex items-center gap-2">
+
+            {/* Alert / Notification Button */}
             <button
               onClick={() => setModalOpen(true)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-md border text-xs font-bold transition-all cursor-pointer"
+              className="relative flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs font-bold transition-all cursor-pointer"
               style={
                 totalAlerts > 0
-                  ? { background: "rgba(239,68,68,0.15)", borderColor: "rgba(239,68,68,0.35)", color: "#f87171" }
-                  : { background: "rgba(16,185,129,0.08)", borderColor: "rgba(16,185,129,0.22)", color: "#34d399" }
+                  ? { background: "rgba(239,68,68,0.12)", borderColor: "rgba(239,68,68,0.30)", color: "#f87171" }
+                  : { background: "rgba(16,185,129,0.07)", borderColor: "rgba(16,185,129,0.20)", color: "#34d399" }
               }
+              onMouseEnter={e => {
+                e.currentTarget.style.borderColor = totalAlerts > 0 ? "rgba(239,68,68,0.6)" : "rgba(16,185,129,0.4)";
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.borderColor = totalAlerts > 0 ? "rgba(239,68,68,0.30)" : "rgba(16,185,129,0.20)";
+              }}
             >
-              <Bell size={14} className={totalAlerts > 0 ? "animate-bounce text-red-400" : "text-emerald-400"} />
-              <span>{totalAlerts > 0 ? `${totalAlerts} Alarm Aktif` : "Status Normal"}</span>
+              <Bell size={14} className={totalAlerts > 0 ? "animate-bounce" : ""} />
+              <span>{totalAlerts > 0 ? `${totalAlerts} Alarm` : "Sistem Normal"}</span>
+              {totalAlerts > 0 && (
+                <span
+                  className="w-5 h-5 text-[10px] font-black text-white rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{ background: "#ef4444" }}
+                >
+                  {totalAlerts > 9 ? "9+" : totalAlerts}
+                </span>
+              )}
             </button>
 
-            <NavLink
-              to="/profile"
-              className="flex items-center gap-2.5 px-3 py-1.5 rounded-md border border-slate-700/60 bg-slate-800/60 hover:bg-slate-700/60 transition-all"
-            >
-              <div
-                className="w-6 h-6 rounded-sm flex items-center justify-center text-[11px] font-black text-white flex-shrink-0"
-                style={{
-                  background: user?.avatar ? undefined : `linear-gradient(135deg, ${rc.color}bb, ${rc.color})`,
-                }}
-              >
-                {user?.avatar
-                  ? <img src={user.avatar.startsWith("http") || user.avatar.startsWith("/storage/") ? user.avatar : `/storage/${user.avatar}`} alt="avatar" className="w-full h-full object-cover rounded-sm" />
-                  : (user?.name?.charAt(0)?.toUpperCase() ?? "U")
-                }
-              </div>
-              <span className="text-xs font-bold text-slate-200 max-w-[130px] truncate">{user?.name ?? "User"}</span>
-              <span className="text-[10px] font-black px-2 py-0.5 rounded-sm uppercase tracking-wider" style={{ background: rc.bg, color: rc.color }}>{rc.label}</span>
-            </NavLink>
+            {/* Divider */}
+            <div className="w-px h-6 bg-slate-700/60" />
 
-            {/* Clear Top Right Logout Button */}
+            {/* Logout Button - prominent, top right */}
             <button
               onClick={handleLogout}
               id="topbar-logout-btn"
               title="Keluar dari Sistem InfraVerse"
-              className="flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-black transition-all cursor-pointer border shadow-sm"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-black transition-all cursor-pointer border"
               style={{
                 background: "rgba(239,68,68,0.12)",
                 borderColor: "rgba(239,68,68,0.30)",
@@ -497,7 +498,7 @@ export default function MainLayout() {
                 e.currentTarget.style.background = "#ef4444";
                 e.currentTarget.style.borderColor = "#ef4444";
                 e.currentTarget.style.color = "#ffffff";
-                e.currentTarget.style.boxShadow = "0 0 16px rgba(239,68,68,0.5)";
+                e.currentTarget.style.boxShadow = "0 0 20px rgba(239,68,68,0.5)";
               }}
               onMouseLeave={e => {
                 e.currentTarget.style.background = "rgba(239,68,68,0.12)";
@@ -506,7 +507,7 @@ export default function MainLayout() {
                 e.currentTarget.style.boxShadow = "none";
               }}
             >
-              <LogOut size={14} />
+              <LogOut size={15} />
               <span>Keluar Sistem</span>
             </button>
           </div>

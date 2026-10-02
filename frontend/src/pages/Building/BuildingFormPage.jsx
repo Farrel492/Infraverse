@@ -161,8 +161,8 @@ export default function BuildingFormPage() {
                   <span>Nama Gedung / Fasilitas <span className="text-blue-400">*</span></span>
                   <span className="text-[11px] font-semibold text-slate-500">Wajib Diisi</span>
                 </label>
-                <div className="flex h-13 rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900/90 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/15 transition-all shadow-inner">
-                  <div className="flex items-center justify-center px-4.5 bg-slate-800/60 border-r border-slate-700/60 text-blue-400 flex-shrink-0">
+                <div className="flex h-14 rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900/90 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/15 transition-all shadow-inner">
+                  <div className="flex items-center justify-center px-6 bg-slate-800/60 border-r border-slate-700/60 text-blue-400 flex-shrink-0">
                     <Building2 size={20} />
                   </div>
                   <input
@@ -196,8 +196,8 @@ export default function BuildingFormPage() {
                   <label className="block text-xs font-black uppercase tracking-wider text-slate-200 mb-2.5">
                     Lokasi / Zona Kampus
                   </label>
-                  <div className="flex h-13 rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900/90 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/15 transition-all shadow-inner">
-                    <div className="flex items-center justify-center px-4.5 bg-slate-800/60 border-r border-slate-700/60 text-indigo-400 flex-shrink-0">
+                  <div className="flex h-14 rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900/90 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/15 transition-all shadow-inner">
+                    <div className="flex items-center justify-center px-6 bg-slate-800/60 border-r border-slate-700/60 text-indigo-400 flex-shrink-0">
                       <MapPin size={20} />
                     </div>
                     <input
@@ -216,7 +216,7 @@ export default function BuildingFormPage() {
                     <span>Total Lantai Fisik <span className="text-blue-400">*</span></span>
                     <span className="text-[11px] font-bold text-blue-400">{form.total_floors} Tingkat</span>
                   </label>
-                  <div className="flex items-center h-13 rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900/90 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/15 transition-all shadow-inner p-1">
+                  <div className="flex items-center h-14 rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900/90 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/15 transition-all shadow-inner p-1">
                     <button
                       type="button"
                       onClick={() => setForm(f => ({ ...f, total_floors: Math.max(1, Number(f.total_floors) - 1) }))}
@@ -271,7 +271,7 @@ export default function BuildingFormPage() {
                 value={form.description}
                 onChange={e => setForm({ ...form, description: e.target.value })}
                 placeholder="Jelaskan peran gedung ini, contoh: Gedung pusat administrasi dan data center rektorat. Berisi server core switch, koneksi fiber optik uplink kampus, serta backup UPS 40kVA."
-                className="w-full p-4.5 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 text-sm focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15 resize-none transition-all leading-relaxed shadow-inner placeholder:text-slate-500 font-medium"
+                className="w-full p-6 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 text-sm focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15 resize-none transition-all leading-relaxed shadow-inner placeholder:text-slate-500 font-medium"
               />
             </div>
 

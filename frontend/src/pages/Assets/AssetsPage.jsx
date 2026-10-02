@@ -361,12 +361,12 @@ export default function AssetsPage() {
             <table className="w-full text-sm text-left">
               <thead>
                 <tr className="border-b border-slate-800 bg-slate-900/90 text-slate-400 uppercase tracking-wider text-xs font-black">
-                  <th className="px-6 py-4.5">Perangkat Hardware</th>
-                  <th className="px-6 py-4.5">IP Address</th>
-                  <th className="px-6 py-4.5">Lokasi Spasial</th>
-                  <th className="px-6 py-4.5">Status Operasional</th>
-                  <th className="px-6 py-4.5">Masa Garansi</th>
-                  {canWrite && <th className="px-6 py-4.5 text-right">Aksi</th>}
+                  <th className="px-6 py-6">Perangkat Hardware</th>
+                  <th className="px-6 py-6">IP Address</th>
+                  <th className="px-6 py-6">Lokasi Spasial</th>
+                  <th className="px-6 py-6">Status Operasional</th>
+                  <th className="px-6 py-6">Masa Garansi</th>
+                  {canWrite && <th className="px-6 py-6 text-right">Aksi</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60 font-medium">
@@ -375,7 +375,7 @@ export default function AssetsPage() {
                     className="hover:bg-slate-800/50 transition-colors cursor-pointer group"
                     onClick={() => navigate(`/assets/${d.id}`)}>
                     
-                    <td className="px-6 py-4.5">
+                    <td className="px-6 py-6">
                       <div className="flex items-center gap-3.5">
                         <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 flex-shrink-0 shadow">
                           {TYPE_ICON[d.type] ?? <Package size={18} />}
@@ -387,16 +387,16 @@ export default function AssetsPage() {
                       </div>
                     </td>
 
-                    <td className="px-6 py-4.5 font-mono text-blue-400 font-bold text-sm">{d.ip_address ?? "-"}</td>
+                    <td className="px-6 py-6 font-mono text-blue-400 font-bold text-sm">{d.ip_address ?? "-"}</td>
 
-                    <td className="px-6 py-4.5">
+                    <td className="px-6 py-6">
                       <p className="text-slate-200 font-semibold">{d.rack?.room?.floor?.building?.name ?? "-"}</p>
                       <p className="text-xs text-slate-400 font-medium">{d.rack?.name ?? "Tidak di rack"}</p>
                     </td>
 
-                    <td className="px-6 py-4.5"><StatusBadge status={d.status} /></td>
+                    <td className="px-6 py-6"><StatusBadge status={d.status} /></td>
 
-                    <td className="px-6 py-4.5">
+                    <td className="px-6 py-6">
                       {d.warranty_expiry ? (
                         <span className={`text-xs font-bold px-3 py-1 rounded-xl border ${
                           d.is_under_warranty ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" : "bg-red-500/10 text-red-400 border-red-500/30"
@@ -407,7 +407,7 @@ export default function AssetsPage() {
                     </td>
 
                     {canWrite && (
-                      <td className="px-6 py-4.5 text-right" onClick={e => e.stopPropagation()}>
+                      <td className="px-6 py-6 text-right" onClick={e => e.stopPropagation()}>
                         <div className="flex items-center justify-end gap-2">
                           <button onClick={() => navigate(`/assets/${d.id}/edit`)}
                             className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-all shadow">

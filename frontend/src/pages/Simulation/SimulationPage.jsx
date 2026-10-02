@@ -262,40 +262,40 @@ export default function SimulationPage() {
             </p>
           </div>
 
-          <div className="flex gap-4">
-            <div className="glass px-5 py-3 rounded-2xl border border-slate-700/60 text-center shadow-lg">
-              <p className="text-2xl font-black text-purple-400 font-mono">{scenarios.length}</p>
-              <p className="text-[11px] uppercase font-bold text-slate-400 mt-0.5">Skenario Bencana</p>
+          <div className="flex gap-5">
+            <div className="glass px-6 py-4 rounded-2xl border border-slate-700/60 text-center shadow-lg">
+              <p className="text-3xl font-black text-purple-400 font-mono">{scenarios.length}</p>
+              <p className="text-xs uppercase font-bold text-slate-400 mt-1">Skenario Bencana</p>
             </div>
-            <div className="glass px-5 py-3 rounded-2xl border border-slate-700/60 text-center shadow-lg">
-              <p className="text-2xl font-black text-emerald-400 font-mono">
+            <div className="glass px-6 py-4 rounded-2xl border border-slate-700/60 text-center shadow-lg">
+              <p className="text-3xl font-black text-emerald-400 font-mono">
                 {logs.filter(l => l.resolved).length}
               </p>
-              <p className="text-[11px] uppercase font-bold text-slate-400 mt-0.5">Insiden Teratasi</p>
+              <p className="text-xs uppercase font-bold text-slate-400 mt-1">Insiden Teratasi</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Protocol Workflow Bar (Explains the sequence clearly so it's not confusing) */}
-      <div className="glass-strong p-6 rounded-3xl border border-slate-800 shadow-xl">
-        <p className="text-xs font-black uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-2">
-          <Activity size={15} className="text-purple-400" /> 4 Tahapan Standar Prosedur Simulasi Insiden (SOP):
+      <div className="glass-strong p-8 rounded-3xl border border-slate-800 shadow-xl">
+        <p className="text-sm font-black uppercase tracking-wider text-slate-400 mb-5 flex items-center gap-2">
+          <Activity size={18} className="text-purple-400" /> 4 Tahapan Standar Prosedur Simulasi Insiden (SOP):
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
           {[
             { step: "1", name: "Deteksi & Notifikasi", desc: "Sistem mendeteksi anomali pada link atau perangkat host" },
             { step: "2", name: "Isolasi Gangguan", desc: "Isolasi area kegagalan dan alihkan ke backup redundant" },
             { step: "3", name: "Prosedur Mitigasi", desc: "Eksekusi langkah SOP perbaikan teknis berurutan" },
             { step: "4", name: "Verifikasi & Evaluasi", desc: "Layanan pulih 100% dan kalkulasi skor kepatuhan SLA" },
           ].map((s) => (
-            <div key={s.step} className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-start gap-3">
-              <div className="w-8 h-8 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-400 font-black text-sm flex items-center justify-center flex-shrink-0">
+            <div key={s.step} className="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-start gap-4 shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-400 font-black text-base flex items-center justify-center flex-shrink-0">
                 {s.step}
               </div>
               <div>
-                <p className="text-xs font-bold text-slate-200">{s.name}</p>
-                <p className="text-[11px] text-slate-400 mt-0.5 leading-relaxed">{s.desc}</p>
+                <p className="text-sm font-bold text-slate-200">{s.name}</p>
+                <p className="text-xs text-slate-400 mt-1 leading-relaxed">{s.desc}</p>
               </div>
             </div>
           ))}
@@ -345,55 +345,55 @@ export default function SimulationPage() {
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: idx * 0.05 }}
-                className={`glass rounded-3xl p-7 border ${c.border} ${c.glow} hover:scale-[1.01] transition-all flex flex-col justify-between group shadow-2xl relative overflow-hidden`}
+                className={`glass rounded-3xl p-8 border ${c.border} ${c.glow} hover:scale-[1.01] transition-all flex flex-col justify-between group shadow-2xl relative overflow-hidden`}
               >
-                <div className="space-y-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="w-14 h-14 rounded-2xl bg-slate-900/90 border border-slate-700/80 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-lg">
-                      {TYPE_ICON[s.scenario_type] ?? <Cpu size={28} className="text-slate-400" />}
+                <div className="space-y-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="w-16 h-16 rounded-2xl bg-slate-900/90 border border-slate-700/80 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform shadow-lg">
+                      {TYPE_ICON[s.scenario_type] ?? <Cpu size={32} className="text-slate-400" />}
                     </div>
-                    <div className="flex flex-col items-end gap-1.5">
-                      <span className={`text-[10px] font-mono uppercase font-black px-3 py-1 rounded-xl border ${sev.color}`}>
+                    <div className="flex flex-col items-end gap-2">
+                      <span className={`text-[11px] font-mono uppercase font-black px-3.5 py-1.5 rounded-xl border ${sev.color}`}>
                         {sev.level}
                       </span>
-                      <span className={`text-[10px] font-mono uppercase font-bold px-2.5 py-0.5 rounded-lg border ${c.badge}`}>
+                      <span className={`text-[11px] font-mono uppercase font-bold px-3 py-1 rounded-lg border ${c.badge}`}>
                         {s.scenario_type?.replace(/_/g," ")}
                       </span>
                     </div>
                   </div>
 
                   <div>
-                    <h3 className="font-black text-slate-100 text-lg group-hover:text-purple-300 transition-colors leading-snug">{s.name}</h3>
-                    <p className="text-xs sm:text-sm text-slate-300 mt-1.5 leading-relaxed font-medium">{s.description}</p>
+                    <h3 className="font-black text-slate-100 text-xl group-hover:text-purple-300 transition-colors leading-snug">{s.name}</h3>
+                    <p className="text-sm sm:text-base text-slate-300 mt-2 leading-relaxed font-medium">{s.description}</p>
                   </div>
 
                   {/* Impact Alert */}
-                  <div className="bg-amber-500/10 rounded-2xl p-4 border border-amber-500/30 text-xs space-y-1.5">
-                    <p className="text-xs text-amber-400 font-black uppercase tracking-wider flex items-center gap-1.5">
-                      <AlertTriangle size={14} /> Dampak Insiden Kegagalan:
+                  <div className="bg-amber-500/10 rounded-2xl p-5 border border-amber-500/30 text-sm space-y-2">
+                    <p className="text-sm text-amber-400 font-black uppercase tracking-wider flex items-center gap-2">
+                      <AlertTriangle size={16} /> Dampak Insiden Kegagalan:
                     </p>
-                    <p className="text-xs text-slate-200 leading-relaxed font-medium">{s.impact_description}</p>
+                    <p className="text-sm text-slate-200 leading-relaxed font-medium">{s.impact_description}</p>
                   </div>
 
                   {/* Step Workflow Preview */}
-                  <div className="bg-slate-950/70 rounded-2xl p-4 border border-slate-800 space-y-2.5">
+                  <div className="bg-slate-950/70 rounded-2xl p-5 border border-slate-800 space-y-3">
                     <div className="flex items-center justify-between">
-                      <p className="text-[11px] font-black text-slate-400 uppercase tracking-wider">Tahapan Prosedur SOP:</p>
-                      <span className="text-[10px] font-mono text-purple-400 font-bold bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">
+                      <p className="text-xs font-black text-slate-400 uppercase tracking-wider">Tahapan Prosedur SOP:</p>
+                      <span className="text-xs font-mono text-purple-400 font-bold bg-purple-500/10 px-2.5 py-1 rounded border border-purple-500/20">
                         {s.steps?.length ?? 0} Langkah
                       </span>
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       {s.steps?.slice(0, 3).map((st, stIdx) => (
-                        <div key={stIdx} className="flex items-center gap-2 text-xs text-slate-300 font-medium">
-                          <span className="w-4 h-4 rounded-full bg-purple-500/20 text-purple-400 font-bold text-[10px] flex items-center justify-center flex-shrink-0 border border-purple-500/30">
+                        <div key={stIdx} className="flex items-center gap-3 text-sm text-slate-300 font-medium">
+                          <span className="w-5 h-5 rounded-full bg-purple-500/20 text-purple-400 font-bold text-[11px] flex items-center justify-center flex-shrink-0 border border-purple-500/30">
                             {stIdx + 1}
                           </span>
                           <span className="truncate">{st}</span>
                         </div>
                       ))}
                       {(s.steps?.length ?? 0) > 3 && (
-                        <p className="text-[10px] text-slate-500 font-bold italic pl-6">+ {(s.steps.length - 3)} langkah prosedur lanjutan...</p>
+                        <p className="text-xs text-slate-500 font-bold italic pl-8">+ {(s.steps.length - 3)} langkah prosedur lanjutan...</p>
                       )}
                     </div>
                   </div>

@@ -147,7 +147,7 @@ export default function LoginPage() {
 
           {/* Top Brand & Version */}
           <div
-            className={`flex items-center justify-between transition-all duration-700 ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
+            className={`flex items-center justify-between transition-all duration-300 ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
           >
             <div className="flex items-center gap-4">
               <div
@@ -186,59 +186,65 @@ export default function LoginPage() {
 
           {/* Main Headline & Description */}
           <div
-            className={`space-y-6 transition-all duration-700 delay-100 ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
+            className={`space-y-6 transition-all duration-300  ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
           >
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-blue-500/10 border border-blue-500/25 text-blue-300 shadow-sm">
               <Sparkles size={14} className="text-blue-400" />
               Solusi Terpadu Manajemen NOC Kampus Berkelanjutan
             </div>
 
-            <h2 className="text-3xl lg:text-4xl xl:text-5xl font-black text-slate-100 leading-[1.18] tracking-tight">
+            <h2 className="text-4xl lg:text-5xl xl:text-6xl font-black text-slate-100 leading-[1.18] tracking-tight">
               Pusat Kendali Infrastruktur<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-200 to-cyan-300">
                 Digital Twin Smart Campus
               </span>
             </h2>
 
-            <p className="text-base lg:text-lg leading-relaxed text-slate-200 font-medium max-w-2xl">
+            <p className="text-lg lg:text-xl leading-relaxed text-slate-200 font-medium max-w-2xl">
               Kelola seluruh ekosistem hardware IT kampus dalam satu visualisasi spasial interaktif.
               Pantau utilisasi rak server 42U, jalur fiber optic antar-gedung, simulasi mitigasi insiden,
               dan efisiensi daya listrik secara akurat dan transparan.
             </p>
 
             {/* 4 Feature Showcase Cards — Spacious & Ultra-Legible */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-3">
               {FEATURES.map(({ Icon, label, sub, tag, color, bg, border }, i) => (
                 <div
                   key={i}
-                  className="p-5 rounded-3xl border transition-all duration-300 flex items-start gap-4 shadow-lg group hover:translate-y-[-2px]"
+                  className="p-6 rounded-3xl border transition-all duration-300 flex items-start gap-5 shadow-lg group hover:translate-y-[-2px]"
                   style={{
                     background: "rgba(10, 22, 45, 0.72)",
                     borderColor: border,
                     backdropFilter: "blur(16px)",
                   }}
-                  onMouseEnter={e => e.currentTarget.style.borderColor = `${color}80`}
-                  onMouseLeave={e => e.currentTarget.style.borderColor = border}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.borderColor = `${color}80`;
+                    e.currentTarget.style.boxShadow = `0 12px 30px ${color}30, inset 0 1px 0 rgba(255,255,255,0.05)`;
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.borderColor = border;
+                    e.currentTarget.style.boxShadow = "0 10px 15px -3px rgba(0, 0, 0, 0.5)";
+                  }}
                 >
                   <div
-                    className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-110 shadow-md"
+                    className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-110 shadow-md"
                     style={{ background: bg, border: `1px solid ${border}` }}
                   >
-                    <Icon size={22} style={{ color }} />
+                    <Icon size={28} style={{ color }} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      <h4 className="text-sm font-black text-slate-100 group-hover:text-blue-300 transition-colors">
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <h4 className="text-base xl:text-lg font-black text-slate-100 group-hover:text-blue-300 transition-colors leading-tight">
                         {label}
                       </h4>
                     </div>
                     <span
-                      className="inline-block text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md mb-1.5"
+                      className="inline-block text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-md mb-2"
                       style={{ background: bg, color: color, border: `1px solid ${border}` }}
                     >
                       {tag}
                     </span>
-                    <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                    <p className="text-sm text-slate-300 leading-relaxed font-semibold">
                       {sub}
                     </p>
                   </div>
@@ -249,7 +255,7 @@ export default function LoginPage() {
 
           {/* Bottom Stats Showcase */}
           <div
-            className={`grid grid-cols-3 gap-6 p-6 rounded-3xl border transition-all duration-700 delay-300 shadow-xl ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
+            className={`grid grid-cols-3 gap-6 p-6 rounded-3xl border transition-all duration-300  shadow-xl ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
             style={{
               background: "rgba(10, 20, 42, 0.75)",
               borderColor: "rgba(79, 140, 220, 0.20)",
@@ -284,7 +290,7 @@ export default function LoginPage() {
         <div className="absolute inset-0 bg-dots opacity-25 pointer-events-none" />
 
         <div
-          className={`w-full max-w-[460px] relative z-10 my-auto transition-all duration-700 delay-200 ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+          className={`w-full max-w-[460px] relative z-10 my-auto transition-all duration-300  ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
         >
           {/* Mobile Header Logo */}
           <div className="lg:hidden text-center mb-8">
@@ -348,7 +354,7 @@ export default function LoginPage() {
                   <label className="block text-xs font-black uppercase tracking-wider text-slate-200 mb-2">
                     Email Pengguna <span className="text-blue-400">*</span>
                   </label>
-                  <div className="flex items-center h-13 rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900/90 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/20 transition-all shadow-inner">
+                  <div className="flex items-center h-14 rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900/90 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/20 transition-all shadow-inner">
                     <div className="px-4 text-blue-400 flex items-center justify-center">
                       <Mail size={18} />
                     </div>
@@ -370,7 +376,7 @@ export default function LoginPage() {
                       Kata Sandi <span className="text-blue-400">*</span>
                     </label>
                   </div>
-                  <div className="flex items-center h-13 rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900/90 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/20 transition-all shadow-inner">
+                  <div className="flex items-center h-14 rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900/90 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/20 transition-all shadow-inner">
                     <div className="px-4 text-indigo-400 flex items-center justify-center">
                       <Lock size={18} />
                     </div>

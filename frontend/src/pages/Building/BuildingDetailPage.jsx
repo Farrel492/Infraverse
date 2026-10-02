@@ -22,6 +22,7 @@ export default function BuildingDetailPage() {
   const [activeFloor, setActiveFloor] = useState(null);
   const [activeRoom, setActiveRoom]   = useState(null);
   const [activeRack, setActiveRack]   = useState(null);
+  const [roomDevices, setRoomDevices] = useState([]);
   const [loading, setLoading]         = useState(true);
 
   // Rack Capacity Modal
@@ -79,6 +80,22 @@ export default function BuildingDetailPage() {
   };
 
   useEffect(() => { load(); }, [id]);
+
+  useEffect(() => {
+    const fetchRoomDevices = async () => {
+      if (!activeRoom) {
+        setRoomDevices([]);
+        return;
+      }
+      try {
+        const res = await buildingService.getRoomDevices(activeRoom.id);
+        setRoomDevices(res.data || []);
+      } catch (err) {
+        setRoomDevices([]);
+      }
+    };
+    fetchRoomDevices();
+  }, [activeRoom]);
 
   const floors = building?.floors ?? [];
   const rooms  = activeFloor?.rooms ?? [];
@@ -346,7 +363,7 @@ export default function BuildingDetailPage() {
                 <div
                   key={f.id}
                   onClick={() => handleSelectFloor(f)}
-                  className={`w-full text-left p-4.5 rounded-3xl border transition-all shadow-md cursor-pointer ${
+                  className={`w-full text-left p-6 rounded-3xl border transition-all shadow-md cursor-pointer ${
                     isActive
                       ? "bg-gradient-to-r from-blue-600 to-indigo-600 border-blue-400 text-white shadow-[0_6px_25px_rgba(59,130,246,0.4)] ring-1 ring-white/20"
                       : "glass border-slate-700/70 text-slate-300 hover:border-slate-600 hover:bg-slate-800/60"
@@ -363,7 +380,7 @@ export default function BuildingDetailPage() {
                       <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
                         <button
                           onClick={() => setEditFloor({ id: f.id, name: f.name, floor_number: f.floor_number })}
-                          className={`w-7.5 h-7.5 rounded-xl flex items-center justify-center transition-all ${
+                          className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${
                             isActive ? "bg-white/20 hover:bg-white/30 text-white" : "bg-slate-800 hover:bg-blue-600 text-slate-300 hover:text-white border border-slate-700"
                           }`}
                           title="Edit Lantai"
@@ -372,7 +389,7 @@ export default function BuildingDetailPage() {
                         </button>
                         <button
                           onClick={() => setDeleteFloor(f)}
-                          className={`w-7.5 h-7.5 rounded-xl flex items-center justify-center transition-all ${
+                          className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${
                             isActive ? "bg-red-500/40 hover:bg-red-500/70 text-white" : "bg-slate-800 hover:bg-red-600 text-slate-300 hover:text-white border border-slate-700"
                           }`}
                           title="Hapus Lantai"
@@ -444,7 +461,7 @@ export default function BuildingDetailPage() {
                 <div
                   key={r.id}
                   onClick={() => handleSelectRoom(r)}
-                  className={`w-full text-left p-4.5 rounded-3xl border transition-all shadow-md cursor-pointer ${
+                  className={`w-full text-left p-6 rounded-3xl border transition-all shadow-md cursor-pointer ${
                     isActive
                       ? "bg-gradient-to-r from-emerald-600 to-teal-600 border-emerald-400 text-white shadow-[0_6px_25px_rgba(16,185,129,0.4)] ring-1 ring-white/20"
                       : "glass border-slate-700/70 text-slate-300 hover:border-slate-600 hover:bg-slate-800/60"
@@ -461,7 +478,7 @@ export default function BuildingDetailPage() {
                       <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
                         <button
                           onClick={() => setEditRoom({ id: r.id, name: r.name, type: r.type, floor_id: r.floor_id ?? activeFloor?.id })}
-                          className={`w-7.5 h-7.5 rounded-xl flex items-center justify-center transition-all ${
+                          className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${
                             isActive ? "bg-white/20 hover:bg-white/30 text-white" : "bg-slate-800 hover:bg-emerald-600 text-slate-300 hover:text-white border border-slate-700"
                           }`}
                           title="Edit Ruangan"
@@ -470,7 +487,7 @@ export default function BuildingDetailPage() {
                         </button>
                         <button
                           onClick={() => setDeleteRoom({ ...r, floor_id: r.floor_id ?? activeFloor?.id })}
-                          className={`w-7.5 h-7.5 rounded-xl flex items-center justify-center transition-all ${
+                          className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${
                             isActive ? "bg-red-500/40 hover:bg-red-500/70 text-white" : "bg-slate-800 hover:bg-red-600 text-slate-300 hover:text-white border border-slate-700"
                           }`}
                           title="Hapus Ruangan"
@@ -723,6 +740,46 @@ export default function BuildingDetailPage() {
                 <p className="text-xs text-slate-500 max-w-sm mx-auto">
                   Visualizer 42U akan langsung memetakan lokasi fisik perangkat server, switch, dan router.
                 </p>
+              </div>
+            )}
+
+            {/* Standalone Room Devices (Access Points, etc.) */}
+            {activeRoom && roomDevices.length > 0 && (
+              <div className="mt-8 space-y-4">
+                <div className="flex items-center gap-3.5 border-b border-slate-800 pb-3">
+                  <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                    <Sparkles size={18} />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-bold text-slate-100 uppercase tracking-wider">Perangkat Standalone Ruangan</h2>
+                    <p className="text-[11px] text-slate-400 mt-0.5">Access Point & Perangkat di luar Rack</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {roomDevices.map(dev => (
+                    <div
+                      key={`room-dev-${dev.id}`}
+                      onClick={() => navigate(`/assets/${dev.id}/edit`)}
+                      className="group cursor-pointer p-3.5 rounded-xl bg-slate-900 border border-slate-700/60 hover:border-amber-500/50 hover:bg-slate-800 transition-all shadow-md flex items-center gap-3"
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center flex-shrink-0 shadow-inner">
+                        <HardDrive size={18} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-xs font-bold text-slate-200 truncate group-hover:text-amber-400 transition-colors">
+                          {dev.name}
+                        </h4>
+                        <div className="text-[10px] font-semibold text-slate-500 mt-0.5 flex gap-2">
+                          <span className="uppercase">{dev.type.replace('_',' ')}</span>
+                          <span>|</span>
+                          <span className="text-slate-400">{dev.ip_address || "Tanpa IP"}</span>
+                        </div>
+                      </div>
+                      <div className="w-2 h-2 rounded-full flex-shrink-0 bg-emerald-400 shadow-[0_0_8px_#34d399]" />
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>

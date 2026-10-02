@@ -176,17 +176,17 @@ export default function UserListPage() {
             <table className="w-full text-sm text-left">
               <thead>
                 <tr className="border-b border-slate-800 bg-slate-900/90 text-slate-400 uppercase tracking-wider text-xs font-black">
-                  <th className="px-6 py-4.5">Pengguna</th>
-                  <th className="px-6 py-4.5">Role / Otorisasi</th>
-                  <th className="px-6 py-4.5">Nomor Telepon</th>
-                  <th className="px-6 py-4.5">Tanggal Terdaftar</th>
-                  <th className="px-6 py-4.5 text-right">Aksi</th>
+                  <th className="px-6 py-6">Pengguna</th>
+                  <th className="px-6 py-6">Role / Otorisasi</th>
+                  <th className="px-6 py-6">Nomor Telepon</th>
+                  <th className="px-6 py-6">Tanggal Terdaftar</th>
+                  <th className="px-6 py-6 text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60 font-medium">
                 {users.map(u => (
                   <tr key={u.id} className="hover:bg-slate-800/50 transition-colors">
-                    <td className="px-6 py-4.5">
+                    <td className="px-6 py-6">
                       <div className="flex items-center gap-3.5">
                         <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center font-black text-white text-base shadow flex-shrink-0">
                           {u.name?.charAt(0)?.toUpperCase()}
@@ -200,13 +200,13 @@ export default function UserListPage() {
                       </div>
                     </td>
 
-                    <td className="px-6 py-4.5">
+                    <td className="px-6 py-6">
                       <span className={`px-3 py-1 rounded-full border text-xs font-black uppercase tracking-wider ${ROLE_BADGE[u.role] ?? ""}`}>
                         {ROLE_LABEL[u.role] ?? u.role}
                       </span>
                     </td>
 
-                    <td className="px-6 py-4.5 text-slate-300 font-mono text-xs">
+                    <td className="px-6 py-6 text-slate-300 font-mono text-xs">
                       {u.phone ? (
                         <span className="flex items-center gap-1.5">
                           <Phone size={13} className="text-slate-500" /> {u.phone}
@@ -216,11 +216,11 @@ export default function UserListPage() {
                       )}
                     </td>
 
-                    <td className="px-6 py-4.5 text-slate-400 text-xs font-semibold">
+                    <td className="px-6 py-6 text-slate-400 text-xs font-semibold">
                       {u.created_at ? new Date(u.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "-"}
                     </td>
 
-                    <td className="px-6 py-4.5 text-right">
+                    <td className="px-6 py-6 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button onClick={() => { setResetting(u); setNewPassword(""); }}
                           title="Reset Password"

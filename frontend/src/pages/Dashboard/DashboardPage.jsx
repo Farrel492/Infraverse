@@ -218,14 +218,18 @@ export default function DashboardPage() {
 
   return (
     <motion.div
-      className="p-6 xl:p-8 space-y-7 min-h-screen"
+      className="p-6 xl:p-10 space-y-8 min-h-screen relative overflow-hidden"
       style={{ background: "radial-gradient(ellipse at top, #060f22 0%, #050c1a 60%)" }}
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
+      {/* Ambient background effects similar to login */}
+      <div className="absolute inset-0 bg-grid opacity-10 pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, rgba(37,99,235,0.08) 0%, transparent 60%)" }} />
+
       {/* ═══════════════ HEADER ═══════════════ */}
-      <motion.div variants={itemVariants}>
+      <motion.div variants={itemVariants} className="relative z-10">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
             <p className="text-xs font-extrabold uppercase tracking-wider mb-1.5 text-blue-400 flex items-center gap-2">
@@ -270,21 +274,24 @@ export default function DashboardPage() {
       </motion.div>
 
       {/* ═══════════════ WELCOME BANNER ═══════════════ */}
-      <motion.div variants={itemVariants}>
+      <motion.div variants={itemVariants} className="relative z-10">
         <div
-          className="relative overflow-hidden rounded-3xl p-6 xl:p-7"
+          className="relative overflow-hidden rounded-md p-8 xl:p-10"
           style={{
-            background: "linear-gradient(135deg, rgba(8,20,48,0.9) 0%, rgba(12,25,55,0.85) 100%)",
-            border: "1px solid rgba(59,130,246,0.18)",
-            boxShadow: "0 8px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)",
+            background: "linear-gradient(135deg, rgba(8,20,48,0.92) 0%, rgba(12,25,55,0.85) 100%)",
+            border: "1px solid rgba(59,130,246,0.25)",
+            boxShadow: "0 12px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
           }}
         >
+          {/* Top glowing cyan line */}
+          <div className="accent-line-top" />
+
           {/* Background decorations */}
           <div className="absolute top-0 right-0 w-96 h-full pointer-events-none">
-            <div className="absolute top-4 right-4 w-64 h-64 rounded-full" style={{ background: "radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 65%)" }} />
-            <div className="absolute -bottom-8 right-20 w-48 h-48 rounded-full" style={{ background: "radial-gradient(circle, rgba(99,102,241,0.10) 0%, transparent 65%)" }} />
+            <div className="absolute top-4 right-4 w-64 h-64 rounded-full" style={{ background: "radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 65%)" }} />
+            <div className="absolute -bottom-8 right-20 w-48 h-48 rounded-full" style={{ background: "radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 65%)" }} />
           </div>
-          <div className="absolute inset-0 bg-grid opacity-20 pointer-events-none" />
+          <div className="absolute inset-0 bg-grid opacity-25 pointer-events-none" />
 
           <div className="relative flex items-center gap-5 xl:gap-6">
             <div
@@ -311,15 +318,15 @@ export default function DashboardPage() {
       </motion.div>
 
       {/* ═══════════════ STAT CARDS ═══════════════ */}
-      <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
+      <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-5 relative z-10">
         {statCards.map((s, idx) => (
           <motion.button
             key={s.label}
             onClick={() => navigate(s.path)}
             whileHover={{ y: -4, scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
-            className="relative text-left overflow-hidden rounded-2xl p-5 border cursor-pointer group"
-            style={{ background: s.bg, borderColor: s.border }}
+            className="stat-card p-6 xl:p-7 group"
+            style={{ background: "rgba(10, 20, 42, 0.75)", borderColor: s.border }}
           >
             {/* Alert ping */}
             {s.alert && (
@@ -351,18 +358,10 @@ export default function DashboardPage() {
       </motion.div>
 
       {/* ═══════════════ CHARTS ROW ═══════════════ */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 xl:grid-cols-3 gap-6 relative z-10">
 
         {/* Power Trend Chart */}
-        <div
-          className="xl:col-span-2 rounded-3xl p-6 xl:p-7"
-          style={{
-            background: "rgba(8,16,35,0.75)",
-            border: "1px solid rgba(79,140,220,0.12)",
-            backdropFilter: "blur(20px)",
-            boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
-          }}
-        >
+        <div className="xl:col-span-2 glass-strong p-6 xl:p-8 flex flex-col justify-between">
           {/* Chart Header */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-5">
             <div>
@@ -505,16 +504,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Device Distribution */}
-        <div
-          className="rounded-3xl p-6"
-          style={{
-            background: "rgba(8,16,35,0.75)",
-            border: "1px solid rgba(79,140,220,0.12)",
-            backdropFilter: "blur(20px)",
-            boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
-          }}
-        >
-          <h3 className="text-base font-black text-slate-100 mb-5 flex items-center gap-2.5">
+        <div className="glass-strong p-6 xl:p-8 flex flex-col justify-between">
+          <h3 className="text-base font-black text-slate-100 mb-6 flex items-center gap-2.5">
             <div
               className="w-7 h-7 rounded-lg flex items-center justify-center"
               style={{ background: "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.25)" }}
@@ -549,17 +540,9 @@ export default function DashboardPage() {
       </motion.div>
 
       {/* ═══════════════ MAINTENANCE SECTION ═══════════════ */}
-      <motion.div variants={itemVariants}>
-        <div
-          className="rounded-3xl p-6 xl:p-7"
-          style={{
-            background: "rgba(8,16,35,0.75)",
-            border: "1px solid rgba(79,140,220,0.12)",
-            backdropFilter: "blur(20px)",
-            boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
-          }}
-        >
-          <div className="flex items-center justify-between mb-6">
+      <motion.div variants={itemVariants} className="relative z-10">
+        <div className="glass p-6 xl:p-8">
+          <div className="flex items-center justify-between mb-8">
             <h3 className="text-base font-black text-slate-100 flex items-center gap-2.5">
               <div
                 className="w-7 h-7 rounded-lg flex items-center justify-center"
@@ -600,14 +583,14 @@ export default function DashboardPage() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {summary.upcoming_maintenances.slice(0,8).map((m, i) => (
                 <div
                   key={i}
-                  className="flex items-center gap-3.5 p-4 rounded-2xl border transition-all cursor-default group"
-                  style={{ background: "rgba(10,20,42,0.80)", borderColor: "rgba(79,140,220,0.10)" }}
-                  onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(234,179,8,0.22)"}
-                  onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(79,140,220,0.10)"}
+                  className="flex items-center gap-4 p-5 rounded-md border transition-all cursor-default group bg-slate-900/60 hover:bg-slate-800/80"
+                  style={{ borderColor: "rgba(79,140,220,0.15)" }}
+                  onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(234,179,8,0.30)"}
+                  onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(79,140,220,0.15)"}
                 >
                   <div
                     className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"

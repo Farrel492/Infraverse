@@ -28,4 +28,7 @@ export const buildingService = {
     api.post(`/rooms/${roomId}/racks/${rackId}`, data),
   deleteRack: (roomId, rackId)      =>
     api.delete(`/rooms/${roomId}/racks/${rackId}`),
+
+  // Room-based devices (Access Points placed directly in rooms, no rack)
+  getRoomDevices: (roomId)          => api.get(`/devices?room_id=${roomId}`),
 };

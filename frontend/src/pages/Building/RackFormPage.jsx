@@ -299,7 +299,7 @@ export default function RackFormPage() {
                     <span>Kapasitas Slot (Total U) <span className="text-blue-400">*</span></span>
                     <span className="text-[11px] font-bold text-blue-400">{form.total_u} U Slot</span>
                   </label>
-                  <div className="flex items-center h-13 rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900/90 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/15 transition-all shadow-inner p-1">
+                  <div className="flex items-center h-14 rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-900/90 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/15 transition-all shadow-inner p-1">
                     <button
                       type="button"
                       onClick={() => setForm(f => ({ ...f, total_u: Math.max(1, Number(f.total_u) - 1) }))}

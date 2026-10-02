@@ -142,7 +142,7 @@ function RackView({ rack, selectedDevice, onSelectDevice, simMode, affectedIds }
         <div className="ml-2 flex flex-col gap-1.5 p-2"
           style={{ minHeight: totalSlots * RACK_U_HEIGHT + 16 }}>
           {[...rack.devices]
-            .sort((a, b) => (a.u_pos ?? 99) - (b.u_pos ?? 99))
+            .sort((a, b) => (b.u_pos ?? 0) - (a.u_pos ?? 0))
             .map((device) => (
               <RackUnit
                 key={device.id}
@@ -344,30 +344,30 @@ export default function DigitalTwinPage() {
 
       {/* Integrated Live Simulation Incident Banner */}
       {simMode && (
-        <div className="glass-strong border border-red-500/50 rounded-3xl p-5 shadow-[0_0_30px_rgba(239,68,68,0.25)] bg-gradient-to-r from-red-950/40 via-purple-950/30 to-slate-900/60 relative overflow-hidden">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-red-500/20 border border-red-500/40 flex items-center justify-center text-red-400 flex-shrink-0 animate-pulse">
-                <Flame size={24} />
+        <div className="glass-strong border border-red-500/50 rounded-3xl p-7 shadow-[0_0_30px_rgba(239,68,68,0.25)] bg-gradient-to-r from-red-950/40 via-purple-950/30 to-slate-900/60 relative overflow-hidden">
+          <div className="flex items-center justify-between flex-wrap gap-5">
+            <div className="flex items-start gap-5">
+              <div className="w-14 h-14 rounded-2xl bg-red-500/20 border border-red-500/40 flex items-center justify-center text-red-400 flex-shrink-0 animate-pulse">
+                <Flame size={28} />
               </div>
               <div>
-                <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider bg-red-500/20 text-red-300 border border-red-500/40 animate-pulse">
+                <div className="flex items-center gap-2.5">
+                  <span className="px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider bg-red-500/20 text-red-300 border border-red-500/40 animate-pulse">
                     Live Incident Simulation
                   </span>
-                  <span className="text-xs font-mono text-purple-300 font-bold capitalize">
+                  <span className="text-sm font-mono text-purple-300 font-bold capitalize">
                     {activeScenario?.scenario_type?.replace(/_/g, " ") ?? "Skenario Insiden"}
                   </span>
                 </div>
-                <h3 className="text-base font-black text-white mt-1">
+                <h3 className="text-xl font-black text-white mt-1.5">
                   {activeScenario?.name ?? "Simulasi Kegagalan Perangkat"}
                 </h3>
-                <p className="text-xs text-slate-300 mt-0.5 max-w-2xl leading-relaxed">
+                <p className="text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
                   {activeScenario?.impact_description || activeScenario?.description || "Perangkat pada rack disimulasikan mengalami pemadaman/gangguan kritis."}
                 </p>
-                <div className="flex items-center gap-3 mt-2 text-[11px] font-semibold text-slate-400">
-                  <span className="text-red-400 font-bold flex items-center gap-1">
-                    <AlertTriangle size={13} /> {affectedIds.length} Perangkat Terdampak pada Visual Rack
+                <div className="flex items-center gap-3 mt-2.5 text-xs font-semibold text-slate-400">
+                  <span className="text-red-400 font-bold flex items-center gap-1.5">
+                    <AlertTriangle size={15} /> {affectedIds.length} Perangkat Terdampak pada Visual Rack
                   </span>
                 </div>
               </div>
@@ -538,39 +538,39 @@ export default function DigitalTwinPage() {
         </div>
 
         {/* Sidebar Inspector Panel */}
-        <div className="w-80 flex-shrink-0 glass-strong border border-slate-700/60 rounded-2xl p-5 overflow-y-auto shadow-2xl">
+        <div className="w-96 flex-shrink-0 glass-strong border border-slate-700/60 rounded-3xl p-7 overflow-y-auto shadow-2xl">
           {selected ? (
-            <div className="space-y-5">
-              <div className="flex items-start gap-3">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 text-slate-100 shadow-md"
+            <div className="space-y-6">
+              <div className="flex items-start gap-4">
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 text-slate-100 shadow-md"
                   style={{ background: (TYPE_COLOR_HEX[selected.type] ?? "#6b7280") }}>
-                  <DeviceIcon type={selected.type} size={22} />
+                  <DeviceIcon type={selected.type} size={26} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-slate-100 text-sm leading-snug">{selected.name}</h3>
-                  <p className="text-[10px] text-slate-400 capitalize font-mono mt-0.5">
+                  <h3 className="font-bold text-slate-100 text-base leading-snug">{selected.name}</h3>
+                  <p className="text-xs text-slate-400 capitalize font-mono mt-1">
                     {selected.type?.replace("_"," ")}
                   </p>
                   {/* Show location from rack context */}
                   {selected._rack && (
-                    <p className="text-[10px] text-blue-400 mt-1 flex items-center gap-1">
-                      <DoorOpen size={10} />
+                    <p className="text-xs text-blue-400 mt-1.5 flex items-center gap-1.5">
+                      <DoorOpen size={14} />
                       {selected._rack.floor_name} › {selected._rack.room_name} › {selected._rack.name}
                     </p>
                   )}
                 </div>
               </div>
 
-              <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border ${STATUS_BG[selected.status]}`}>
-                <div className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+              <div className={`flex items-center gap-2.5 px-4 py-3 rounded-2xl border ${STATUS_BG[selected.status]}`}>
+                <div className="w-3 h-3 rounded-full flex-shrink-0"
                   style={{
                     background: STATUS_COLOR[selected.status],
-                    boxShadow: selected.status === "active" ? `0 0 8px ${STATUS_COLOR.active}` : "none",
+                    boxShadow: selected.status === "active" ? `0 0 10px ${STATUS_COLOR.active}` : "none",
                   }} />
-                <p className="text-xs font-bold">{STATUS_LABEL[selected.status]}</p>
+                <p className="text-sm font-bold">{STATUS_LABEL[selected.status]}</p>
               </div>
 
-              <div className="space-y-2 text-xs">
+              <div className="space-y-3 text-sm">
                 {[
                   ["Vendor / Merek",  selected.vendor ?? "-"],
                   ["Model Hardware", selected.model  ?? "-"],
@@ -579,23 +579,23 @@ export default function DigitalTwinPage() {
                   ["Ukuran Perangkat",`${selected.u_size ?? 1}U Unit`],
                 ].map(([label, val]) => (
                   <div key={label}
-                    className="flex justify-between items-center py-2 border-b border-slate-800/80">
-                    <span className="text-slate-500 text-[11px]">{label}</span>
-                    <span className="text-slate-200 font-mono font-bold text-[11px]">{val}</span>
+                    className="flex justify-between items-center py-2.5 border-b border-slate-800/80">
+                    <span className="text-slate-500 text-xs">{label}</span>
+                    <span className="text-slate-200 font-mono font-bold text-xs">{val}</span>
                   </div>
                 ))}
               </div>
 
               <div>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-2">
+                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-3">
                   Ubah Status Operasional
                 </p>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-3">
                   {Object.entries(STATUS_LABEL).map(([s, label]) => (
                     <button key={s}
                       disabled={updating || s === selected.status}
                       onClick={() => handleStatusChange(s)}
-                      className={`py-2 px-3 text-xs rounded-xl border font-bold transition-all ${
+                      className={`py-2.5 px-4 text-sm rounded-xl border font-bold transition-all ${
                         s === selected.status
                           ? "opacity-100 shadow-md"
                           : "hover:brightness-125 opacity-50 hover:opacity-100"
@@ -612,27 +612,27 @@ export default function DigitalTwinPage() {
               </div>
 
               {/* Quick Actions */}
-              <div className="pt-3 border-t border-slate-800/80 flex flex-col gap-2">
+              <div className="pt-5 border-t border-slate-800/80 flex flex-col gap-3">
                 <button
                   onClick={() => navigate(`/maintenance/create?device_id=${selected.id}`)}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-bold transition-all shadow-md cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-sm font-bold transition-all shadow-md cursor-pointer"
                 >
-                  <Wrench size={14} /> Jadwalkan Maintenance
+                  <Wrench size={16} /> Jadwalkan Maintenance
                 </button>
                 <button
                   onClick={() => navigate(`/assets/${selected.id}/edit`)}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700/60 text-xs font-bold transition-all shadow-md cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700/60 text-sm font-bold transition-all shadow-md cursor-pointer"
                 >
-                  <ExternalLink size={14} /> Edit Konfigurasi Aset
+                  <ExternalLink size={16} /> Edit Konfigurasi Aset
                 </button>
               </div>
             </div>
           ) : (
-            <div className="text-center py-10 text-slate-500 space-y-3">
-              <Server size={36} className="mx-auto text-blue-400/80" />
+            <div className="text-center py-12 text-slate-500 space-y-4">
+              <Server size={48} className="mx-auto text-blue-400/80" />
               <div>
-                <h3 className="font-bold text-slate-200 text-xs">Inspektur Perangkat Rack</h3>
-                <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
+                <h3 className="font-bold text-slate-200 text-sm">Inspektur Perangkat Rack</h3>
+                <p className="text-xs text-slate-400 mt-2 leading-relaxed">
                   Klik perangkat di dalam Rack untuk menguji status dan melihat detail teknis.
                 </p>
               </div>
