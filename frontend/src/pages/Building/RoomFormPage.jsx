@@ -287,14 +287,14 @@ export default function RoomFormPage() {
                 </div>
 
                 {/* Quick Name Presets */}
-                <div className="flex items-center gap-2 mt-2.5 flex-wrap">
-                  <span className="text-[11px] font-bold text-slate-500">Template Cepat:</span>
+                <div className="flex items-center gap-2.5 mt-3.5 flex-wrap">
+                  <span className="text-xs font-bold text-slate-400">Template Cepat:</span>
                   {ROOM_TEMPLATES.map(tpl => (
                     <button
                       key={tpl}
                       type="button"
                       onClick={() => setForm({ ...form, name: tpl })}
-                      className="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-emerald-600/20 text-slate-300 hover:text-emerald-300 border border-slate-700/60 transition-colors cursor-pointer"
+                      className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-emerald-600/30 text-slate-200 hover:text-emerald-300 border border-slate-700/80 transition-all cursor-pointer shadow-sm"
                     >
                       + {tpl}
                     </button>
@@ -316,7 +316,7 @@ export default function RoomFormPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4.5">
               {ROOM_TYPES.map(t => {
                 const IconComp = t.icon;
                 const isSelected = form.type === t.value;
@@ -324,25 +324,25 @@ export default function RoomFormPage() {
                   <label
                     key={t.value}
                     onClick={() => setForm({ ...form, type: t.value })}
-                    className={`p-5 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between gap-3 ${
+                    className={`p-5 rounded-3xl border cursor-pointer transition-all flex flex-col justify-between gap-3.5 shadow-md ${
                       isSelected
                         ? t.borderActive
-                        : "bg-slate-900/70 border-slate-800/90 hover:border-slate-700 hover:bg-slate-800/40"
+                        : "bg-slate-900/80 border-slate-700/80 hover:border-slate-600 hover:bg-slate-800/60"
                     }`}
                   >
                     <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center border ${
-                          isSelected ? "bg-white/10 border-white/20 text-white" : "bg-slate-800 border-slate-700 text-slate-400"
+                      <div className="flex items-center gap-3.5">
+                        <div className={`w-11 h-11 rounded-2xl flex items-center justify-center border shadow-sm ${
+                          isSelected ? "bg-white/15 border-white/30 text-white" : "bg-slate-800 border-slate-700 text-slate-400"
                         }`}>
-                          <IconComp size={18} />
+                          <IconComp size={20} />
                         </div>
                         <div>
-                          <p className={`text-sm font-bold ${isSelected ? t.textActive : "text-slate-200"}`}>
+                          <p className={`text-sm font-black ${isSelected ? t.textActive : "text-slate-100"}`}>
                             {t.label}
                           </p>
-                          <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md ${
-                            isSelected ? "bg-white/10 text-white" : "bg-slate-800 text-slate-400"
+                          <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md mt-1 inline-block ${
+                            isSelected ? "bg-white/15 text-white" : "bg-slate-800 text-slate-400 border border-slate-700"
                           }`}>
                             {t.badge}
                           </span>
@@ -357,7 +357,7 @@ export default function RoomFormPage() {
                         className="accent-blue-500 w-4 h-4 mt-1"
                       />
                     </div>
-                    <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                    <p className="text-xs text-slate-300 leading-relaxed font-medium">
                       {t.desc}
                     </p>
                   </label>

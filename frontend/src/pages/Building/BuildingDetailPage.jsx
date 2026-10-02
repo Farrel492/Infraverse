@@ -338,7 +338,7 @@ export default function BuildingDetailPage() {
             </button>
           </div>
 
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             {floors.map((f) => {
               const isActive = activeFloor?.id === f.id;
               const roomCount = f.rooms?.length ?? 0;
@@ -346,16 +346,16 @@ export default function BuildingDetailPage() {
                 <div
                   key={f.id}
                   onClick={() => handleSelectFloor(f)}
-                  className={`w-full text-left p-4 rounded-2xl border transition-all shadow-md cursor-pointer ${
+                  className={`w-full text-left p-4.5 rounded-3xl border transition-all shadow-md cursor-pointer ${
                     isActive
-                      ? "bg-gradient-to-r from-blue-600 to-indigo-600 border-blue-400 text-white shadow-[0_4px_25px_rgba(59,130,246,0.35)] ring-1 ring-white/20"
-                      : "glass border-slate-700/60 text-slate-300 hover:border-slate-600 hover:bg-slate-800/60"
+                      ? "bg-gradient-to-r from-blue-600 to-indigo-600 border-blue-400 text-white shadow-[0_6px_25px_rgba(59,130,246,0.4)] ring-1 ring-white/20"
+                      : "glass border-slate-700/70 text-slate-300 hover:border-slate-600 hover:bg-slate-800/60"
                   }`}
                 >
-                  {/* Card Header: Level badge on left, Edit/Delete on right (no overlapping) */}
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className={`text-[10px] font-mono px-2.5 py-0.5 rounded-md font-bold ${
-                      isActive ? "bg-white/25 text-white" : "bg-slate-800 text-blue-400 border border-slate-700"
+                  {/* Card Header: Level badge on left, Edit/Delete on right */}
+                  <div className="flex items-center justify-between gap-2 mb-2.5">
+                    <span className={`text-[11px] font-mono px-3 py-1 rounded-lg font-bold shadow-xs ${
+                      isActive ? "bg-white/25 text-white" : "bg-slate-800/90 text-blue-400 border border-slate-700/80"
                     }`}>
                       Tingkat {f.floor_number}
                     </span>
@@ -363,33 +363,33 @@ export default function BuildingDetailPage() {
                       <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
                         <button
                           onClick={() => setEditFloor({ id: f.id, name: f.name, floor_number: f.floor_number })}
-                          className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${
+                          className={`w-7.5 h-7.5 rounded-xl flex items-center justify-center transition-all ${
                             isActive ? "bg-white/20 hover:bg-white/30 text-white" : "bg-slate-800 hover:bg-blue-600 text-slate-300 hover:text-white border border-slate-700"
                           }`}
                           title="Edit Lantai"
                         >
-                          <Edit2 size={12} />
+                          <Edit2 size={13} />
                         </button>
                         <button
                           onClick={() => setDeleteFloor(f)}
-                          className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${
+                          className={`w-7.5 h-7.5 rounded-xl flex items-center justify-center transition-all ${
                             isActive ? "bg-red-500/40 hover:bg-red-500/70 text-white" : "bg-slate-800 hover:bg-red-600 text-slate-300 hover:text-white border border-slate-700"
                           }`}
                           title="Hapus Lantai"
                         >
-                          <Trash2 size={12} />
+                          <Trash2 size={13} />
                         </button>
                       </div>
                     )}
                   </div>
 
                   {/* Floor Name */}
-                  <p className={`font-extrabold text-sm leading-snug break-words ${isActive ? "text-white" : "text-slate-100"}`}>
+                  <p className={`font-black text-sm leading-snug break-words my-1 ${isActive ? "text-white" : "text-slate-100"}`}>
                     {f.name}
                   </p>
 
                   {/* Floor Footer */}
-                  <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-white/10 text-xs">
+                  <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-white/10 text-xs font-semibold">
                     <span className={isActive ? "text-blue-100 opacity-90" : "text-slate-400"}>
                       {roomCount} Ruangan Terdaftar
                     </span>
@@ -436,7 +436,7 @@ export default function BuildingDetailPage() {
             )}
           </div>
 
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             {rooms.map((r) => {
               const isActive = activeRoom?.id === r.id;
               const rackCount = r.racks?.length ?? 0;
@@ -444,16 +444,16 @@ export default function BuildingDetailPage() {
                 <div
                   key={r.id}
                   onClick={() => handleSelectRoom(r)}
-                  className={`w-full text-left p-4 rounded-2xl border transition-all shadow-md cursor-pointer ${
+                  className={`w-full text-left p-4.5 rounded-3xl border transition-all shadow-md cursor-pointer ${
                     isActive
-                      ? "bg-gradient-to-r from-emerald-600 to-teal-600 border-emerald-400 text-white shadow-[0_4px_25px_rgba(16,185,129,0.35)] ring-1 ring-white/20"
-                      : "glass border-slate-700/60 text-slate-300 hover:border-slate-600 hover:bg-slate-800/60"
+                      ? "bg-gradient-to-r from-emerald-600 to-teal-600 border-emerald-400 text-white shadow-[0_6px_25px_rgba(16,185,129,0.4)] ring-1 ring-white/20"
+                      : "glass border-slate-700/70 text-slate-300 hover:border-slate-600 hover:bg-slate-800/60"
                   }`}
                 >
-                  {/* Card Header: Type badge on left, Edit/Delete on right (no overlapping) */}
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className={`text-[10px] px-2.5 py-0.5 rounded-md font-semibold capitalize ${
-                      isActive ? "bg-white/20 text-white" : "bg-slate-800 text-emerald-300 border border-slate-700"
+                  {/* Card Header: Type badge on left, Edit/Delete on right */}
+                  <div className="flex items-center justify-between gap-2 mb-2.5">
+                    <span className={`text-[11px] px-3 py-1 rounded-lg font-bold capitalize shadow-xs ${
+                      isActive ? "bg-white/25 text-white" : "bg-slate-800/90 text-emerald-300 border border-slate-700/80"
                     }`}>
                       {r.type.replace("_"," ")}
                     </span>
@@ -461,33 +461,33 @@ export default function BuildingDetailPage() {
                       <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
                         <button
                           onClick={() => setEditRoom({ id: r.id, name: r.name, type: r.type, floor_id: r.floor_id ?? activeFloor?.id })}
-                          className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${
+                          className={`w-7.5 h-7.5 rounded-xl flex items-center justify-center transition-all ${
                             isActive ? "bg-white/20 hover:bg-white/30 text-white" : "bg-slate-800 hover:bg-emerald-600 text-slate-300 hover:text-white border border-slate-700"
                           }`}
                           title="Edit Ruangan"
                         >
-                          <Edit2 size={12} />
+                          <Edit2 size={13} />
                         </button>
                         <button
                           onClick={() => setDeleteRoom({ ...r, floor_id: r.floor_id ?? activeFloor?.id })}
-                          className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${
+                          className={`w-7.5 h-7.5 rounded-xl flex items-center justify-center transition-all ${
                             isActive ? "bg-red-500/40 hover:bg-red-500/70 text-white" : "bg-slate-800 hover:bg-red-600 text-slate-300 hover:text-white border border-slate-700"
                           }`}
                           title="Hapus Ruangan"
                         >
-                          <Trash2 size={12} />
+                          <Trash2 size={13} />
                         </button>
                       </div>
                     )}
                   </div>
 
                   {/* Room Name */}
-                  <p className={`font-extrabold text-sm leading-snug break-words ${isActive ? "text-white" : "text-slate-100"}`}>
+                  <p className={`font-black text-sm leading-snug break-words my-1 ${isActive ? "text-white" : "text-slate-100"}`}>
                     {r.name}
                   </p>
 
                   {/* Room Footer */}
-                  <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-white/10 text-xs">
+                  <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-white/10 text-xs font-semibold">
                     <span className={isActive ? "text-emerald-100 opacity-90" : "text-slate-400 font-medium"}>
                       {rackCount} Rack Terpasang
                     </span>

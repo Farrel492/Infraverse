@@ -180,14 +180,14 @@ export default function FloorFormPage() {
                 </div>
 
                 {/* Quick Presets */}
-                <div className="flex items-center gap-2 mt-2.5 flex-wrap">
-                  <span className="text-[11px] font-bold text-slate-500">Template Cepat:</span>
+                <div className="flex items-center gap-2.5 mt-3.5 flex-wrap">
+                  <span className="text-xs font-bold text-slate-400">Template Cepat:</span>
                   {FLOOR_PRESETS.map(tpl => (
                     <button
                       key={tpl}
                       type="button"
                       onClick={() => setForm({ ...form, name: tpl })}
-                      className="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-indigo-600/20 text-slate-300 hover:text-indigo-300 border border-slate-700/60 transition-colors cursor-pointer"
+                      className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-indigo-600/30 text-slate-200 hover:text-indigo-300 border border-slate-700/80 transition-all cursor-pointer shadow-sm"
                     >
                       + {tpl}
                     </button>

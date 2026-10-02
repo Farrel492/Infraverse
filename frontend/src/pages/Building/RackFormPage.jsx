@@ -243,14 +243,14 @@ export default function RackFormPage() {
                 </div>
 
                 {/* Quick Presets */}
-                <div className="flex items-center gap-2 mt-2.5 flex-wrap">
-                  <span className="text-[11px] font-bold text-slate-500">Template Cepat:</span>
+                <div className="flex items-center gap-2.5 mt-3.5 flex-wrap">
+                  <span className="text-xs font-bold text-slate-400">Template Cepat:</span>
                   {RACK_NAME_PRESETS.map(tpl => (
                     <button
                       key={tpl}
                       type="button"
                       onClick={() => setForm({ ...form, name: tpl })}
-                      className="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-blue-600/20 text-slate-300 hover:text-blue-300 border border-slate-700/60 transition-colors cursor-pointer"
+                      className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-blue-600/30 text-slate-200 hover:text-blue-300 border border-slate-700/80 transition-all cursor-pointer shadow-sm"
                     >
                       + {tpl}
                     </button>
@@ -334,27 +334,27 @@ export default function RackFormPage() {
               {/* Standard Presets */}
               <div>
                 <label className="form-label">
-                  <span className="flex items-center gap-1.5 text-slate-300">
+                  <span className="flex items-center gap-1.5 text-slate-200 font-bold">
                     <Zap size={14} className="text-amber-400" />
                     Pilihan Standar Industri Data Center:
                   </span>
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   {RACK_PRESETS.map(item => (
                     <button
                       key={item.u}
                       type="button"
                       onClick={() => setForm({ ...form, total_u: item.u })}
-                      className={`p-3.5 rounded-2xl border text-center transition-all flex flex-col gap-1 cursor-pointer ${
+                      className={`p-4 sm:p-5 rounded-2xl border text-center transition-all flex flex-col items-center justify-center gap-1.5 cursor-pointer shadow-md ${
                         Number(form.total_u) === item.u
-                          ? "bg-blue-600/25 border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.3)] text-white"
-                          : "bg-slate-900/70 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200"
+                          ? "bg-blue-600/25 border-blue-400 shadow-[0_0_22px_rgba(59,130,246,0.35)] text-white ring-1 ring-blue-300/50"
+                          : "bg-slate-900/80 border-slate-700/80 text-slate-300 hover:border-slate-600 hover:bg-slate-800/60"
                       }`}
                     >
-                      <span className={`text-lg font-black ${Number(form.total_u) === item.u ? "text-blue-300" : "text-slate-300"}`}>
+                      <span className={`text-xl font-black font-mono ${Number(form.total_u) === item.u ? "text-blue-300" : "text-white"}`}>
                         {item.label}
                       </span>
-                      <span className="text-[11px] font-medium leading-tight">{item.desc}</span>
+                      <span className="text-xs font-semibold leading-tight text-slate-300">{item.desc}</span>
                     </button>
                   ))}
                 </div>

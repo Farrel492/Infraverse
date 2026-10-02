@@ -163,7 +163,7 @@ export default function AssetDetailPage() {
             <ArrowLeft size={14} /> Kembali ke Katalog
           </button>
           {canWrite && (
-            <button onClick={() => navigate(`/assets?edit=${device.id}`)}
+            <button onClick={() => navigate(`/assets/${device.id}/edit`)}
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.3)] transition-all">
               <Edit2 size={14} /> Edit Perangkat
             </button>

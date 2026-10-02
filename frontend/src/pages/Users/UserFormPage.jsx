@@ -387,19 +387,19 @@ export default function UserFormPage() {
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center border ${
-                          isSelected ? "bg-white/10 border-white/20 text-white" : "bg-slate-800 border-slate-700 text-slate-400"
+                      <div className="flex items-center gap-3.5">
+                        <div className={`w-11 h-11 rounded-2xl flex items-center justify-center border shadow-sm ${
+                          isSelected ? "bg-white/15 border-white/30 text-white" : "bg-slate-800 border-slate-700 text-slate-400"
                         }`}>
-                          <IconComp size={18} />
+                          <IconComp size={20} />
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className={`text-sm font-bold ${isSelected ? r.textActive : "text-slate-200"}`}>
+                            <span className={`text-base font-black ${isSelected ? r.textActive : "text-slate-100"}`}>
                               {r.label}
                             </span>
-                            <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
-                              isSelected ? "bg-white/15 text-white" : "bg-slate-800 text-slate-400"
+                            <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-md ${
+                              isSelected ? "bg-white/15 text-white" : "bg-slate-800 text-slate-400 border border-slate-700"
                             }`}>
                               {r.badge}
                             </span>
@@ -412,19 +412,19 @@ export default function UserFormPage() {
                         value={r.value}
                         checked={isSelected}
                         onChange={() => setForm({ ...form, role: r.value })}
-                        className="accent-blue-500 w-4 h-4"
+                        className="accent-blue-500 w-4 h-4 cursor-pointer"
                       />
                     </div>
-                    <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                    <p className="text-xs text-slate-300 leading-relaxed font-medium">
                       {r.desc}
                     </p>
-                    <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-800/60">
+                    <div className="flex flex-wrap gap-2 pt-3 border-t border-slate-800/80">
                       {r.capabilities.map((cap, i) => (
                         <span
                           key={i}
-                          className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-900/90 border border-slate-800 text-slate-300 flex items-center gap-1"
+                          className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-900/90 border border-slate-700/80 text-slate-200 flex items-center gap-1.5 shadow-xs"
                         >
-                          <CheckCircle2 size={11} className={isSelected ? "text-emerald-400" : "text-slate-500"} />
+                          <CheckCircle2 size={13} className={isSelected ? "text-emerald-400" : "text-slate-400"} />
                           {cap}
                         </span>
                       ))}

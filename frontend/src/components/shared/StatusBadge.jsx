@@ -1,19 +1,69 @@
 export default function StatusBadge({ status }) {
   const map = {
-    active:      { label:"Aktif",       dot:"#22c55e", cls:"bg-green-500/10 text-green-400 border-green-500/25",   glow:"shadow-green-500/20" },
-    inactive:    { label:"Nonaktif",    dot:"#64748b", cls:"bg-slate-500/10 text-slate-400 border-slate-500/20",   glow:"" },
-    maintenance: { label:"Maintenance", dot:"#eab308", cls:"bg-yellow-500/10 text-yellow-400 border-yellow-500/25", glow:"shadow-yellow-500/20" },
-    down:        { label:"Down",        dot:"#ef4444", cls:"bg-red-500/10 text-red-400 border-red-500/25",         glow:"shadow-red-500/20" },
+    active:      {
+      label: "Aktif",
+      dot: "#22c55e",
+      bg: "rgba(34,197,94,0.09)",
+      border: "rgba(34,197,94,0.22)",
+      color: "#86efac",
+      glow: "0 0 10px rgba(34,197,94,0.25)",
+      pulse: true,
+    },
+    inactive:    {
+      label: "Nonaktif",
+      dot: "#64748b",
+      bg: "rgba(100,116,139,0.08)",
+      border: "rgba(100,116,139,0.18)",
+      color: "#94a3b8",
+      glow: "none",
+      pulse: false,
+    },
+    maintenance: {
+      label: "Maintenance",
+      dot: "#eab308",
+      bg: "rgba(234,179,8,0.09)",
+      border: "rgba(234,179,8,0.22)",
+      color: "#fde047",
+      glow: "0 0 10px rgba(234,179,8,0.22)",
+      pulse: false,
+    },
+    down:        {
+      label: "Down",
+      dot: "#ef4444",
+      bg: "rgba(239,68,68,0.09)",
+      border: "rgba(239,68,68,0.22)",
+      color: "#fca5a5",
+      glow: "0 0 12px rgba(239,68,68,0.30)",
+      pulse: true,
+    },
   };
-  const s = map[status] ?? { label: status ?? "-", dot:"#64748b", cls:"bg-slate-500/10 text-slate-400 border-slate-500/20", glow:"" };
+
+  const s = map[status] ?? {
+    label: status ?? "-",
+    dot: "#64748b",
+    bg: "rgba(100,116,139,0.08)",
+    border: "rgba(100,116,139,0.18)",
+    color: "#94a3b8",
+    glow: "none",
+    pulse: false,
+  };
+
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border shadow-sm ${s.cls} ${s.glow}`}>
+    <span
+      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold"
+      style={{
+        background: s.bg,
+        border: `1px solid ${s.border}`,
+        color: s.color,
+        boxShadow: s.glow,
+      }}
+    >
       <span
         className="w-1.5 h-1.5 rounded-full flex-shrink-0"
         style={{
           background: s.dot,
-          boxShadow: `0 0 6px ${s.dot}88`,
-          ...(status === "active" || status === "down" ? { animation: "pulse 2s cubic-bezier(0.4,0,0.6,1) infinite" } : {})
+          boxShadow: `0 0 6px ${s.dot}`,
+          animation: s.pulse ? "pulse 2s cubic-bezier(0.4,0,0.6,1) infinite" : "none",
         }}
       />
       {s.label}

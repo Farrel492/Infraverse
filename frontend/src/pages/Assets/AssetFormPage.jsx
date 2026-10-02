@@ -422,7 +422,7 @@ export default function AssetFormPage() {
                 <label className="form-label">
                   <span>Tipe Hardware Perangkat <span className="text-blue-400">*</span></span>
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3.5">
                   {DEVICE_TYPES.map(t => {
                     const IconComp = t.icon;
                     const isSelected = form.type === t.value;
@@ -431,16 +431,21 @@ export default function AssetFormPage() {
                         key={t.value}
                         type="button"
                         onClick={() => setForm({ ...form, type: t.value })}
-                        className={`p-3.5 rounded-2xl border text-left transition-all flex flex-col gap-2 cursor-pointer ${
+                        className={`p-4 rounded-2xl border text-left transition-all flex items-center gap-3.5 cursor-pointer ${
                           isSelected
-                            ? "bg-indigo-600/25 border-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.3)] text-white"
-                            : "bg-slate-900/70 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200"
+                            ? "bg-indigo-600/25 border-indigo-400 shadow-[0_0_22px_rgba(99,102,241,0.3)] text-white ring-1 ring-indigo-400/50"
+                            : "bg-slate-900/80 border-slate-700/80 text-slate-300 hover:border-slate-600 hover:bg-slate-800/60"
                         }`}
                       >
-                        <div className={isSelected ? "text-indigo-300" : "text-slate-500"}>
-                          <IconComp size={18} />
+                        <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform ${
+                          isSelected ? "bg-indigo-500/25 text-indigo-300 border border-indigo-400/40" : "bg-slate-800 text-slate-400 border border-slate-700"
+                        }`}>
+                          <IconComp size={20} />
                         </div>
-                        <span className="text-xs font-bold capitalize leading-snug">{t.label}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs sm:text-sm font-bold leading-snug">{t.label}</p>
+                          <span className="text-[10px] text-slate-400 font-mono mt-0.5 block uppercase tracking-wider">{t.value}</span>
+                        </div>
                       </button>
                     );
                   })}
@@ -569,7 +574,7 @@ export default function AssetFormPage() {
                 <label className="form-label">
                   <span>Status Operasional Perangkat</span>
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
                   {DEVICE_STATUSES.map(s => {
                     const isSelected = form.status === s.value;
                     return (
@@ -577,14 +582,14 @@ export default function AssetFormPage() {
                         key={s.value}
                         type="button"
                         onClick={() => setForm({ ...form, status: s.value })}
-                        className={`p-3.5 rounded-2xl border text-center font-bold text-xs capitalize transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                        className={`py-3.5 px-4 rounded-2xl border text-center font-bold text-xs sm:text-sm capitalize transition-all flex items-center justify-center gap-2.5 cursor-pointer shadow-sm ${
                           isSelected
-                            ? "bg-blue-600 text-white border-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.35)]"
-                            : "bg-slate-900/70 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-white"
+                            ? "bg-blue-600 text-white border-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.35)] ring-1 ring-blue-300/40"
+                            : "bg-slate-900/80 border-slate-700/80 text-slate-300 hover:border-slate-600 hover:text-white"
                         }`}
                       >
-                        <span className={`w-2 h-2 rounded-full ${s.dot}`} />
-                        <span>{s.label}</span>
+                        <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${s.dot}`} />
+                        <span className="truncate">{s.label}</span>
                       </button>
                     );
                   })}

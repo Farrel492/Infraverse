@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import {
   LayoutDashboard, Building2, Server, Network,
   Zap, Globe, Wrench, LogOut, ChevronRight, Bell,
-  PanelLeftClose, PanelLeft, Users, Activity
+  PanelLeftClose, PanelLeft, Users, Activity, X
 } from "lucide-react";
 import useAuthStore from "../../stores/authStore";
 import { authService } from "../../services/authService";
@@ -21,297 +21,405 @@ const navItems = [
   { to: "/maintenance",  label: "Maintenance",    Icon: Wrench,          alertKey: "maintenance", desc: "Jadwal Perawatan" },
 ];
 
-const roleColor   = { admin: "#f87171", teknisi: "#60a5fa", viewer: "#4ade80" };
-const roleLabel   = { admin: "Administrator", teknisi: "Teknisi IT", viewer: "Viewer" };
-const roleBadgeBg = { admin: "rgba(239,68,68,0.15)", teknisi: "rgba(59,130,246,0.15)", viewer: "rgba(74,222,128,0.15)" };
+const roleConfig = {
+  admin:   { color: "#f87171", label: "Administrator",  bg: "rgba(239,68,68,0.12)",   border: "rgba(239,68,68,0.25)",   glow: "rgba(239,68,68,0.3)" },
+  teknisi: { color: "#60a5fa", label: "Teknisi IT",     bg: "rgba(59,130,246,0.12)",  border: "rgba(59,130,246,0.25)",  glow: "rgba(59,130,246,0.3)" },
+  viewer:  { color: "#34d399", label: "System Viewer",  bg: "rgba(52,211,153,0.10)",  border: "rgba(52,211,153,0.22)",  glow: "rgba(52,211,153,0.3)" },
+};
 
 export default function MainLayout() {
   const { user, clearAuth } = useAuthStore();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const navigate   = useNavigate();
+  const location   = useLocation();
   const { alerts, fetchAlerts, setModalOpen } = useNotificationStore();
-  const [clock, setClock]       = useState(new Date());
+  const [clock, setClock]         = useState(new Date());
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  // 1. Initial & Realtime Polling (setiap 5 detik)
+  // Polling & refresh alerts
   useEffect(() => {
     fetchAlerts(true);
-    const interval = setInterval(() => {
-      fetchAlerts(true);
-    }, 5000);
+    const interval = setInterval(() => fetchAlerts(true), 5000);
     return () => clearInterval(interval);
   }, [fetchAlerts]);
 
-  // 2. Refresh setiap kali berpindah rute/halaman
-  useEffect(() => {
-    fetchAlerts(true);
-  }, [location.pathname, fetchAlerts]);
+  useEffect(() => { fetchAlerts(true); }, [location.pathname, fetchAlerts]);
 
-  // 3. Refresh saat tab kembali aktif atau event kustom terpicu
   useEffect(() => {
-    const handleFocus = () => fetchAlerts(true);
+    const handleFocus  = () => fetchAlerts(true);
     const handleCustom = () => fetchAlerts(true);
-
     window.addEventListener("focus", handleFocus);
     window.addEventListener("infraverse:refresh-alerts", handleCustom);
-
     return () => {
       window.removeEventListener("focus", handleFocus);
       window.removeEventListener("infraverse:refresh-alerts", handleCustom);
     };
   }, [fetchAlerts]);
 
+  // Clock
   useEffect(() => {
     const t = setInterval(() => setClock(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
 
+  // Close mobile on route change
+  useEffect(() => { setMobileOpen(false); }, [location.pathname]);
+
   const handleLogout = async () => {
-    try { await authService.logout(); toast.success("Berhasil keluar."); }
+    try { await authService.logout(); toast.success("Berhasil keluar dari sistem."); }
     finally { clearAuth(); navigate("/login"); }
   };
 
   const totalAlerts = alerts?.total ?? 0;
+  const role = user?.role ?? "viewer";
+  const rc   = roleConfig[role] ?? roleConfig.viewer;
 
-  const activeNavItems = user?.role === "admin"
+  const activeNavItems = role === "admin"
     ? [...navItems, { to: "/users", label: "Kelola User", Icon: Users, alertKey: null, desc: "Manajemen Akun" }]
     : navItems;
 
-  const sidebarW = collapsed ? "w-[88px]" : "w-[288px]";
+  const sidebarW = collapsed ? "72px" : "272px";
+
+  // Sidebar content component (shared between desktop and mobile)
+  const SidebarContent = ({ isMobile = false }) => (
+    <div className="flex flex-col h-full">
+
+      {/* ─── Top accent glow line ─── */}
+      <div className="accent-line-top" />
+
+      {/* ─── Logo Header ─── */}
+      <div
+        className="flex items-center px-4 py-4 flex-shrink-0"
+        style={{ borderBottom: "1px solid rgba(59,130,246,0.08)" }}
+      >
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          {/* Logo Icon */}
+          <div
+            className="relative w-10 h-10 rounded-xl flex items-center justify-center font-black text-white text-sm flex-shrink-0"
+            style={{
+              background: "linear-gradient(135deg, #1d4ed8, #4f46e5)",
+              boxShadow: "0 4px 20px rgba(59,130,246,0.50), inset 0 1px 0 rgba(255,255,255,0.15)",
+            }}
+          >
+            IV
+            <div
+              className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2"
+              style={{
+                background: "#22c55e",
+                borderColor: "#05091a",
+                boxShadow: "0 0 8px #22c55e",
+              }}
+            />
+          </div>
+          {(!collapsed || isMobile) && (
+            <div className="min-w-0 overflow-hidden">
+              <h1 className="text-base font-black text-slate-100 tracking-tight leading-none">InfraVerse</h1>
+              <p className="text-[10px] font-bold mt-0.5 uppercase tracking-widest" style={{ color: "#3b82f6" }}>
+                Digital Twin
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Collapse/Close Button */}
+        {isMobile ? (
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700/60 transition-all flex-shrink-0"
+          >
+            <X size={16} />
+          </button>
+        ) : (
+          <button
+            onClick={() => setCollapsed(v => !v)}
+            title={collapsed ? "Buka Sidebar" : "Sembunyikan"}
+            className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-500 hover:text-slate-200 hover:bg-slate-700/50 border border-slate-700/40 transition-all flex-shrink-0 ml-auto"
+          >
+            {collapsed ? <PanelLeft size={15} /> : <PanelLeftClose size={15} />}
+          </button>
+        )}
+      </div>
+
+      {/* ─── Clock & Alert Strip ─── */}
+      {(!collapsed || isMobile) && (
+        <div
+          className="px-4 py-3 flex items-center justify-between flex-shrink-0"
+          style={{ borderBottom: "1px solid rgba(59,130,246,0.06)" }}
+        >
+          <div>
+            <p className="font-mono text-sm font-black tracking-wider text-slate-200">
+              {clock.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+            </p>
+            <p className="text-[9px] text-slate-500 mt-0.5 font-bold uppercase tracking-wider">
+              {clock.toLocaleDateString("id-ID", { weekday: "short", day: "numeric", month: "short" })}
+            </p>
+          </div>
+          <button
+            onClick={() => setModalOpen(true)}
+            title={totalAlerts > 0 ? `${totalAlerts} Alarm Aktif` : "Status Normal"}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border transition-all cursor-pointer text-xs font-bold"
+            style={
+              totalAlerts > 0
+                ? { background: "rgba(239,68,68,0.12)", borderColor: "rgba(239,68,68,0.30)", color: "#f87171", boxShadow: "0 0 12px rgba(239,68,68,0.20)" }
+                : { background: "rgba(16,185,129,0.08)", borderColor: "rgba(16,185,129,0.20)", color: "#34d399" }
+            }
+          >
+            {totalAlerts > 0 ? (
+              <><Bell size={12} className="animate-bounce" /><span>{totalAlerts}</span></>
+            ) : (
+              <><Activity size={12} /><span className="text-[9px] uppercase tracking-wider">Normal</span></>
+            )}
+          </button>
+        </div>
+      )}
+
+      {/* Collapsed Bell */}
+      {collapsed && !isMobile && (
+        <div className="flex justify-center py-2.5 flex-shrink-0" style={{ borderBottom: "1px solid rgba(59,130,246,0.06)" }}>
+          <button
+            onClick={() => setModalOpen(true)}
+            title={totalAlerts > 0 ? `${totalAlerts} Alarm` : "Normal"}
+            className="w-9 h-9 rounded-xl flex items-center justify-center border transition-all cursor-pointer"
+            style={
+              totalAlerts > 0
+                ? { background: "rgba(239,68,68,0.15)", borderColor: "rgba(239,68,68,0.35)", color: "#f87171", boxShadow: "0 0 12px rgba(239,68,68,0.25)" }
+                : { background: "rgba(16,185,129,0.08)", borderColor: "rgba(16,185,129,0.18)", color: "#34d399" }
+            }
+          >
+            <Bell size={16} className={totalAlerts > 0 ? "animate-bounce" : ""} />
+          </button>
+        </div>
+      )}
+
+      {/* ─── Navigation ─── */}
+      <nav className="flex-1 px-2.5 py-3 space-y-1 overflow-y-auto">
+        {(!collapsed || isMobile) && (
+          <p className="text-[9px] font-black uppercase px-3 mb-3 tracking-[0.18em]" style={{ color: "#1e3a5f" }}>
+            Navigasi
+          </p>
+        )}
+
+        {activeNavItems.map(({ to, label, Icon, alertKey, desc }) => {
+          const badgeCount = alertKey ? (alerts[alertKey] ?? 0) : 0;
+          return (
+            <NavLink
+              key={to}
+              to={to}
+              title={collapsed && !isMobile ? label : undefined}
+              className={({ isActive }) =>
+                `flex items-center px-3 py-2.5 rounded-xl font-bold transition-all duration-200 group relative ${collapsed && !isMobile ? "justify-center" : "gap-3"} ${
+                  isActive
+                    ? "text-white sidebar-nav-item active"
+                    : "text-slate-400 hover:text-slate-100 sidebar-nav-item"
+                }`
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  {/* Icon */}
+                  <span
+                    className="flex-shrink-0 transition-all duration-200"
+                    style={isActive
+                      ? { color: "#60a5fa", filter: "drop-shadow(0 0 8px rgba(59,130,246,0.8))" }
+                      : { color: "rgba(100,116,139,0.9)" }
+                    }
+                  >
+                    <Icon size={19} strokeWidth={isActive ? 2.2 : 1.8} />
+                  </span>
+
+                  {/* Labels */}
+                  {(!collapsed || isMobile) && (
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[13.5px] font-extrabold leading-tight truncate">{label}</span>
+                      {!isActive && (
+                        <span className="block text-[10px] font-medium truncate mt-0.5" style={{ color: "#1e3a5f" }}>
+                          {desc}
+                        </span>
+                      )}
+                    </span>
+                  )}
+
+                  {/* Badge */}
+                  {(!collapsed || isMobile) && badgeCount > 0 && (
+                    <span
+                      className="text-white text-[10px] font-black rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0 ml-auto"
+                      style={{ background: "linear-gradient(135deg, #ef4444, #dc2626)", boxShadow: "0 2px 8px rgba(239,68,68,0.55)" }}
+                    >
+                      {badgeCount > 9 ? "9+" : badgeCount}
+                    </span>
+                  )}
+                  {(!collapsed || isMobile) && badgeCount === 0 && !isActive && (
+                    <ChevronRight size={13} className="text-slate-700 opacity-0 group-hover:opacity-60 transition-opacity flex-shrink-0 ml-auto" />
+                  )}
+                </>
+              )}
+            </NavLink>
+          );
+        })}
+      </nav>
+
+      {/* ─── User Section ─── */}
+      <div className="flex-shrink-0 p-2.5 space-y-1.5" style={{ borderTop: "1px solid rgba(59,130,246,0.08)" }}>
+        {/* Profile Link */}
+        <NavLink
+          to="/profile"
+          title={collapsed && !isMobile ? user?.name : undefined}
+          className={({ isActive }) =>
+            `flex items-center gap-3 p-2.5 rounded-xl transition-all group ${collapsed && !isMobile ? "justify-center" : ""} ${
+              isActive ? "bg-white/8 border border-white/8" : "hover:bg-white/4 border border-transparent"
+            }`
+          }
+        >
+          {/* Avatar */}
+          <div
+            className="relative w-9 h-9 rounded-xl flex items-center justify-center text-sm font-black text-white flex-shrink-0 overflow-hidden"
+            style={{
+              background: user?.avatar ? undefined : `linear-gradient(135deg, ${rc.color}bb, ${rc.color})`,
+              boxShadow: `0 3px 12px ${rc.glow}`,
+            }}
+          >
+            {user?.avatar
+              ? <img
+                  src={user.avatar.startsWith("http") || user.avatar.startsWith("/storage/") ? user.avatar : `/storage/${user.avatar}`}
+                  alt="avatar"
+                  className="w-full h-full object-cover"
+                />
+              : (user?.name?.charAt(0)?.toUpperCase() ?? "U")
+            }
+            <div
+              className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-[1.5px]"
+              style={{ background: "#22c55e", borderColor: "#05091a", boxShadow: "0 0 6px #22c55e" }}
+            />
+          </div>
+
+          {(!collapsed || isMobile) && (
+            <div className="min-w-0 flex-1">
+              <p className="text-[13px] font-black text-slate-100 leading-tight truncate">{user?.name ?? "User"}</p>
+              <p className="text-[10px] mt-0.5 font-bold truncate" style={{ color: rc.color }}>
+                {rc.label}
+              </p>
+            </div>
+          )}
+        </NavLink>
+
+        {/* Logout Button */}
+        <button
+          onClick={handleLogout}
+          title={collapsed && !isMobile ? "Keluar Sistem" : undefined}
+          className={`w-full flex items-center justify-center px-3 py-2.5 rounded-xl text-sm font-bold transition-all border cursor-pointer group ${collapsed && !isMobile ? "" : "gap-2.5"}`}
+          style={{
+            background: "rgba(239,68,68,0.07)",
+            borderColor: "rgba(239,68,68,0.18)",
+            color: "#f87171",
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.background = "rgba(239,68,68,0.18)";
+            e.currentTarget.style.borderColor = "rgba(239,68,68,0.35)";
+            e.currentTarget.style.color = "#fff";
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.background = "rgba(239,68,68,0.07)";
+            e.currentTarget.style.borderColor = "rgba(239,68,68,0.18)";
+            e.currentTarget.style.color = "#f87171";
+          }}
+        >
+          <LogOut size={16} />
+          {(!collapsed || isMobile) && <span>Keluar Sistem</span>}
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: "var(--color-bg-base)" }}>
 
-      {/* ===== SIDEBAR ===== */}
+      {/* ===== DESKTOP SIDEBAR ===== */}
       <aside
-        className={`${sidebarW} flex flex-col flex-shrink-0 relative transition-all duration-300 ease-in-out z-30`}
+        className="hidden lg:flex flex-col flex-shrink-0 relative z-30 transition-all duration-300 ease-in-out"
         style={{
-          background: "linear-gradient(180deg, #09142a 0%, #060d1c 60%, #040810 100%)",
-          borderRight: "1px solid rgba(99,148,210,0.15)",
+          width: sidebarW,
+          background: "var(--grad-sidebar)",
+          borderRight: "1px solid rgba(59,130,246,0.10)",
         }}
       >
-        {/* Top accent glow line */}
+        <SidebarContent />
+      </aside>
+
+      {/* ===== MOBILE OVERLAY ===== */}
+      {mobileOpen && (
         <div
-          className="absolute top-0 left-0 right-0 h-[2px]"
-          style={{ background: "linear-gradient(90deg, transparent 0%, rgba(59,130,246,0.9) 30%, rgba(139,92,246,0.9) 70%, transparent 100%)" }}
+          className="fixed inset-0 z-40 lg:hidden"
+          style={{ background: "rgba(2,8,20,0.70)", backdropFilter: "blur(4px)" }}
+          onClick={() => setMobileOpen(false)}
         />
+      )}
 
-        {/* ---- Logo Header ---- */}
-        <div
-          className="flex items-center justify-between px-5 py-5"
-          style={{ borderBottom: "1px solid rgba(99,148,210,0.1)" }}
-        >
-          <div className="flex items-center gap-3.5 min-w-0">
-            <div
-              className="relative w-12 h-12 rounded-2xl flex items-center justify-center font-black text-white text-lg flex-shrink-0"
-              style={{
-                background: "linear-gradient(135deg, #1d4ed8, #6366f1)",
-                boxShadow: "0 6px 24px rgba(59,130,246,0.55), inset 0 1px 0 rgba(255,255,255,0.15)",
-              }}
-            >
-              IV
-              <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-[#060d1c] shadow-[0_0_8px_#10b981]" />
-            </div>
-            {!collapsed && (
-              <div className="min-w-0">
-                <h1 className="text-xl font-black text-slate-100 tracking-tight leading-tight">InfraVerse</h1>
-                <p className="text-[11px] font-bold mt-0.5 text-blue-400 uppercase tracking-widest">Digital Twin Platform</p>
-              </div>
-            )}
-          </div>
-          <button
-            onClick={() => setCollapsed(v => !v)}
-            title={collapsed ? "Buka Sidebar" : "Sembunyikan Sidebar"}
-            className="w-9 h-9 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center border border-slate-700/60 transition-all flex-shrink-0 ml-1"
-          >
-            {collapsed ? <PanelLeft size={17} /> : <PanelLeftClose size={17} />}
-          </button>
-        </div>
-
-        {/* ---- Clock & Alert Strip ---- */}
-        {!collapsed && (
-          <div
-            className="px-5 py-3.5 flex items-center justify-between"
-            style={{ borderBottom: "1px solid rgba(99,148,210,0.07)" }}
-          >
-            <div>
-              <p className="font-mono text-base font-black tracking-wider text-slate-200">
-                {clock.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
-              </p>
-              <p className="text-[10px] text-slate-500 mt-0.5 font-semibold uppercase tracking-wider">
-                {clock.toLocaleDateString("id-ID", { weekday: "short", day: "numeric", month: "short" })}
-              </p>
-            </div>
-            {totalAlerts > 0 ? (
-              <button
-                onClick={() => setModalOpen(true)}
-                title="Buka Pusat Notifikasi & Alarm Realtime"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-red-500/30 hover:border-red-400/60 hover:bg-red-500/20 transition-all cursor-pointer shadow-[0_0_12px_rgba(239,68,68,0.2)]"
-                style={{ background: "rgba(239,68,68,0.12)" }}
-              >
-                <Bell size={13} className="text-red-400 animate-bounce" />
-                <span className="text-xs font-black text-red-400">{totalAlerts}</span>
-              </button>
-            ) : (
-              <button
-                onClick={() => setModalOpen(true)}
-                title="Sistem Normal - Klik untuk rincian"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-500/20 hover:border-emerald-500/40 hover:bg-emerald-500/15 transition-all cursor-pointer"
-                style={{ background: "rgba(16,185,129,0.08)" }}
-              >
-                <Activity size={13} className="text-emerald-400" />
-                <span className="text-[10px] font-black text-emerald-400 uppercase tracking-wider">Normal</span>
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* Collapsed Alert Icon */}
-        {collapsed && (
-          <div className="px-3 py-2.5 flex justify-center border-b border-slate-800/40">
-            <button
-              onClick={() => setModalOpen(true)}
-              title={totalAlerts > 0 ? `${totalAlerts} Alarm Aktif` : "Status Normal"}
-              className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-all cursor-pointer ${
-                totalAlerts > 0
-                  ? "bg-red-500/15 border-red-500/40 text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.3)]"
-                  : "bg-slate-800/60 border-slate-700/60 text-emerald-400 hover:bg-slate-700"
-              }`}
-            >
-              <Bell size={18} className={totalAlerts > 0 ? "animate-bounce" : ""} />
-            </button>
-          </div>
-        )}
-
-        {/* ---- Navigation ---- */}
-        <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto">
-          {!collapsed && (
-            <p className="text-[10px] font-black uppercase px-3 mb-4 tracking-[0.15em] text-slate-500">
-              MENU NAVIGASI
-            </p>
-          )}
-          {activeNavItems.map(({ to, label, Icon, alertKey, desc }) => {
-            const badgeCount = alertKey ? (alerts[alertKey] ?? 0) : 0;
-            return (
-              <NavLink
-                key={to}
-                to={to}
-                title={collapsed ? label : undefined}
-                className={({ isActive }) =>
-                  `flex items-center justify-between px-3.5 py-3.5 rounded-2xl font-bold transition-all duration-200 group relative ${
-                    isActive
-                      ? "text-white"
-                      : "hover:bg-slate-800/70 text-slate-400 hover:text-slate-100"
-                  }`
-                }
-                style={({ isActive }) => isActive ? {
-                  background: "linear-gradient(135deg, rgba(37,99,235,0.35), rgba(99,102,241,0.25))",
-                  border: "1px solid rgba(59,130,246,0.4)",
-                  boxShadow: "0 4px 20px rgba(59,130,246,0.2)",
-                } : {
-                  border: "1px solid transparent",
-                }}
-              >
-                {({ isActive }) => (
-                  <>
-                    <span className={`flex items-center min-w-0 ${collapsed ? "justify-center w-full" : "gap-3.5"}`}>
-                      <span
-                        className="transition-all duration-200 flex-shrink-0"
-                        style={isActive
-                          ? { color: "#60a5fa", filter: "drop-shadow(0 0 10px rgba(59,130,246,0.8))" }
-                          : { color: "rgba(148,163,184,0.8)" }
-                        }
-                      >
-                        <Icon size={22} strokeWidth={isActive ? 2.3 : 1.8} />
-                      </span>
-                      {!collapsed && (
-                        <span className="min-w-0">
-                          <span className="block font-extrabold text-[15px] leading-tight truncate">{label}</span>
-                          {!isActive && (
-                            <span className="block text-[10px] font-medium text-slate-500 truncate mt-0.5">{desc}</span>
-                          )}
-                        </span>
-                      )}
-                    </span>
-
-                    {!collapsed && badgeCount > 0 && (
-                      <span
-                        className="text-white text-[11px] font-black rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 shadow-lg ml-auto"
-                        style={{ background: "linear-gradient(135deg, #ef4444, #dc2626)", boxShadow: "0 2px 10px rgba(239,68,68,0.5)" }}
-                      >
-                        {badgeCount > 9 ? "9+" : badgeCount}
-                      </span>
-                    )}
-                    {!collapsed && badgeCount === 0 && !isActive && (
-                      <ChevronRight size={14} className="text-slate-700 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ml-auto" />
-                    )}
-                  </>
-                )}
-              </NavLink>
-            );
-          })}
-        </nav>
-
-        {/* ---- User Section ---- */}
-        <div className="p-3" style={{ borderTop: "1px solid rgba(99,148,210,0.1)" }}>
-          <NavLink
-            to="/profile"
-            title={collapsed ? user?.name : undefined}
-            className={({ isActive }) =>
-              `flex items-center gap-3.5 p-3.5 rounded-2xl transition-all group mb-2.5 ${
-                isActive ? "bg-white/10 border border-white/10" : "hover:bg-white/5 border border-transparent"
-              }`
-            }
-          >
-            <div
-              className="relative w-12 h-12 rounded-2xl flex items-center justify-center text-lg font-black text-white flex-shrink-0 shadow-md overflow-hidden"
-              style={{
-                background: user?.avatar ? undefined : `linear-gradient(135deg, ${roleColor[user?.role] ?? "#3b82f6"}cc, ${roleColor[user?.role] ?? "#6366f1"})`,
-                boxShadow: `0 4px 15px ${roleColor[user?.role] ?? "#3b82f6"}50`,
-              }}
-            >
-              {user?.avatar
-                ? <img src={`/storage/${user.avatar}`} alt="avatar" className="w-full h-full object-cover" />
-                : (user?.name?.charAt(0)?.toUpperCase() ?? "U")
-              }
-              <div
-                className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-[#060d1c]"
-                style={{ background: "#22c55e", boxShadow: "0 0 6px #22c55e" }}
-              />
-            </div>
-            {!collapsed && (
-              <div className="min-w-0 flex-1">
-                <p className="text-[15px] font-black text-slate-100 leading-tight truncate">{user?.name ?? "User"}</p>
-                <p
-                  className="text-[11px] mt-0.5 font-bold truncate"
-                  style={{ color: roleColor[user?.role] ?? "#60a5fa" }}
-                >
-                  {roleLabel[user?.role] ?? user?.role ?? "-"}
-                </p>
-              </div>
-            )}
-          </NavLink>
-
-          <button
-            onClick={handleLogout}
-            title={collapsed ? "Keluar Sistem" : undefined}
-            className={`w-full flex items-center justify-center px-4 py-3.5 rounded-2xl text-sm font-black transition-all border border-red-500/20 text-red-400 hover:text-white group ${collapsed ? "" : "gap-3"}`}
-            style={{ background: "rgba(239,68,68,0.08)" }}
-            onMouseEnter={e => e.currentTarget.style.background = "rgba(239,68,68,0.2)"}
-            onMouseLeave={e => e.currentTarget.style.background = "rgba(239,68,68,0.08)"}
-          >
-            <LogOut size={18} />
-            {!collapsed && <span>Keluar Sistem</span>}
-          </button>
-        </div>
+      {/* ===== MOBILE SIDEBAR ===== */}
+      <aside
+        className={`fixed left-0 top-0 bottom-0 z-50 lg:hidden flex flex-col transition-transform duration-300 ease-in-out ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}
+        style={{
+          width: "272px",
+          background: "var(--grad-sidebar)",
+          borderRight: "1px solid rgba(59,130,246,0.10)",
+        }}
+      >
+        <SidebarContent isMobile />
       </aside>
 
       {/* ===== MAIN CONTENT ===== */}
-      <main className="flex-1 overflow-auto min-w-0">
-        <Outlet />
-      </main>
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
-      {/* ===== REALTIME NOTIFICATION CENTER MODAL ===== */}
+        {/* Mobile top bar */}
+        <div
+          className="lg:hidden flex items-center justify-between px-4 py-3 flex-shrink-0"
+          style={{
+            background: "rgba(5,12,26,0.95)",
+            borderBottom: "1px solid rgba(59,130,246,0.10)",
+            backdropFilter: "blur(12px)",
+          }}
+        >
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700/50 border border-slate-700/40 transition-all"
+          >
+            <PanelLeft size={18} />
+          </button>
+          <div className="flex items-center gap-2">
+            <div
+              className="w-7 h-7 rounded-lg flex items-center justify-center font-black text-white text-xs"
+              style={{ background: "linear-gradient(135deg, #1d4ed8, #4f46e5)" }}
+            >
+              IV
+            </div>
+            <span className="text-sm font-black text-slate-100">InfraVerse</span>
+          </div>
+          <button
+            onClick={() => setModalOpen(true)}
+            className="relative w-9 h-9 rounded-xl flex items-center justify-center border transition-all"
+            style={
+              totalAlerts > 0
+                ? { background: "rgba(239,68,68,0.12)", borderColor: "rgba(239,68,68,0.30)", color: "#f87171" }
+                : { background: "rgba(16,185,129,0.08)", borderColor: "rgba(16,185,129,0.18)", color: "#34d399" }
+            }
+          >
+            <Bell size={16} className={totalAlerts > 0 ? "animate-bounce" : ""} />
+            {totalAlerts > 0 && (
+              <span
+                className="absolute -top-1 -right-1 w-4 h-4 text-[9px] font-black text-white rounded-full flex items-center justify-center"
+                style={{ background: "#ef4444" }}
+              >
+                {totalAlerts > 9 ? "9+" : totalAlerts}
+              </span>
+            )}
+          </button>
+        </div>
+
+        <main className="flex-1 overflow-auto min-w-0">
+          <Outlet />
+        </main>
+      </div>
+
+      {/* ===== NOTIFICATION MODAL ===== */}
       <NotificationModal />
     </div>
   );

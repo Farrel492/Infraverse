@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import toast from "react-hot-toast";
 import useAuthStore from "../../stores/authStore";
 import Breadcrumb from "../../components/shared/Breadcrumb.jsx";
@@ -83,19 +83,19 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("profile");
   const [showCurrentPass, setShowCurrentPass] = useState(false);
   const [showNewPass, setShowNewPass] = useState(false);
-  const [avatarPreview, setAvatarPreview] = useState(
-    user?.avatar
-      ? (user.avatar.startsWith('http') || user.avatar.startsWith('/storage/') ? user.avatar : `/storage/${user.avatar}`)
-      : null
-  );
+  const getAvatarUrl = (avatar) => {
+    if (!avatar || typeof avatar !== "string") return null;
+    if (avatar.startsWith("http") || avatar.startsWith("/storage/")) return avatar;
+    return `/storage/${avatar}`;
+  };
+
+  const [avatarPreview, setAvatarPreview] = useState(getAvatarUrl(user?.avatar));
   const [avatarFile, setAvatarFile] = useState(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    if (user?.avatar) {
-      setAvatarPreview(user.avatar.startsWith('http') || user.avatar.startsWith('/storage/') ? user.avatar : `/storage/${user.avatar}`);
-    }
+    setAvatarPreview(getAvatarUrl(user?.avatar));
   }, [user?.avatar]);
 
   const handleUpdateProfile = async (e) => {
@@ -221,7 +221,7 @@ export default function ProfilePage() {
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               <button
-                onClick={() => { setAvatarFile(null); setAvatarPreview(user?.avatar ? `/storage/${user.avatar}` : null); }}
+                onClick={() => { setAvatarFile(null); setAvatarPreview(getAvatarUrl(user?.avatar)); }}
                 className="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white border border-slate-600 hover:border-slate-500 transition-all"
               >
                 Batalkan
