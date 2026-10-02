@@ -48,7 +48,7 @@ export default function NotificationModal() {
 
       {/* Modal Dialog */}
       <div
-        className="relative w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[88vh] border border-blue-500/20"
+        className="relative w-full max-w-2xl rounded-md overflow-hidden shadow-2xl flex flex-col max-h-[88vh] border border-blue-500/20"
         style={{
           background: "linear-gradient(180deg, #091326 0%, #070d1a 100%)",
           boxShadow: "0 20px 60px -10px rgba(0,0,0,0.8), 0 0 40px rgba(59,130,246,0.15)",
@@ -66,7 +66,7 @@ export default function NotificationModal() {
         <div className="px-6 py-5 flex items-center justify-between border-b border-slate-800/80 bg-slate-900/50">
           <div className="flex items-center gap-3.5">
             <div
-              className={`w-11 h-11 rounded-2xl flex items-center justify-center border shadow-inner ${
+              className={`w-11 h-11 rounded-md flex items-center justify-center border shadow-inner ${
                 alerts.total > 0
                   ? "bg-red-500/10 border-red-500/30 text-red-400"
                   : "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"

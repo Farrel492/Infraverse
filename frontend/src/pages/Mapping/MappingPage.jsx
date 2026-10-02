@@ -69,7 +69,7 @@ function calculateLayout(nodes, mode = "tier") {
 // ----------------------------------------------------
 // 3D NODE COMPONENT WITH CUSTOM GEOMETRIES
 // ----------------------------------------------------
-function NetworkNode({ node, selected, isDown, onClick }) {
+function NetworkNode({ node, selected, isDown, onClick, hideLabels }) {
   const color = isDown ? "#ef4444" : (STATUS_C[node.status] || "#94a3b8");
   const glowColor = isDown ? "#7f1d1d" : (TYPE_COLOR[node.type] || color);
   
@@ -204,33 +204,35 @@ function NetworkNode({ node, selected, isDown, onClick }) {
         <meshBasicMaterial color={isDown ? "#ef4444" : color} />
       </Sphere>
 
-      {/* Crisp HTML Label Card */}
-      <Html position={[0, -2.0, 0]} center zIndexRange={[100, 0]}>
-        <div className={`pointer-events-none px-4 py-2.5 rounded-2xl border backdrop-blur-2xl whitespace-nowrap transition-all shadow-2xl ${
-          selected 
-            ? "bg-blue-950/95 border-blue-400 scale-110 ring-2 ring-blue-400/50 shadow-[0_0_30px_rgba(59,130,246,0.6)]" 
-            : "bg-slate-900/90 border-slate-700/80 shadow-black/80"
-        }`}>
-          <div className="flex items-center gap-3">
-            <div 
-              className="w-3 h-3 rounded-full flex-shrink-0" 
-              style={{ background: isDown ? "#ef4444" : color, boxShadow: `0 0 12px ${isDown ? "#ef4444" : color}` }} 
-            />
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-black text-slate-100">{node.name}</span>
-                <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider" style={{ background: `${TYPE_COLOR[node.type]}25`, color: TYPE_COLOR[node.type] }}>
-                  {TYPE_LABEL[node.type] ?? node.type}
-                </span>
+      {/* Crisp HTML Label Card (Hidden when modal dialog is open so names don't bleed through) */}
+      {!hideLabels && (
+        <Html position={[0, -2.0, 0]} center zIndexRange={[10, 0]}>
+          <div className={`pointer-events-none px-4 py-2.5 rounded-md border backdrop-blur-2xl whitespace-nowrap transition-all shadow-2xl ${
+            selected 
+              ? "bg-blue-950/95 border-blue-400 scale-110 ring-2 ring-blue-400/50 shadow-[0_0_30px_rgba(59,130,246,0.6)]" 
+              : "bg-slate-900/90 border-slate-700/80 shadow-black/80"
+          }`}>
+            <div className="flex items-center gap-3">
+              <div 
+                className="w-3 h-3 rounded-full flex-shrink-0" 
+                style={{ background: isDown ? "#ef4444" : color, boxShadow: `0 0 12px ${isDown ? "#ef4444" : color}` }} 
+              />
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-black text-slate-100">{node.name}</span>
+                  <span className="px-2 py-0.5 rounded-sm text-[9px] font-black uppercase tracking-wider" style={{ background: `${TYPE_COLOR[node.type]}25`, color: TYPE_COLOR[node.type] }}>
+                    {TYPE_LABEL[node.type] ?? node.type}
+                  </span>
+                </div>
+                <p className="text-[11px] font-mono text-slate-400 mt-0.5">
+                  {node.ip ? node.ip : "Tanpa IP"} &bull; {node.location ? node.location.split("/")[0].trim() : "-"}
+                </p>
+                {isDown && <p className="text-[10px] font-black text-red-400 mt-0.5 animate-pulse">NODE CRITICAL DOWN</p>}
               </div>
-              <p className="text-[11px] font-mono text-slate-400 mt-0.5">
-                {node.ip ? node.ip : "Tanpa IP"} &bull; {node.location ? node.location.split("/")[0].trim() : "-"}
-              </p>
-              {isDown && <p className="text-[10px] font-black text-red-400 mt-0.5 animate-pulse">NODE CRITICAL DOWN</p>}
             </div>
           </div>
-        </div>
-      </Html>
+        </Html>
+      )}
     </group>
   );
 }
@@ -304,13 +306,11 @@ export default function MappingPage() {
   const [deletingConn, setDeletingConn] = useState(null);
 
   // Cable Connection Modal State
-  const [connectModalOpen, setConnectModalOpen]     = useState(false);
-  const [connectSource, setConnectSource]           = useState("");
-  const [connectTarget, setConnectTarget]           = useState("");
-  const [connectType, setConnectType]               = useState("utp"); // utp | fiber | wireless
-  const [connectPortSource, setConnectPortSource]   = useState("");
-  const [connectPortTarget, setConnectPortTarget]   = useState("");
-  const [connecting, setConnecting]                 = useState(false);
+  const [connectModalOpen, setConnectModalOpen] = useState(false);
+  const [connectSource, setConnectSource]       = useState("");
+  const [connectTarget, setConnectTarget]       = useState("");
+  const [connectType, setConnectType]           = useState("utp"); // utp | fiber | wireless
+  const [connecting, setConnecting]             = useState(false);
 
   const openConnectModal = (sourceId = null) => {
     const sId = sourceId ? String(sourceId) : (rawNodes[0] ? String(rawNodes[0].id) : "");
@@ -318,8 +318,6 @@ export default function MappingPage() {
     const otherNode = rawNodes.find(n => String(n.id) !== String(sId));
     setConnectTarget(otherNode ? String(otherNode.id) : "");
     setConnectType("utp");
-    setConnectPortSource("");
-    setConnectPortTarget("");
     setConnectModalOpen(true);
   };
 
@@ -340,8 +338,6 @@ export default function MappingPage() {
         source_device_id: Number(connectSource),
         target_device_id: Number(connectTarget),
         connection_type: connectType,
-        port_source: connectPortSource.trim() || null,
-        port_target: connectPortTarget.trim() || null,
       });
 
       const sDev = rawNodes.find(n => String(n.id) === String(connectSource));
@@ -584,6 +580,7 @@ export default function MappingPage() {
                   isDown={effStatus === "down"}
                   selected={n.id === selected}
                   onClick={setSelected}
+                  hideLabels={connectModalOpen || !!deletingConn}
                 />
               );
             })}
@@ -754,14 +751,14 @@ export default function MappingPage() {
 
       {/* Cable Connection Modal Dialog */}
       {connectModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
-          <div className="w-full max-w-xl glass-strong border border-slate-700/80 rounded-3xl p-7 shadow-2xl space-y-6 relative overflow-hidden">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-xl animate-fade-in">
+          <div className="w-full max-w-xl glass-strong border border-slate-700/80 rounded-md p-8 shadow-2xl space-y-6 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
             
             {/* Header */}
             <div className="flex items-center justify-between border-b border-slate-800 pb-4 relative z-10">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center text-blue-400 shadow-inner">
+                <div className="w-10 h-10 rounded-md bg-blue-500/15 border border-blue-500/30 flex items-center justify-center text-blue-400 shadow-inner">
                   <Plug size={20} />
                 </div>
                 <div>
@@ -769,24 +766,24 @@ export default function MappingPage() {
                     Sambungkan Kabel Interkoneksi
                   </h3>
                   <p className="text-xs text-slate-400 mt-0.5">
-                    Hubungkan dua node perangkat hardware dengan kabel fisik
+                    Hubungkan dua node perangkat hardware dengan media kabel fisik
                   </p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setConnectModalOpen(false)}
-                className="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors"
+                className="w-8 h-8 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors"
               >
                 <X size={16} />
               </button>
             </div>
 
-            <form onSubmit={handleCreateConnection} className="space-y-5 relative z-10">
+            <form onSubmit={handleCreateConnection} className="space-y-6 relative z-10">
               {/* Node Source & Target Selection */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 {/* Node A (Source) */}
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <label className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-blue-400" /> Dari Node (Perangkat A)
                   </label>
@@ -794,7 +791,7 @@ export default function MappingPage() {
                     value={connectSource}
                     onChange={e => setConnectSource(e.target.value)}
                     required
-                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-semibold text-slate-200 outline-none focus:border-blue-500"
+                    className="w-full bg-slate-900 border border-slate-700 rounded-md px-3.5 py-3 text-xs font-semibold text-slate-200 outline-none focus:border-blue-500"
                   >
                     <option value="">-- Pilih Perangkat A --</option>
                     {rawNodes.map(n => (
@@ -806,7 +803,7 @@ export default function MappingPage() {
                 </div>
 
                 {/* Node B (Target) */}
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <label className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-emerald-400" /> Ke Node (Perangkat B)
                   </label>
@@ -814,7 +811,7 @@ export default function MappingPage() {
                     value={connectTarget}
                     onChange={e => setConnectTarget(e.target.value)}
                     required
-                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-semibold text-slate-200 outline-none focus:border-emerald-500"
+                    className="w-full bg-slate-900 border border-slate-700 rounded-md px-3.5 py-3 text-xs font-semibold text-slate-200 outline-none focus:border-emerald-500"
                   >
                     <option value="">-- Pilih Perangkat B --</option>
                     {rawNodes.filter(n => String(n.id) !== String(connectSource)).map(n => (
@@ -827,7 +824,7 @@ export default function MappingPage() {
               </div>
 
               {/* Cable Media Selection */}
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 <label className="text-xs font-bold text-slate-300">
                   Pilih Media Transmisi Kabel
                 </label>
@@ -843,7 +840,7 @@ export default function MappingPage() {
                         key={c.id}
                         type="button"
                         onClick={() => setConnectType(c.id)}
-                        className={`p-3 rounded-2xl border text-left transition-all ${
+                        className={`p-3.5 rounded-md border text-left transition-all cursor-pointer ${
                           isSelected
                             ? `${c.border} shadow-lg`
                             : "bg-slate-900/60 border-slate-700/80 text-slate-400 hover:bg-slate-800"
@@ -860,43 +857,19 @@ export default function MappingPage() {
                 </div>
               </div>
 
-              {/* Ports (Optional) */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-[11px] font-semibold text-slate-400">Port Node A (Opsional)</label>
-                  <input
-                    type="text"
-                    value={connectPortSource}
-                    onChange={e => setConnectPortSource(e.target.value)}
-                    placeholder="Contoh: Port 1 / eth0"
-                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-slate-200 outline-none focus:border-blue-500"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[11px] font-semibold text-slate-400">Port Node B (Opsional)</label>
-                  <input
-                    type="text"
-                    value={connectPortTarget}
-                    onChange={e => setConnectPortTarget(e.target.value)}
-                    placeholder="Contoh: Port 24 / eth1"
-                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-slate-200 outline-none focus:border-emerald-500"
-                  />
-                </div>
-              </div>
-
               {/* Action Buttons */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-3 pt-5 border-t border-slate-800">
                 <button
                   type="button"
                   onClick={() => setConnectModalOpen(false)}
-                  className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-colors cursor-pointer"
+                  className="px-5 py-3 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-colors cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={connecting}
-                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white text-xs font-black shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                  className="px-7 py-3 rounded-md bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white text-xs font-black shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer"
                 >
                   {connecting ? (
                     <>

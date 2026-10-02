@@ -4,8 +4,8 @@ import { authService } from "../../services/authService";
 import useAuthStore from "../../stores/authStore";
 import {
   Eye, EyeOff, Lock, Mail, Activity, Server,
-  Zap, Shield, ArrowRight, Cpu, Wifi, Globe,
-  CheckCircle2, Sparkles, Layers, Radio, AlertTriangle
+  Zap, Shield, ArrowRight, Globe,
+  CheckCircle2, Sparkles, Radio
 } from "lucide-react";
 
 const FEATURES = [
@@ -108,15 +108,7 @@ export default function LoginPage() {
     }
   };
 
-  const fillDemoAccount = (role) => {
-    if (role === "admin") {
-      setForm({ email: "admin@infraverse.id", password: "password" });
-    } else if (role === "teknisi") {
-      setForm({ email: "teknisi@infraverse.id", password: "password" });
-    } else {
-      setForm({ email: "viewer@infraverse.id", password: "password" });
-    }
-  };
+
 
   return (
     <div
@@ -344,7 +336,7 @@ export default function LoginPage() {
               {/* Error Alert */}
               {error && (
                 <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-sm font-semibold text-red-300 flex items-center gap-3 shadow-md animate-fade-in">
-                  <AlertTriangle size={18} className="text-red-400 flex-shrink-0" />
+                  <span className="text-red-400 flex-shrink-0 text-lg">⚠</span>
                   <span>{error}</span>
                 </div>
               )}
@@ -404,7 +396,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full h-14 rounded-2xl font-black text-sm text-white flex items-center justify-center gap-2.5 transition-all shadow-xl active:scale-98 cursor-pointer mt-2"
+                  className="w-full py-3 rounded-2xl font-black text-sm text-white flex items-center justify-center gap-2.5 transition-all shadow-xl active:scale-98 cursor-pointer mt-2"
                   style={{
                     background: loading
                       ? "rgba(59,130,246,0.4)"
@@ -414,47 +406,19 @@ export default function LoginPage() {
                 >
                   {loading ? (
                     <>
-                      <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       <span>Memverifikasi Otorisasi...</span>
                     </>
                   ) : (
                     <>
                       <span>Masuk ke Platform</span>
-                      <ArrowRight size={18} />
+                      <ArrowRight size={16} />
                     </>
                   )}
                 </button>
               </form>
 
-              {/* Demo Account Fillers for Evaluation */}
-              <div className="pt-2 border-t border-slate-800/80">
-                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2.5 text-center">
-                  Uji Coba Cepat (Akun Demo Evaluator):
-                </p>
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => fillDemoAccount("admin")}
-                    className="py-2 px-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-300 text-xs font-bold transition-all text-center cursor-pointer"
-                  >
-                    🛡️ Admin
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => fillDemoAccount("teknisi")}
-                    className="py-2 px-2.5 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-300 text-xs font-bold transition-all text-center cursor-pointer"
-                  >
-                    ⚡ Teknisi
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => fillDemoAccount("viewer")}
-                    className="py-2 px-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-bold transition-all text-center cursor-pointer"
-                  >
-                    👁️ Viewer
-                  </button>
-                </div>
-              </div>
+
 
               {/* Register Link */}
               <div className="text-center pt-2">

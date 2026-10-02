@@ -29,7 +29,7 @@ export default function Modal({ title, onClose, children, maxWidth = "max-w-2xl"
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96, y: 15 }}
           transition={{ type: "spring", stiffness: 320, damping: 26 }}
-          className={`relative w-full ${maxWidth} z-10 glass-strong rounded-3xl border border-slate-700/70 shadow-[0_25px_80px_rgba(0,0,0,0.8)] overflow-hidden my-auto`}
+          className={`relative w-full ${maxWidth} z-10 glass-strong rounded-md border border-slate-700/70 shadow-[0_25px_80px_rgba(0,0,0,0.8)] overflow-hidden my-auto`}
         >
           {/* Top glowing cyan/indigo border */}
           <div className="h-1.5 w-full bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-400" />
@@ -45,7 +45,7 @@ export default function Modal({ title, onClose, children, maxWidth = "max-w-2xl"
             </div>
             <button
               onClick={onClose}
-              className="w-9 h-9 rounded-2xl bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-slate-100 border border-slate-700/60 flex items-center justify-center transition-all shadow-sm hover:scale-105"
+              className="w-9 h-9 rounded-md bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-slate-100 border border-slate-700/60 flex items-center justify-center transition-all shadow-sm hover:scale-105"
             >
               <X size={18} />
             </button>

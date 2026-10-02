@@ -5,8 +5,7 @@ import { deviceService } from "../../services/deviceService";
 import Breadcrumb from "../../components/shared/Breadcrumb.jsx";
 import { 
   Network, ArrowLeft, Save, CheckCircle2, 
-  Zap, Radio, Sparkles, AlertCircle, Cpu, 
-  GitBranch, Plug, Compass, Server
+  Zap, Sparkles, AlertCircle, Cpu, Compass
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -69,8 +68,6 @@ export default function ConnectionFormPage() {
     source_device_id: "",
     target_device_id: "",
     connection_type: "fiber",
-    port_source: "",
-    port_target: "",
   });
 
   useEffect(() => {
@@ -99,8 +96,6 @@ export default function ConnectionFormPage() {
         source_device_id: Number(form.source_device_id),
         target_device_id: Number(form.target_device_id),
         connection_type: form.connection_type,
-        port_source: form.port_source ? form.port_source.trim() : null,
-        port_target: form.port_target ? form.port_target.trim() : null,
       };
 
       await mappingService.addConnection(payload);
@@ -335,58 +330,9 @@ export default function ConnectionFormPage() {
             </div>
           </div>
 
-          {/* Section 3: Port Interface */}
-          <div className="glass p-8 rounded-3xl border border-slate-700/60 space-y-6 shadow-2xl">
-            <div className="flex items-center gap-3.5 border-b border-slate-800 pb-5">
-              <div className="w-11 h-11 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shadow-inner">
-                <Plug size={22} />
-              </div>
-              <div>
-                <h2 className="text-base font-bold text-slate-100 uppercase tracking-wider">Port Interface Fisik (Opsional)</h2>
-                <p className="text-xs text-slate-400 mt-0.5">Identifikasi port interface switch atau router untuk dokumentasi kabel</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div>
-                <label className="form-label">
-                  <span>Port Interface Sumber (Node A)</span>
-                </label>
-                <div className="input-group">
-                  <div className="input-icon-box text-blue-400">
-                    <GitBranch size={18} />
-                  </div>
-                  <input 
-                    type="text" 
-                    value={form.port_source} 
-                    placeholder="Contoh: Gi0/1 atau Te1/0/1"
-                    onChange={e => setForm({ ...form, port_source: e.target.value })}
-                    className="input-control font-mono" 
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="form-label">
-                  <span>Port Interface Tujuan (Node B)</span>
-                </label>
-                <div className="input-group">
-                  <div className="input-icon-box text-indigo-400">
-                    <GitBranch size={18} />
-                  </div>
-                  <input 
-                    type="text" 
-                    value={form.port_target} 
-                    placeholder="Contoh: Te1/0/24 atau Eth0"
-                    onChange={e => setForm({ ...form, port_target: e.target.value })}
-                    className="input-control font-mono" 
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-slate-800">
+          {/* Section 3: Action Buttons */}
+          <div className="glass p-8 rounded-3xl border border-slate-700/60 shadow-2xl">
+            <div className="flex flex-col sm:flex-row gap-4">
               <button 
                 type="button" 
                 onClick={() => navigate("/mapping")}
@@ -440,7 +386,7 @@ export default function ConnectionFormPage() {
                     {sourceDev ? sourceDev.name : "Pilih Node A"}
                   </p>
                   <p className="text-[11px] text-blue-400 font-mono mt-0.5 truncate">
-                    {form.port_source || (sourceDev?.ip_address ?? "Port Asal")}
+                    {sourceDev?.ip_address ?? "—"}
                   </p>
                 </div>
 
@@ -461,7 +407,7 @@ export default function ConnectionFormPage() {
                     {targetDev ? targetDev.name : "Pilih Node B"}
                   </p>
                   <p className="text-[11px] text-indigo-400 font-mono mt-0.5 truncate">
-                    {form.port_target || (targetDev?.ip_address ?? "Port Tujuan")}
+                    {targetDev?.ip_address ?? "—"}
                   </p>
                 </div>
               </div>

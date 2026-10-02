@@ -23,9 +23,9 @@ export default function ConfirmDialog({ message, onConfirm, onCancel, title = "K
           className="relative w-full max-w-md z-10"
         >
           {/* Glow border */}
-          <div className="absolute -inset-px rounded-3xl bg-gradient-to-br from-red-500/40 via-transparent to-transparent blur-sm pointer-events-none" />
+          <div className="absolute -inset-px rounded-md bg-gradient-to-br from-red-500/40 via-transparent to-transparent blur-sm pointer-events-none" />
           
-          <div className="relative glass-strong rounded-3xl border border-slate-700/70 shadow-[0_25px_60px_rgba(0,0,0,0.7)] overflow-hidden">
+          <div className="relative glass-strong rounded-md border border-slate-700/70 shadow-[0_25px_60px_rgba(0,0,0,0.7)] overflow-hidden">
             {/* Top accent */}
             <div className="h-1 w-full bg-gradient-to-r from-red-500 via-orange-500 to-red-600" />
 
@@ -33,10 +33,10 @@ export default function ConfirmDialog({ message, onConfirm, onCancel, title = "K
               {/* Icon */}
               <div className="flex justify-center mb-6">
                 <div
-                  className="w-20 h-20 rounded-3xl flex items-center justify-center shadow-xl"
+                  className="w-16 h-16 rounded-md flex items-center justify-center shadow-xl"
                   style={{ background: "rgba(239,68,68,0.15)", border: "2px solid rgba(239,68,68,0.3)", boxShadow: "0 0 30px rgba(239,68,68,0.2)" }}
                 >
-                  <Trash2 size={32} className="text-red-400" />
+                  <Trash2 size={28} className="text-red-400" />
                 </div>
               </div>
 
@@ -49,7 +49,7 @@ export default function ConfirmDialog({ message, onConfirm, onCancel, title = "K
               </p>
 
               {/* Warning */}
-              <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-red-500/8 border border-red-500/20 mb-6">
+              <div className="flex items-center gap-2.5 p-3.5 rounded-md bg-red-500/8 border border-red-500/20 mb-6">
                 <AlertTriangle size={15} className="text-red-400 flex-shrink-0" />
                 <p className="text-xs text-red-300 font-medium leading-snug">
                   Tindakan ini tidak dapat dibatalkan. Data yang dihapus tidak dapat dipulihkan kembali.

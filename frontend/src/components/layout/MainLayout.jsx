@@ -305,26 +305,29 @@ export default function MainLayout() {
         {/* Logout Button */}
         <button
           onClick={handleLogout}
+          id="sidebar-logout-btn"
           title={collapsed && !isMobile ? "Keluar Sistem" : undefined}
-          className={`w-full flex items-center justify-center px-3 py-2.5 rounded-xl text-sm font-bold transition-all border cursor-pointer group ${collapsed && !isMobile ? "" : "gap-2.5"}`}
+          className={`w-full flex items-center justify-center px-4 py-3 rounded-md text-sm font-black transition-all border cursor-pointer group shadow-sm ${collapsed && !isMobile ? "" : "gap-2.5"}`}
           style={{
-            background: "rgba(239,68,68,0.07)",
-            borderColor: "rgba(239,68,68,0.18)",
-            color: "#f87171",
+            background: "rgba(239,68,68,0.12)",
+            borderColor: "rgba(239,68,68,0.30)",
+            color: "#fca5a5",
           }}
           onMouseEnter={e => {
-            e.currentTarget.style.background = "rgba(239,68,68,0.18)";
-            e.currentTarget.style.borderColor = "rgba(239,68,68,0.35)";
-            e.currentTarget.style.color = "#fff";
+            e.currentTarget.style.background = "#ef4444";
+            e.currentTarget.style.borderColor = "#ef4444";
+            e.currentTarget.style.color = "#ffffff";
+            e.currentTarget.style.boxShadow = "0 0 20px rgba(239,68,68,0.45)";
           }}
           onMouseLeave={e => {
-            e.currentTarget.style.background = "rgba(239,68,68,0.07)";
-            e.currentTarget.style.borderColor = "rgba(239,68,68,0.18)";
-            e.currentTarget.style.color = "#f87171";
+            e.currentTarget.style.background = "rgba(239,68,68,0.12)";
+            e.currentTarget.style.borderColor = "rgba(239,68,68,0.30)";
+            e.currentTarget.style.color = "#fca5a5";
+            e.currentTarget.style.boxShadow = "none";
           }}
         >
-          <LogOut size={16} />
-          {(!collapsed || isMobile) && <span>Keluar Sistem</span>}
+          <LogOut size={17} className="group-hover:rotate-6 transition-transform" />
+          {(!collapsed || isMobile) && <span className="tracking-wide">Keluar Sistem</span>}
         </button>
       </div>
     </div>
@@ -380,38 +383,133 @@ export default function MainLayout() {
         >
           <button
             onClick={() => setMobileOpen(true)}
-            className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700/50 border border-slate-700/40 transition-all"
+            className="w-9 h-9 rounded-md flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700/50 border border-slate-700/40 transition-all"
           >
             <PanelLeft size={18} />
           </button>
           <div className="flex items-center gap-2">
             <div
-              className="w-7 h-7 rounded-lg flex items-center justify-center font-black text-white text-xs"
+              className="w-7 h-7 rounded-md flex items-center justify-center font-black text-white text-xs"
               style={{ background: "linear-gradient(135deg, #1d4ed8, #4f46e5)" }}
             >
               IV
             </div>
             <span className="text-sm font-black text-slate-100">InfraVerse</span>
           </div>
-          <button
-            onClick={() => setModalOpen(true)}
-            className="relative w-9 h-9 rounded-xl flex items-center justify-center border transition-all"
-            style={
-              totalAlerts > 0
-                ? { background: "rgba(239,68,68,0.12)", borderColor: "rgba(239,68,68,0.30)", color: "#f87171" }
-                : { background: "rgba(16,185,129,0.08)", borderColor: "rgba(16,185,129,0.18)", color: "#34d399" }
-            }
-          >
-            <Bell size={16} className={totalAlerts > 0 ? "animate-bounce" : ""} />
-            {totalAlerts > 0 && (
-              <span
-                className="absolute -top-1 -right-1 w-4 h-4 text-[9px] font-black text-white rounded-full flex items-center justify-center"
-                style={{ background: "#ef4444" }}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setModalOpen(true)}
+              className="relative w-9 h-9 rounded-md flex items-center justify-center border transition-all"
+              style={
+                totalAlerts > 0
+                  ? { background: "rgba(239,68,68,0.12)", borderColor: "rgba(239,68,68,0.30)", color: "#f87171" }
+                  : { background: "rgba(16,185,129,0.08)", borderColor: "rgba(16,185,129,0.18)", color: "#34d399" }
+              }
+            >
+              <Bell size={16} className={totalAlerts > 0 ? "animate-bounce" : ""} />
+              {totalAlerts > 0 && (
+                <span
+                  className="absolute -top-1 -right-1 w-4 h-4 text-[9px] font-black text-white rounded-full flex items-center justify-center"
+                  style={{ background: "#ef4444" }}
+                >
+                  {totalAlerts > 9 ? "9+" : totalAlerts}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={handleLogout}
+              title="Keluar Sistem"
+              className="w-9 h-9 rounded-md flex items-center justify-center text-red-400 hover:text-white bg-red-500/10 hover:bg-red-500 border border-red-500/30 transition-all"
+            >
+              <LogOut size={16} />
+            </button>
+          </div>
+        </div>
+
+        {/* ===== DESKTOP TOP BAR (All Internal Pages) ===== */}
+        <div
+          className="hidden lg:flex items-center justify-between px-6 py-3.5 flex-shrink-0"
+          style={{
+            background: "rgba(5,12,26,0.95)",
+            borderBottom: "1px solid rgba(59,130,246,0.12)",
+            backdropFilter: "blur(14px)",
+          }}
+        >
+          {/* Left: System Status & Current Route */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-slate-700/60 bg-slate-900/60 text-xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="font-extrabold text-slate-300">InfraVerse NOC</span>
+              <span className="text-slate-600">•</span>
+              <span className="font-mono text-emerald-400 font-bold">ONLINE</span>
+            </div>
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+              {location.pathname.replace("/", "").replace("-", " ") || "dashboard"}
+            </span>
+          </div>
+
+          {/* Right: Notification + User Profile + Clear Logout */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setModalOpen(true)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-md border text-xs font-bold transition-all cursor-pointer"
+              style={
+                totalAlerts > 0
+                  ? { background: "rgba(239,68,68,0.15)", borderColor: "rgba(239,68,68,0.35)", color: "#f87171" }
+                  : { background: "rgba(16,185,129,0.08)", borderColor: "rgba(16,185,129,0.22)", color: "#34d399" }
+              }
+            >
+              <Bell size={14} className={totalAlerts > 0 ? "animate-bounce text-red-400" : "text-emerald-400"} />
+              <span>{totalAlerts > 0 ? `${totalAlerts} Alarm Aktif` : "Status Normal"}</span>
+            </button>
+
+            <NavLink
+              to="/profile"
+              className="flex items-center gap-2.5 px-3 py-1.5 rounded-md border border-slate-700/60 bg-slate-800/60 hover:bg-slate-700/60 transition-all"
+            >
+              <div
+                className="w-6 h-6 rounded-sm flex items-center justify-center text-[11px] font-black text-white flex-shrink-0"
+                style={{
+                  background: user?.avatar ? undefined : `linear-gradient(135deg, ${rc.color}bb, ${rc.color})`,
+                }}
               >
-                {totalAlerts > 9 ? "9+" : totalAlerts}
-              </span>
-            )}
-          </button>
+                {user?.avatar
+                  ? <img src={user.avatar.startsWith("http") || user.avatar.startsWith("/storage/") ? user.avatar : `/storage/${user.avatar}`} alt="avatar" className="w-full h-full object-cover rounded-sm" />
+                  : (user?.name?.charAt(0)?.toUpperCase() ?? "U")
+                }
+              </div>
+              <span className="text-xs font-bold text-slate-200 max-w-[130px] truncate">{user?.name ?? "User"}</span>
+              <span className="text-[10px] font-black px-2 py-0.5 rounded-sm uppercase tracking-wider" style={{ background: rc.bg, color: rc.color }}>{rc.label}</span>
+            </NavLink>
+
+            {/* Clear Top Right Logout Button */}
+            <button
+              onClick={handleLogout}
+              id="topbar-logout-btn"
+              title="Keluar dari Sistem InfraVerse"
+              className="flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-black transition-all cursor-pointer border shadow-sm"
+              style={{
+                background: "rgba(239,68,68,0.12)",
+                borderColor: "rgba(239,68,68,0.30)",
+                color: "#fca5a5",
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = "#ef4444";
+                e.currentTarget.style.borderColor = "#ef4444";
+                e.currentTarget.style.color = "#ffffff";
+                e.currentTarget.style.boxShadow = "0 0 16px rgba(239,68,68,0.5)";
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = "rgba(239,68,68,0.12)";
+                e.currentTarget.style.borderColor = "rgba(239,68,68,0.30)";
+                e.currentTarget.style.color = "#fca5a5";
+                e.currentTarget.style.boxShadow = "none";
+              }}
+            >
+              <LogOut size={14} />
+              <span>Keluar Sistem</span>
+            </button>
+          </div>
         </div>
 
         <main className="flex-1 overflow-auto min-w-0">
