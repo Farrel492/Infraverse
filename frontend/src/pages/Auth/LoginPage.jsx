@@ -143,7 +143,7 @@ export default function LoginPage() {
         <div className="accent-line-top" />
 
         {/* Content Container */}
-        <div className="relative z-10 flex flex-col justify-between h-full p-10 xl:p-14 space-y-10">
+        <div className="relative z-10 flex flex-col justify-between h-full p-8 xl:p-12 space-y-8">
 
           {/* Top Brand & Version */}
           <div
@@ -193,25 +193,25 @@ export default function LoginPage() {
               Solusi Terpadu Manajemen NOC Kampus Berkelanjutan
             </div>
 
-            <h2 className="text-4xl lg:text-5xl xl:text-6xl font-black text-slate-100 leading-[1.18] tracking-tight">
+            <h2 className="text-3xl lg:text-4xl xl:text-[2.6rem] font-black text-slate-100 leading-[1.2] tracking-tight">
               Pusat Kendali Infrastruktur<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-200 to-cyan-300">
                 Digital Twin Smart Campus
               </span>
             </h2>
 
-            <p className="text-lg lg:text-xl leading-relaxed text-slate-200 font-medium max-w-2xl">
+            <p className="text-sm lg:text-base leading-relaxed text-slate-300 font-medium max-w-xl">
               Kelola seluruh ekosistem hardware IT kampus dalam satu visualisasi spasial interaktif.
               Pantau utilisasi rak server 42U, jalur fiber optic antar-gedung, simulasi mitigasi insiden,
               dan efisiensi daya listrik secara akurat dan transparan.
             </p>
 
             {/* 4 Feature Showcase Cards — Spacious & Ultra-Legible */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
               {FEATURES.map(({ Icon, label, sub, tag, color, bg, border }, i) => (
                 <div
                   key={i}
-                  className="p-6 rounded-3xl border transition-all duration-300 flex items-start gap-5 shadow-lg group hover:translate-y-[-2px]"
+                  className="p-4 rounded-2xl border transition-all duration-300 flex items-start gap-4 shadow-lg group hover:translate-y-[-2px]"
                   style={{
                     background: "rgba(10, 22, 45, 0.72)",
                     borderColor: border,
@@ -227,14 +227,14 @@ export default function LoginPage() {
                   }}
                 >
                   <div
-                    className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-110 shadow-md"
+                    className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-110 shadow-md"
                     style={{ background: bg, border: `1px solid ${border}` }}
                   >
-                    <Icon size={28} style={{ color }} />
+                    <Icon size={22} style={{ color }} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2 mb-1.5">
-                      <h4 className="text-base xl:text-lg font-black text-slate-100 group-hover:text-blue-300 transition-colors leading-tight">
+                      <h4 className="text-sm font-black text-slate-100 group-hover:text-blue-300 transition-colors leading-tight">
                         {label}
                       </h4>
                     </div>
@@ -244,7 +244,7 @@ export default function LoginPage() {
                     >
                       {tag}
                     </span>
-                    <p className="text-sm text-slate-300 leading-relaxed font-semibold">
+                    <p className="text-xs text-slate-400 leading-relaxed font-medium">
                       {sub}
                     </p>
                   </div>
@@ -255,7 +255,7 @@ export default function LoginPage() {
 
           {/* Bottom Stats Showcase */}
           <div
-            className={`grid grid-cols-3 gap-6 p-6 rounded-3xl border transition-all duration-300  shadow-xl ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
+            className={`grid grid-cols-3 gap-4 p-5 rounded-2xl border transition-all duration-300 shadow-xl ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
             style={{
               background: "rgba(10, 20, 42, 0.75)",
               borderColor: "rgba(79, 140, 220, 0.20)",
@@ -264,7 +264,7 @@ export default function LoginPage() {
           >
             {STATS.map(({ value, label, detail }) => (
               <div key={label} className="space-y-1">
-                <p className="text-2xl lg:text-3xl font-black font-mono text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-200 to-white">
+                <p className="text-xl lg:text-2xl font-black font-mono text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-200 to-white">
                   {value}
                 </p>
                 <p className="text-xs font-bold text-slate-100 uppercase tracking-wider">
@@ -284,7 +284,7 @@ export default function LoginPage() {
           RIGHT PANEL — AUTHENTICATION FORM & DEMO TESTING SHORTCUTS
           =================================================================== */}
       <div
-        className="flex-1 flex items-center justify-center relative p-6 sm:p-10 lg:p-12 xl:p-16 overflow-y-auto"
+        className="flex-1 flex items-center justify-center relative p-6 sm:p-8 lg:p-10 xl:p-14 overflow-y-auto"
         style={{ background: "linear-gradient(145deg, #050c1a 0%, #08142b 100%)" }}
       >
         <div className="absolute inset-0 bg-dots opacity-25 pointer-events-none" />
@@ -319,7 +319,7 @@ export default function LoginPage() {
             {/* Top gradient highlight */}
             <div className="h-1.5 w-full bg-gradient-to-r from-blue-500 via-indigo-500 to-cyan-400" />
 
-            <div className="p-8 sm:p-10 space-y-6">
+            <div className="p-6 sm:p-8 space-y-5">
               
               {/* Header Titles */}
               <div>
@@ -331,7 +331,7 @@ export default function LoginPage() {
                     Portal Otorisasi
                   </span>
                 </div>
-                <h2 className="text-2xl sm:text-3xl font-black text-slate-100 tracking-tight">
+                <h2 className="text-xl sm:text-2xl font-black text-slate-100 tracking-tight">
                   Masuk ke Akun
                 </h2>
                 <p className="text-sm text-slate-300 font-medium mt-1">

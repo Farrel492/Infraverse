@@ -66,7 +66,8 @@ body {
   background-color: var(--color-bg-base);
   color: var(--color-text-primary);
   min-height: 100vh;
-  line-height: 1.6;
+  line-height: 1.65;
+  letter-spacing: 0.01em;
 }
 
 /* ===== SCROLLBAR ===== */
@@ -210,7 +211,7 @@ body {
   -webkit-backdrop-filter: blur(20px) saturate(1.4);
   border: 1px solid rgba(79,140,220,0.14);
   border-radius: var(--radius-lg);
-  padding: 1.75rem 2rem;
+  padding: 1.5rem 1.75rem;
 }
 .glass-light {
   background: rgba(15, 28, 55, 0.55);
@@ -226,7 +227,7 @@ body {
   -webkit-backdrop-filter: blur(28px) saturate(1.6);
   border: 1px solid rgba(79,140,220,0.20);
   border-radius: var(--radius-lg);
-  padding: 1.75rem 2rem;
+  padding: 1.5rem 1.75rem;
 }
 .glass-card {
   background: rgba(11, 21, 42, 0.75);
@@ -236,7 +237,7 @@ body {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
   transition: var(--transition-base);
-  padding: 1.75rem 2rem;
+  padding: 1.5rem 1.75rem;
 }
 .glass-card:hover {
   border-color: rgba(59,130,246,0.35);
@@ -475,13 +476,13 @@ body {
 .form-label {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  margin-bottom: 0.5rem;
-  font-size: 0.72rem;
-  font-weight: 800;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #94a3b8;
+  letter-spacing: 0.05em;
+  color: #cbd5e1;
 }
 .form-label .required {
   color: #f87171;
@@ -492,9 +493,9 @@ body {
 .input-group {
   display: flex;
   align-items: center;
-  height: 3.25rem;
+  height: 3.5rem;
   background: rgba(8, 16, 32, 0.9);
-  border: 1.5px solid rgba(79,140,220,0.18);
+  border: 1.5px solid rgba(79,140,220,0.25);
   border-radius: var(--radius-md);
   overflow: hidden;
   transition: var(--transition-fast);
@@ -515,7 +516,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 3rem;
+  width: 3.25rem;
   height: 100%;
   background: rgba(12, 24, 48, 0.6);
   border-right: 1px solid rgba(79,140,220,0.14);
@@ -532,9 +533,9 @@ body {
   border: none;
   outline: none;
   font-family: var(--font-sans);
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 600;
-  color: #f0f6ff;
+  color: #ffffff;
 }
 .input-control::placeholder {
   color: #334155;
@@ -574,9 +575,9 @@ body {
   border: none;
   outline: none;
   font-family: var(--font-sans);
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 600;
-  color: #f0f6ff;
+  color: #ffffff;
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
@@ -633,9 +634,9 @@ body {
 .table-premium tbody tr:last-child { border-bottom: none; }
 .table-premium tbody tr:hover { background: rgba(59,130,246,0.05); }
 .table-premium tbody td {
-  padding: 1.15rem 1.25rem;
+  padding: 1rem 1.25rem;
   vertical-align: middle;
-  line-height: 1.55;
+  line-height: 1.6;
 }
 
 /* Overdue row */
@@ -782,7 +783,7 @@ body {
   position: relative;
   overflow: hidden;
   border-radius: var(--radius-xl);
-  padding: 2.25rem 2.5rem;
+  padding: 2rem 2.5rem;
   border: 1px solid rgba(79,140,220,0.15);
   background: rgba(9,18,38,0.7);
   backdrop-filter: blur(24px);

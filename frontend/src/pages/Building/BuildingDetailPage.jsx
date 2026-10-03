@@ -346,13 +346,15 @@ export default function BuildingDetailPage() {
               </div>
               <span>Daftar Lantai ({floors.length})</span>
             </div>
-            <button 
-              id="btn-add-floor"
-              onClick={() => navigate(`/buildings/${id}/floors/create`)}
-              className="flex items-center gap-1.5 text-xs font-bold text-blue-300 hover:text-white px-3 py-1.5 rounded-xl bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 transition-all shadow-sm cursor-pointer"
-            >
-              <Plus size={14} /> Lantai
-            </button>
+            {canWrite && (
+              <button 
+                id="btn-add-floor"
+                onClick={() => navigate(`/buildings/${id}/floors/create`)}
+                className="flex items-center gap-1.5 text-xs font-bold text-blue-300 hover:text-white px-3 py-1.5 rounded-xl bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 transition-all shadow-sm cursor-pointer"
+              >
+                <Plus size={14} /> Lantai
+              </button>
+            )}
           </div>
 
           <div className="space-y-3">
@@ -442,7 +444,7 @@ export default function BuildingDetailPage() {
               </div>
               <span>Ruangan ({rooms.length})</span>
             </div>
-            {activeFloor && (
+            {activeFloor && canWrite && (
               <button 
                 id="btn-add-room"
                 onClick={() => navigate(`/buildings/${id}/rooms/create?floor_id=${activeFloor.id}`)}
@@ -544,7 +546,7 @@ export default function BuildingDetailPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              {activeRoom && (
+              {activeRoom && canWrite && (
                 <button 
                   id="btn-add-rack"
                   onClick={() => navigate(`/buildings/${id}/racks/create?room_id=${activeRoom.id}`)}
@@ -553,7 +555,7 @@ export default function BuildingDetailPage() {
                   <Plus size={14} /> Tambah Rack
                 </button>
               )}
-              {activeRack && (
+              {activeRack && canWrite && (
                 <>
                   <button 
                     id="btn-edit-rack-capacity"

@@ -124,13 +124,15 @@ export default function AssetsPage() {
             {devices.length} Perangkat Terdaftar & Dipantau Real-Time
           </p>
         </div>
-        <button 
-          id="btn-add-asset"
-          onClick={() => navigate("/assets/create")}
-          className="flex items-center gap-2 px-6 py-3.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white text-sm font-bold rounded-2xl shadow-[0_0_25px_rgba(59,130,246,0.4)] transition-all cursor-pointer"
-        >
-          <Plus size={18} /> Tambah Perangkat Baru
-        </button>
+        {canWrite && (
+          <button 
+            id="btn-add-asset"
+            onClick={() => navigate("/assets/create")}
+            className="flex items-center gap-2 px-6 py-3.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 hover:from-blue-500 hover:to-emerald-500 text-white text-sm font-bold rounded-2xl shadow-[0_0_25px_rgba(59,130,246,0.4)] transition-all cursor-pointer"
+          >
+            <Plus size={18} /> Tambah Perangkat Baru
+          </button>
+        )}
       </div>
 
       {/* Quick Status Filter Tabs / Chips for Laypeople */}
